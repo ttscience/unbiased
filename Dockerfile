@@ -21,4 +21,4 @@ ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
 
 EXPOSE 3838
 
-RUN ["R", "-e", "plumber::plumb(dir = 'api') |> plumber::pr_run(port = 3838)"]
+CMD ["R", "-e", "plumber::plumb(dir = 'api') |> plumber::pr_run(port = 3838)"]
