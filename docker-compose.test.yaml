@@ -15,7 +15,7 @@ services:
     volumes:
       - type: bind
         source: ./tests
-        target: /tests
+        target: /src/unbiased/tests
     command: Rscript tests/testthat.R
 
 networks:
