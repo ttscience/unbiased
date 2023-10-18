@@ -1,5 +1,12 @@
-# Start the API
+api_url <- "http://api:3838"
+
+skip_on_ci()
+
+# Overwrite API URL if not on CI
+api_url <- "http://127.0.0.1:5556"
 api_path <- tempdir()
+
+# Start the API
 api <- callr::r_bg(\(path) {
   # 1. Set path to `path`
   # 2. Build a plumber API

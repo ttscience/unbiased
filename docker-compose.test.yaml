@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    container_name: unbiased_api
+    networks:
+      - test_net
+  tests:
+    build: .
+    container_name: unbiased_tests
+    depends_on:
+      - api
+    networks:
+      - test_net
+    volumes:
+      - type: bind
+        source: ./tests
+        target: /tests
+    command: Rscript tests/testthat.R
+
+networks:
+  test_net:
