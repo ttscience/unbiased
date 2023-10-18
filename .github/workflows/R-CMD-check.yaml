@@ -25,8 +25,6 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      CI: true
-      RENV_CONFIG_SANDBOX_ENABLED: false
 
     steps:
       - uses: actions/checkout@v3

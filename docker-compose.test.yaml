@@ -3,6 +3,9 @@ services:
   api:
     build: .
     container_name: unbiased_api
+    environment:
+      - CI=true
+      - RENV_CONFIG_SANDBOX_ENABLED=false
     networks:
       - test_net
   tests:
@@ -10,6 +13,9 @@ services:
     container_name: unbiased_tests
     depends_on:
       - api
+    environment:
+      - CI=true
+      - RENV_CONFIG_SANDBOX_ENABLED=false
     networks:
       - test_net
     volumes:
