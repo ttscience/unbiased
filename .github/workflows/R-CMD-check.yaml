@@ -34,4 +34,4 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
 
       - name: Run tests
-        run: docker compose -f "docker-compose.test.yaml" up --abort-on-container-exit --exit-code-from test --attach test
+        run: docker compose -f "docker-compose.test.yaml" up --abort-on-container-exit --exit-code-from tests --attach tests
