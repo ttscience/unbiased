@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   api:
-    build: .
+    image: unbiased
     container_name: unbiased_api
     environment:
       - CI=true
@@ -9,7 +9,7 @@ services:
     networks:
       - test_net
   tests:
-    build: .
+    image: unbiased
     container_name: unbiased_tests
     depends_on:
       - api
