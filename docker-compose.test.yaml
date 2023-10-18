@@ -3,9 +3,6 @@ services:
   api:
     image: unbiased
     container_name: unbiased_api
-    environment:
-      - CI=true
-      - RENV_CONFIG_SANDBOX_ENABLED=false
     networks:
       - test_net
   tests:
@@ -15,7 +12,6 @@ services:
       - api
     environment:
       - CI=true
-      - RENV_CONFIG_SANDBOX_ENABLED=false
     networks:
       - test_net
     volumes:
