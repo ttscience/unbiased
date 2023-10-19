@@ -10,15 +10,12 @@ name: R-CMD-check
 
 jobs:
   R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ubuntu-latest
 
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
+    name: Ubuntu (latest)
 
     strategy:
       fail-fast: false
-      matrix:
-        config:
-          - {os: ubuntu-latest,   r: 'release'}
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -30,7 +27,7 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
       
       - name: Build image
-        run: docker build -t unbiased .
+        run: docker build -t unbiased --build-arg github_sha=${{ github.sha }} .
 
       - name: Run tests
         run: docker compose -f "docker-compose.test.yaml" up --abort-on-container-exit --exit-code-from tests --attach tests
