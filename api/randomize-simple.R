@@ -1,10 +1,11 @@
 #* Return hello world
 #* 
 #* @get /hello
+#* @serializer unboxedJSON
 function() {
   call_hello_world()
 }
 
 call_hello_world <- function() {
-  Sys.getenv("GITHUB_SHA", unset = "none")
+  "Hello TTSI!"
 }
