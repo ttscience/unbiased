@@ -1,4 +1,4 @@
-test_that("hello world endpoint returns expected message", {
+test_that("hello world endpoint returns the SHA", {
   response <- request(api_url) |>
     req_url_path("simple", "hello") |>
     req_method("GET") |>
@@ -7,5 +7,5 @@ test_that("hello world endpoint returns expected message", {
     resp_body_json()
   
   expect_list(response, len = 1)
-  expect_string(response[[1]], pattern = "^[0-9a-f]{40}$")
+  expect_string(response[[1]], pattern = "^[0-9a-f]{64}$")
 })
