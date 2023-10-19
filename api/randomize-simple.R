@@ -6,5 +6,5 @@ function() {
 }
 
 call_hello_world <- function() {
-  "Hello TTSI!"
+  Sys.getenv("GITHUB_SHA", unset = "none")
 }

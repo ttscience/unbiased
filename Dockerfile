@@ -1,5 +1,9 @@
 FROM rocker/r-ver:4.3.1
 
+ARG github_sha
+ENV GITHUB_SHA=${github_sha}
+ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
+
 WORKDIR /src/unbiased
 
 # Install system dependencies
@@ -16,8 +20,6 @@ COPY renv.lock .
 RUN R -e 'renv::restore()'
 
 COPY api/ ./api
-
-ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
 
 EXPOSE 3838
 
