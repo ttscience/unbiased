@@ -7,6 +7,7 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
+library(checkmate)
 library(httr2)
 
 test_dir(fs::path("tests", "testthat"))

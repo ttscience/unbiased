@@ -6,5 +6,6 @@ test_that("hello world endpoint returns expected message", {
     req_perform() |>
     resp_body_json()
   
-  expect_identical(response, list("Hello TTSI!"))
+  expect_list(response, len = 1)
+  expect_string(response[[1]], pattern = "^[0-9a-f]{40}$")
 })
