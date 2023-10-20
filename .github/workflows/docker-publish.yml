@@ -83,6 +83,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
+          sbom: false
           build-args: github_sha=${{ github.sha }}
 
       # Sign the resulting Docker image digest except on PRs.
