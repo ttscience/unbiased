@@ -17,7 +17,12 @@ COPY renv.lock .
 
 RUN R -e 'renv::restore()'
 
-COPY api/ ./api
+COPY app/ ./app
+COPY inst/api/ ./api
+
+# Copy more package data
+# Build package from app
+# Or maybe separate Dockerfiles and build package in a separate image
 
 EXPOSE 3838
 
