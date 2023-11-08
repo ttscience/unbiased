@@ -26,3 +26,11 @@ if (!isTRUE(as.logical(Sys.getenv("CI")))) {
   # Close API upon exiting
   withr::defer({ api$kill() }, teardown_env())
 }
+
+# Retry a request until the API starts
+request(api_url) |>
+  # Endpoint that should be always available
+  req_url_path("meta", "sha") |>
+  req_method("GET") |>
+  req_retry(max_tries = 5) |>
+  req_perform()
