@@ -31,4 +31,4 @@ EXPOSE 3838
 ARG github_sha
 ENV GITHUB_SHA=${github_sha}
 
-CMD ["R", "-e", "plumber::plumb(dir = fs::path_package('unbiased', 'api') |> plumber::pr_run(host = '0.0.0.0', port = 3838)"]
+CMD ["R", "-e", "plumber::plumb(dir = fs::path_package('unbiased', 'api')) |> plumber::pr_run(host = '0.0.0.0', port = 3838)"]
