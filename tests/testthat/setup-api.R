@@ -1,3 +1,6 @@
+library(checkmate)
+library(httr2)
+
 api_url <- "http://api:3838"
 
 if (!isTRUE(as.logical(Sys.getenv("CI")))) {

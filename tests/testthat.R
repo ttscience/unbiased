@@ -7,8 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(checkmate)
-library(httr2)
 library(unbiased)
 
 test_check("unbiased")
