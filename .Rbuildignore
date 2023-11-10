@@ -1,3 +1,6 @@
 ^renv$
 ^renv\.lock$
 ^\.github$
+^unbiased\.Rproj$
+^\.Rproj\.user$
+^LICENSE\.md$

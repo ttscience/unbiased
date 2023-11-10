@@ -14,11 +14,7 @@ services:
       - CI=true
     networks:
       - test_net
-    volumes:
-      - type: bind
-        source: ./tests
-        target: /src/unbiased/tests
-    command: Rscript tests/testthat.R
+    command: R -e "testthat::test_package('unbiased')"
 
 networks:
   test_net:
