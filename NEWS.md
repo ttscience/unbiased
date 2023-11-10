@@ -1,3 +1,3 @@
 # unbiased (development version)
 
-* Initial CRAN submission.
+* Initialized package structure.
