@@ -1,8 +1,19 @@
 version: "3.9"
 services:
+  db:
+    image: postgres:16.0
+    container_name: unbiased_db
+    networks:
+      - test_net
+    volumes:
+      - type: bind
+        source: ./inst/postgres/
+        target: /docker-entrypoint-initdb.d/
   api:
     image: unbiased
     container_name: unbiased_api
+    depends_on:
+      - db
     networks:
       - test_net
   tests:
