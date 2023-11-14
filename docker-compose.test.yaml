@@ -3,6 +3,8 @@ services:
   db:
     image: postgres:16.0
     container_name: unbiased_db
+    environment:
+      - POSTGRES_PASSWORD=postgres
     networks:
       - test_net
     volumes:
