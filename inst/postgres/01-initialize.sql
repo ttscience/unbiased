@@ -77,7 +77,7 @@ CREATE TABLE numeric_constraint (
 CREATE TABLE patient (
   id          SERIAL PRIMARY KEY,
   study_id    INT NOT NULL,
-  arm_id      INT NOT NULL,
+  arm_id      INT,
   timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
   rand_code   VARCHAR(255),
   CONSTRAINT patient_arm_study
