@@ -50,7 +50,6 @@ CREATE TABLE stratum_in_study (
     UNIQUE (stratum_id, study_id)
 );
 
--- TODO: Add trigger to check for stratum value type = 'factor'
 CREATE TABLE factor_constraint (
   stratum_id  INT NOT NULL,
   value       TEXT NOT NULL,
@@ -61,7 +60,6 @@ CREATE TABLE factor_constraint (
     UNIQUE (stratum_id, value)
 );
 
--- TODO: Add trigger to check for stratum value type = 'numeric'
 CREATE TABLE numeric_constraint (
   stratum_id  INT NOT NULL,
   min_value   FLOAT,
@@ -121,14 +119,12 @@ $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER stratum_fct_constraint
-BEFORE INSERT
-ON factor_constraint
+BEFORE INSERT ON factor_constraint
 FOR EACH ROW
 EXECUTE PROCEDURE check_fct_stratum();
 
 
 CREATE TRIGGER stratum_num_constraint
-BEFORE INSERT
-ON numeric_constraint
+BEFORE INSERT ON numeric_constraint
 FOR EACH ROW
 EXECUTE PROCEDURE check_num_stratum();
