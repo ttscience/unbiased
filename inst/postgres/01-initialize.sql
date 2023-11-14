@@ -93,13 +93,14 @@ CREATE TABLE patient (
 CREATE OR REPLACE FUNCTION check_fct_stratum()
 RETURNS trigger AS $$
 BEGIN
-  IF EXISTS (
+  IF NOT EXISTS (
     SELECT 1 FROM stratum
     -- Checks that column value is correct
-    WHERE id = NEW.stratum_id AND value_type <> 'factor'
+    WHERE id = NEW.stratum_id AND value_type = 'factor'
   ) THEN
     RAISE EXCEPTION 'Can''t set factor constraint for non-factor stratum.';
   END IF;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -107,13 +108,14 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION check_num_stratum()
 RETURNS trigger AS $$
 BEGIN
-  IF EXISTS (
+  IF NOT EXISTS (
     SELECT 1 FROM stratum
     -- Checks that column value is correct
-    WHERE id = NEW.stratum_id AND value_type <> 'numeric'
+    WHERE id = NEW.stratum_id AND value_type = 'numeric'
   ) THEN
     RAISE EXCEPTION 'Can''t set numeric constraint for non-numeric stratum.';
   END IF;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -121,12 +123,12 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER stratum_fct_constraint
 BEFORE INSERT
 ON factor_constraint
-FOR EACH STATEMENT
+FOR EACH ROW
 EXECUTE PROCEDURE check_fct_stratum();
 
 
 CREATE TRIGGER stratum_num_constraint
 BEFORE INSERT
 ON numeric_constraint
-FOR EACH STATEMENT
+FOR EACH ROW
 EXECUTE PROCEDURE check_num_stratum();
