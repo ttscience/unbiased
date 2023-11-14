@@ -8,7 +8,7 @@ CREATE TABLE study (
   identifier  VARCHAR(12) NOT NULL,
   name        VARCHAR(255) NOT NULL,
   method_id   INT NOT NULL,
-  parameters  JSON,
+  parameters  JSONB,
   timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT study_method
     FOREIGN KEY (method_id)
@@ -52,7 +52,7 @@ CREATE TABLE stratum_in_study (
 
 CREATE TABLE factor_constraint (
   stratum_id  INT NOT NULL,
-  value       TEXT NOT NULL,
+  value       VARCHAR(255) NOT NULL,
   CONSTRAINT factor_stratum
     FOREIGN KEY (stratum_id)
     REFERENCES stratum (id) ON DELETE CASCADE,
@@ -87,6 +87,26 @@ CREATE TABLE patient (
     UNIQUE (study_id, rand_code)
 );
 
+CREATE TABLE patient_stratum (
+  patient_id  INT NOT NULL,
+  stratum_id  INT NOT NULL,
+  fct_value   VARCHAR(255),
+  num_value   FLOAT,
+  CONSTRAINT fk_patient
+    FOREIGN KEY (patient_id)
+    REFERENCES patient (id) ON DELETE CASCADE,
+  CONSTRAINT fk_stratum_2
+    FOREIGN KEY (stratum_id)
+    REFERENCES stratum (id) ON DELETE CASCADE,
+  CONSTRAINT chk_value_exists
+    -- Either factor or numeric value must be given
+    CHECK (IS NOT NULL fct_value OR IS NOT NULL num_value),
+  CONSTRAINT chk_one_value_only
+    -- Can't give both factor and numeric value
+    CHECK (IS NULL fct_value OR IS NULL num_value)
+);
+
+-- Stratum constraint checks
 
 CREATE OR REPLACE FUNCTION check_fct_stratum()
 RETURNS trigger AS $$
@@ -128,3 +148,90 @@ CREATE TRIGGER stratum_num_constraint
 BEFORE INSERT ON numeric_constraint
 FOR EACH ROW
 EXECUTE PROCEDURE check_num_stratum();
+
+-- Patient stratum value checks
+
+CREATE OR REPLACE FUNCTION check_patient_stratum_study()
+RETURNS trigger AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM patient AS p
+    INNER JOIN stratum_in_study AS s
+    USING (study_id)
+    WHERE s.stratum_id = NEW.stratum_id
+  ) THEN
+    RAISE EXCEPTION 'Stratum and patient must be assigned to the same study.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION check_fct_patient()
+RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM stratum
+    WHERE id = NEW.stratum_id AND value_type = 'factor'
+  ) THEN
+    IF (IS NULL NEW.fct_value) THEN
+      RAISE EXCEPTION 'Factor stratum requires a factor value.';
+    END IF;
+    IF NOT EXISTS (
+      SELECT 1 FROM factor_constraint
+      WHERE stratum_id = NEW.stratum_id AND value = NEW.fct_value
+    ) THEN
+      RAISE EXCEPTION 'Factor value not specified as allowed.';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION check_num_patient()
+RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM stratum
+    WHERE id = NEW.stratum_id AND value_type = 'numeric'
+  ) THEN
+    IF (IS NULL NEW.num_value) THEN
+      RAISE EXCEPTION 'Numeric stratum requires a numeric value.';
+    END IF;
+    min_value := (
+      SELECT min_value FROM numeric_constraint
+      WHERE stratum_id = NEW.stratum_id
+    );
+    IF IS NOT NULL min_value AND NEW.num_value < min_value
+      RAISE EXCEPTION 'New value is lower than minimum allowed value.';
+    END IF;
+    max_value := (
+      SELECT max_value FROM numeric_constraint
+      WHERE stratum_id = NEW.stratum_id
+    );
+    IF IS NOT NULL max_value AND NEW.num_value > max_value
+      RAISE EXCEPTION 'New value is greater than maximum allowed value.';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER patient_stratum_study_constraint
+BEFORE INSERT ON patient_stratum
+FOR EACH ROW
+EXECUTE PROCEDURE check_patient_stratum_study();
+
+
+CREATE TRIGGER patient_fct_constraint
+BEFORE INSERT ON patient_stratum
+FOR EACH ROW
+EXECUTE PROCEDURE check_fct_patient();
+
+
+CREATE TRIGGER patient_num_constraint
+BEFORE INSERT ON patient_stratum
+FOR EACH ROW
+EXECUTE PROCEDURE check_num_patient();
