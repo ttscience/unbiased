@@ -100,10 +100,10 @@ CREATE TABLE patient_stratum (
     REFERENCES stratum (id) ON DELETE CASCADE,
   CONSTRAINT chk_value_exists
     -- Either factor or numeric value must be given
-    CHECK (IS NOT NULL fct_value OR IS NOT NULL num_value),
+    CHECK (fct_value IS NOT NULL OR num_value IS NOT NULL),
   CONSTRAINT chk_one_value_only
     -- Can't give both factor and numeric value
-    CHECK (IS NULL fct_value OR IS NULL num_value)
+    CHECK (fct_value IS NULL OR num_value IS NULL)
 );
 
 -- Stratum constraint checks
@@ -174,7 +174,7 @@ BEGIN
     SELECT 1 FROM stratum
     WHERE id = NEW.stratum_id AND value_type = 'factor'
   ) THEN
-    IF (IS NULL NEW.fct_value) THEN
+    IF (NEW.fct_value IS NULL) THEN
       RAISE EXCEPTION 'Factor stratum requires a factor value.';
     END IF;
     IF NOT EXISTS (
@@ -196,23 +196,26 @@ BEGIN
     SELECT 1 FROM stratum
     WHERE id = NEW.stratum_id AND value_type = 'numeric'
   ) THEN
-    IF (IS NULL NEW.num_value) THEN
+    IF (NEW.num_value IS NULL) THEN
       RAISE EXCEPTION 'Numeric stratum requires a numeric value.';
     END IF;
-    min_value := (
-      SELECT min_value FROM numeric_constraint
-      WHERE stratum_id = NEW.stratum_id
-    );
-    IF IS NOT NULL min_value AND NEW.num_value < min_value
-      RAISE EXCEPTION 'New value is lower than minimum allowed value.';
-    END IF;
-    max_value := (
-      SELECT max_value FROM numeric_constraint
-      WHERE stratum_id = NEW.stratum_id
-    );
-    IF IS NOT NULL max_value AND NEW.num_value > max_value
-      RAISE EXCEPTION 'New value is greater than maximum allowed value.';
-    END IF;
+    DECLARE
+      min_value FLOAT := (
+        SELECT min_value FROM numeric_constraint
+        WHERE stratum_id = NEW.stratum_id
+      );
+      max_value FLOAT := (
+        SELECT max_value FROM numeric_constraint
+        WHERE stratum_id = NEW.stratum_id
+      );
+    BEGIN
+      IF (min_value IS NOT NULL AND NEW.num_value < min_value) THEN
+        RAISE EXCEPTION 'New value is lower than minimum allowed value.';
+      END IF;
+      IF (max_value IS NOT NULL AND NEW.num_value > max_value) THEN
+        RAISE EXCEPTION 'New value is greater than maximum allowed value.';
+      END IF;
+    END;
   END IF;
   RETURN NEW;
 END;
