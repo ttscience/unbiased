@@ -1,4 +1,5 @@
 library(checkmate)
+library(dplyr)
 library(dbplyr)
 library(httr2)
 

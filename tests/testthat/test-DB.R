@@ -37,3 +37,13 @@ test_that("database contains history tables", {
     glue::glue("{versioned_tables}_history")
   )
 })
+
+test_that("database version is the same as package version", {
+  expect_identical(
+    tbl(conn, "settings") |>
+      filter(key == "schema_version") |>
+      pull(value),
+    packageVersion("unbiased") |>
+      as.character()
+  )
+})
