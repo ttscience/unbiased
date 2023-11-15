@@ -7,7 +7,9 @@ RUN apt update && apt-get install -y --no-install-recommends \
   # httpuv
   libz-dev \
   # sodium
-  libsodium-dev
+  libsodium-dev \
+  # RPostgres
+  libpq-dev libssl-dev
 
 ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
 

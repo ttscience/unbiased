@@ -1,4 +1,5 @@
 library(checkmate)
+library(dbplyr)
 library(httr2)
 
 api_url <- "http://api:3838"
