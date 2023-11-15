@@ -8,11 +8,8 @@ INSERT INTO arm (study_id, name, ratio)
 VALUES (1, 'placebo', 2),
        (1, 'active', 1);
 
-INSERT INTO stratum (name, value_type)
-VALUES ('gender', 'factor');
-
-INSERT INTO stratum_in_study (stratum_id, study_id)
-VALUES (1, 1);
+INSERT INTO stratum (study_id, name, value_type)
+VALUES (1, 'gender', 'factor');
 
 INSERT INTO factor_constraint (stratum_id, value)
 VALUES (1, 'F'), (1, 'M');
@@ -20,8 +17,8 @@ VALUES (1, 'F'), (1, 'M');
 INSERT INTO patient (study_id, arm_id)
 VALUES (1, 1);
 
-INSERT INTO patient_stratum (patient_id, stratum_id)
-VALUES (1, 1);
+INSERT INTO patient_stratum (patient_id, stratum_id, fct_value)
+VALUES (1, 1, 'F');
 
 -- Trigger properly raises an error here
 /*

@@ -31,23 +31,14 @@ CREATE TABLE arm (
 
 CREATE TABLE stratum (
   id          SERIAL PRIMARY KEY,
+  study_id    INT NOT NULL,
   name        VARCHAR(255) NOT NULL,
   value_type  VARCHAR(12),
-  CONSTRAINT chk_value_type
-    CHECK (value_type IN ('factor', 'numeric'))
-);
-
-CREATE TABLE stratum_in_study (
-  stratum_id  INT NOT NULL,
-  study_id    INT NOT NULL,
-  CONSTRAINT fk_stratum
-    FOREIGN KEY (stratum_id)
-    REFERENCES stratum (id) ON DELETE CASCADE,
   CONSTRAINT fk_study
     FOREIGN KEY (study_id)
     REFERENCES study (id) ON DELETE CASCADE,
-  CONSTRAINT uc_stratum_study
-    UNIQUE (stratum_id, study_id)
+  CONSTRAINT chk_value_type
+    CHECK (value_type IN ('factor', 'numeric'))
 );
 
 CREATE TABLE factor_constraint (
@@ -79,12 +70,11 @@ CREATE TABLE patient (
   study_id    INT NOT NULL,
   arm_id      INT,
   timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  rand_code   VARCHAR(255),
+  used        BOOLEAN NOT NULL DEFAULT FALSE,
   CONSTRAINT patient_arm_study
     FOREIGN KEY (arm_id, study_id)
-    REFERENCES arm (id, study_id) ON DELETE CASCADE,
-  CONSTRAINT uc_study_code
-    UNIQUE (study_id, rand_code)
+    REFERENCES arm (id, study_id) ON DELETE CASCADE
+  -- TODO: check that USED only when arm not NULL
 );
 
 CREATE TABLE patient_stratum (
@@ -154,14 +144,20 @@ EXECUTE PROCEDURE check_num_stratum();
 CREATE OR REPLACE FUNCTION check_patient_stratum_study()
 RETURNS trigger AS $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM patient AS p
-    INNER JOIN stratum_in_study AS s
-    USING (study_id)
-    WHERE s.stratum_id = NEW.stratum_id
-  ) THEN
-    RAISE EXCEPTION 'Stratum and patient must be assigned to the same study.';
-  END IF;
+  DECLARE
+    patient_study INT := (
+      SELECT study_id FROM patient
+      WHERE id = NEW.patient_id
+    );
+    stratum_study INT := (
+      SELECT study_id FROM stratum
+      WHERE id = NEW.stratum_id
+    );
+  BEGIN
+    IF (patient_study <> stratum_study) THEN
+      RAISE EXCEPTION 'Stratum and patient must be assigned to the same study.';
+    END IF;
+  END;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
