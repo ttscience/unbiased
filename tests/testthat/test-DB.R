@@ -1,12 +1,7 @@
 skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
 
 # Define connection ----
-
-
-conn <- try_again(5, {
-  # Some more time for Postgres to start
-  Sys.sleep(1)
-
+conn <- purrr::insistently(function() {
   DBI::dbConnect(
     RPostgres::Postgres(),
     dbname = "postgres",
@@ -15,7 +10,7 @@ conn <- try_again(5, {
     user = "postgres",
     password = "postgres"
   )
-})
+}, rate = purrr::rate_delay(2, max_times = 5))()
 
 on.exit({
   DBI::dbDisconnect(conn)
