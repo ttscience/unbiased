@@ -1,14 +1,21 @@
 skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
 
 # Define connection ----
-conn <- DBI::dbConnect(
-  RPostgres::Postgres(),
-  dbname = "postgres",
-  host = "postgres",
-  port = 5432,
-  user = "postgres",
-  password = "postgres"
-)
+
+
+conn <- try_again(5, {
+  # Some more time for Postgres to start
+  Sys.sleep(1)
+
+  DBI::dbConnect(
+    RPostgres::Postgres(),
+    dbname = "postgres",
+    host = "postgres",
+    port = 5432,
+    user = "postgres",
+    password = "postgres"
+  )
+})
 
 on.exit({
   DBI::dbDisconnect(conn)
