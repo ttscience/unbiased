@@ -11,7 +11,8 @@ CREATE TABLE study (
   name        VARCHAR(255) NOT NULL,
   method_id   INT NOT NULL,
   parameters  JSONB,
-  timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  -- timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT study_method
     FOREIGN KEY (method_id)
     REFERENCES method (id)
@@ -22,6 +23,7 @@ CREATE TABLE arm (
   study_id    INT NOT NULL,
   name        VARCHAR(255) NOT NULL,
   ratio       INT NOT NULL DEFAULT 1,
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT arm_study
     FOREIGN KEY (study_id)
     REFERENCES study (id) ON DELETE CASCADE,
@@ -36,6 +38,7 @@ CREATE TABLE stratum (
   study_id    INT NOT NULL,
   name        VARCHAR(255) NOT NULL,
   value_type  VARCHAR(12),
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT fk_study
     FOREIGN KEY (study_id)
     REFERENCES study (id) ON DELETE CASCADE,
@@ -46,6 +49,7 @@ CREATE TABLE stratum (
 CREATE TABLE factor_constraint (
   stratum_id  INT NOT NULL,
   value       VARCHAR(255) NOT NULL,
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT factor_stratum
     FOREIGN KEY (stratum_id)
     REFERENCES stratum (id) ON DELETE CASCADE,
@@ -57,6 +61,7 @@ CREATE TABLE numeric_constraint (
   stratum_id  INT NOT NULL,
   min_value   FLOAT,
   max_value   FLOAT,
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT numeric_stratum
     FOREIGN KEY (stratum_id)
     REFERENCES stratum (id) ON DELETE CASCADE,
@@ -85,6 +90,7 @@ CREATE TABLE patient_stratum (
   stratum_id  INT NOT NULL,
   fct_value   VARCHAR(255),
   num_value   FLOAT,
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT fk_patient
     FOREIGN KEY (patient_id)
     REFERENCES patient (id) ON DELETE CASCADE,
@@ -237,12 +243,3 @@ CREATE TRIGGER patient_num_constraint
 BEFORE INSERT ON patient_stratum
 FOR EACH ROW
 EXECUTE PROCEDURE check_num_patient();
-
--- Versioning
-
-CREATE TABLE patient_history (LIKE patient);
-
-CREATE TRIGGER patient_versioning
-BEFORE INSERT OR UPDATE OR DELETE ON patient
-FOR EACH ROW
-EXECUTE PROCEDURE versioning('sys_period', 'patient_history', true);
