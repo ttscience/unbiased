@@ -20,6 +20,10 @@ VALUES (1, 1);
 INSERT INTO patient_stratum (patient_id, stratum_id, fct_value)
 VALUES (1, 1, 'F');
 
+UPDATE patient
+SET used = true
+WHERE id = 1;
+
 -- Trigger properly raises an error here
 /*
 INSERT INTO numeric_constraint (stratum_id)

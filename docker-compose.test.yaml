@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   db:
-    image: postgres:16.0
+    image: eddhannay/alpine-postgres-temporal-tables:latest
     container_name: unbiased_db
     environment:
       - POSTGRES_PASSWORD=postgres

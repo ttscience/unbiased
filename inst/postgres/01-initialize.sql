@@ -1,3 +1,5 @@
+CREATE EXTENSION temporal_tables;
+
 CREATE TABLE method (
   id          SERIAL PRIMARY KEY,
   name        VARCHAR(255) NOT NULL
@@ -69,8 +71,9 @@ CREATE TABLE patient (
   id          SERIAL PRIMARY KEY,
   study_id    INT NOT NULL,
   arm_id      INT,
-  timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  used        BOOLEAN NOT NULL DEFAULT FALSE,
+  used        BOOLEAN NOT NULL DEFAULT false,
+  -- timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT patient_arm_study
     FOREIGN KEY (arm_id, study_id)
     REFERENCES arm (id, study_id) ON DELETE CASCADE
@@ -234,3 +237,12 @@ CREATE TRIGGER patient_num_constraint
 BEFORE INSERT ON patient_stratum
 FOR EACH ROW
 EXECUTE PROCEDURE check_num_patient();
+
+-- Versioning
+
+CREATE TABLE patient_history (LIKE patient);
+
+CREATE TRIGGER patient_versioning
+BEFORE INSERT OR UPDATE OR DELETE ON patient
+FOR EACH ROW
+EXECUTE PROCEDURE versioning('sys_period', 'patient_history', true);
