@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-  db:
+  postgres:
     image: eddhannay/alpine-postgres-temporal-tables:latest
-    container_name: unbiased_db
+    container_name: unbiased_postgres
     environment:
       - POSTGRES_PASSWORD=postgres
     networks:
@@ -15,7 +15,7 @@ services:
     image: unbiased
     container_name: unbiased_api
     depends_on:
-      - db
+      - postgres
     networks:
       - test_net
   tests:

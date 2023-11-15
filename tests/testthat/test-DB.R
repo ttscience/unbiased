@@ -4,7 +4,7 @@ skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
 conn <- DBI::dbConnect(
   RPostgres::Postgres(),
   dbname = "postgres",
-  host = "db",
+  host = "postgres",
   port = 5432,
   user = "postgres",
   password = "postgres"
