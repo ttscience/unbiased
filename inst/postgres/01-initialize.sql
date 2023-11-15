@@ -2,7 +2,8 @@ CREATE EXTENSION temporal_tables;
 
 CREATE TABLE method (
   id          SERIAL PRIMARY KEY,
-  name        VARCHAR(255) NOT NULL
+  name        VARCHAR(255) NOT NULL,
+  sys_period  TSTZRANGE NOT NULL
 );
 
 CREATE TABLE study (
@@ -81,8 +82,9 @@ CREATE TABLE patient (
   sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT patient_arm_study
     FOREIGN KEY (arm_id, study_id)
-    REFERENCES arm (id, study_id) ON DELETE CASCADE
-  -- TODO: check that USED only when arm not NULL
+    REFERENCES arm (id, study_id) ON DELETE CASCADE,
+  CONSTRAINT used_with_arm
+    CHECK (NOT used OR arm_id IS NOT NULL)
 );
 
 CREATE TABLE patient_stratum (
