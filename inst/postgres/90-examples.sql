@@ -1,6 +1,3 @@
-INSERT INTO method (name)
-VALUES ('simple');
-
 INSERT INTO study (identifier, name, method_id, parameters)
 VALUES ('TEST', 'Badanie testowe', 1, '{}');
 

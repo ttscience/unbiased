@@ -1,3 +1,5 @@
+CREATE EXTENSION temporal_tables;
+
 CREATE TABLE settings (
   key         TEXT NOT NULL,
   value       TEXT NOT NULL

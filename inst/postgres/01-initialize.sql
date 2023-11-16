@@ -1,5 +1,3 @@
-CREATE EXTENSION temporal_tables;
-
 CREATE TABLE method (
   id          SERIAL PRIMARY KEY,
   name        VARCHAR(255) NOT NULL,
