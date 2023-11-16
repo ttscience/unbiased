@@ -4,6 +4,6 @@ test_that("hello world endpoint returns the message", {
     req_method("GET") |>
     req_perform() |>
     resp_body_json()
-  
+
   expect_identical(response, "Hello TTSI!")
 })
