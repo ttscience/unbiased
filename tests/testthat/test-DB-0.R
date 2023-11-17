@@ -24,7 +24,7 @@ test_that("database contains history tables", {
   )
 })
 
-test_that("database version is the same as package version", {
+test_that("database version is the same as package version (did you update /inst/postgres/00-metadata.sql?)", {
   expect_identical(
     tbl(conn, "settings") |>
       filter(key == "schema_version") |>

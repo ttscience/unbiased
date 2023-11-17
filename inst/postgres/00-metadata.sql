@@ -6,4 +6,4 @@ CREATE TABLE settings (
 );
 
 INSERT INTO settings (key, value)
-VALUES ('schema_version', '0.0.0.9002');
+VALUES ('schema_version', '0.0.0.9003');
