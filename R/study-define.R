@@ -12,20 +12,21 @@ define_study <- function(name, identifier, method, arms,
 
   # Actual code
   study_id <- tbl(CONN, "study") |>
-    rows_insert(
+    rows_append(
       tibble(
         identifier = identifier,
         name = name,
         method_id = method_id,
-        parameters = jsonlite::toJSON(parameters)
+        parameters = jsonlite::toJSON(parameters, auto_unbox = FALSE)
       ),
       copy = TRUE, in_place = TRUE, returning = id
     ) |>
-    get_returned_rows()
+    dbplyr::get_returned_rows() |>
+    pull(id)
 
   purrr::walk2(arms, ratio, function(arm, prop) {
     tbl(CONN, "arm") |>
-      rows_insert(
+      rows_append(
         tibble(
           study_id = study_id,
           name = arm,
@@ -39,7 +40,7 @@ define_study <- function(name, identifier, method, arms,
     if (is.numeric(stratum)) {
       # Numeric case
       stratum_id <- tbl(CONN, "stratum") |>
-        rows_insert(
+        rows_append(
           tibble(
             study_id = study_id,
             name = name,
@@ -47,13 +48,14 @@ define_study <- function(name, identifier, method, arms,
           ),
           copy = TRUE, in_place = TRUE, returning = id
         ) |>
-        get_returned_rows()
+        dbplyr::get_returned_rows() |>
+        pull(id)
 
       # TODO: how to set min/max values?
     } else {
       # Factor case
       stratum_id <- tbl(CONN, "stratum") |>
-        rows_insert(
+        rows_append(
           tibble(
             study_id = study_id,
             name = name,
@@ -61,11 +63,12 @@ define_study <- function(name, identifier, method, arms,
           ),
           copy = TRUE, in_place = TRUE, returning = id
         ) |>
-        get_returned_rows()
+        dbplyr::get_returned_rows() |>
+        pull(id)
 
       purrr::walk(stratum, function(value) {
         tbl(CONN, "factor_constraint") |>
-          rows_insert(
+          rows_append(
             tibble(
               stratum_id = stratum_id,
               value = value

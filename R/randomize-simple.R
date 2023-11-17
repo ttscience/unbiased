@@ -16,10 +16,8 @@
 #'
 #' @export
 randomize_simple <- function(arms, ratio) {
-  checkmate::assert_character(
-    arms, any.missing = FALSE, unique = TRUE, min.chars = 1
-  )
-  checkmate::assert_numeric(
+  assert_character(arms, any.missing = FALSE, unique = TRUE, min.chars = 1)
+  assert_numeric(
     ratio, any.missing = FALSE, lower = 0, finite = TRUE, len = length(arms)
   )
 
