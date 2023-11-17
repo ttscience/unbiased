@@ -47,11 +47,32 @@ function(identifier, name, method, arms, ratio, strata, parameters, req, res) {
   )
 }
 
+#* Get available studies
+#*
+#* @get /study
+function(req, res) {
+  unbiased:::list_studies()
+}
+
+#* Get study details
+#*
+#* @get /study/<study_id:int>
+function(study_id, req, res) {
+  study_id <- as.integer(study_id)
+
+  if (!unbiased:::study_exists(study_id)) {
+    res$status <- 404
+    return(list(error = glue::glue("Study {study_id} does not exist.")))
+  }
+
+  unbiased:::read_study_details(study_id)
+}
+
 #* Randomize one patient
 #*
 #* @param strata:object
 #*
-#* @get /study/<study_id:chr>/randomize
+#* @get /study/<study_id:int>/randomize
 function(strata, req, res) {
   # Check whether study with study_id exists, if not, return error
 

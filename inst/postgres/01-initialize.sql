@@ -10,7 +10,7 @@ CREATE TABLE study (
   name        VARCHAR(255) NOT NULL,
   method_id   INT NOT NULL,
   parameters  JSONB,
-  -- timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
   sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT study_method
     FOREIGN KEY (method_id)
