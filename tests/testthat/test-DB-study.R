@@ -61,7 +61,7 @@ test_that("deleting archivizes a study", {
   expect_identical(
     tbl(conn, "study_history") |>
       filter(id == new_study_id) |>
-      select(-parameters, -sys_period) |>
+      select(-parameters, -sys_period, -timestamp) |>
       collect(),
     tibble(
       id = new_study_id,
