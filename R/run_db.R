@@ -12,6 +12,7 @@ CONN <- NULL
 #'
 #' @export
 run_unbiased_db <- function() {
+  Sys.setenv(GITHUB_SHA = system("git rev-parse HEAD", intern = TRUE))
   Sys.setenv(POSTGRES_DB = "postgres")
   Sys.setenv(POSTGRES_HOST = "127.0.0.1")
   Sys.setenv(POSTGRES_PORT = 5432)

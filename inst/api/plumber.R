@@ -6,6 +6,22 @@ function(api) {
     plumber::pr_mount("/meta", meta)
 }
 
+#* Log request data
+#*
+#* @filter logger
+function(req) {
+  cat(
+    "[QUERY]", as.character(Sys.time()), "-",
+    req$REQUEST_METHOD, req$PATH_INFO, "-",
+    req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n"
+  )
+  purrr::imap(req$args, function(arg, arg_name) {
+    cat("[ARG]", arg_name, "=", as.character(arg), "\n")
+  })
+
+  plumber::forward()
+}
+
 #* Define study to randomize
 #*
 #* @param identifier:str Study code, at most 12 characters.
