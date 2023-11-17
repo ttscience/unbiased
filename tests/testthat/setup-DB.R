@@ -1,7 +1,7 @@
-skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
+if (is_CI()) {
+  # Define connection ----
+  conn <- connect_to_db()
 
-# Define connection ----
-conn <- connect_to_db()
-
-# Close DB connection upon exiting
-withr::defer({ DBI::dbDisconnect(conn) }, teardown_env())
+  # Close DB connection upon exiting
+  withr::defer({ DBI::dbDisconnect(conn) }, teardown_env())
+}
