@@ -26,7 +26,7 @@ function(identifier, name, method, arms, ratio, strata, parameters, req, res) {
 
   # Define study
   unbiased:::define_study(
-    name, identifier, method, arms,
+    name, identifier, arms, method,
     strata = strata, parameters = parameters, ratio = ratio
   )
 }
