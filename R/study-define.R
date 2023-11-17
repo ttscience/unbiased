@@ -132,4 +132,6 @@ define_study <- function(name, identifier, arms,
       })
     }
   })
+
+  study_id
 }
