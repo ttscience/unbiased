@@ -10,7 +10,7 @@ function(api) {
 #*
 #* @param strata:object
 #*
-#* @get /study/<study_id:chr>/randomize
+#* @post /study/<study_id:chr>/randomize
 function(strata, req, res) {
   # Check whether study with study_id exists, if not, return error
 
@@ -30,12 +30,4 @@ function(strata, req, res) {
     simple = do.call(unbiased:::randomize_simple, params),
     # block = do.call(unbiased:::randomize_blocked, c(params, strata = strata))
   )
-}
-
-#* Return hello world
-#*
-#* @get /simple/hello
-#* @serializer unboxedJSON
-function() {
-  unbiased:::call_hello_world()
 }
