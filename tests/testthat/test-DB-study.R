@@ -114,12 +114,12 @@ test_that("can't push stratum level outside of defined levels", {
       dbplyr::get_returned_rows()
   })
 
-  added_petient_id <- return$id
+  added_patient_id <<- return$id
 
   expect_error({
     tbl(conn, "patient_stratum") |>
       rows_append(
-        tibble(patient_id = added_petient_id,
+        tibble(patient_id = added_patient_id,
                stratum_id = 1,
                fct_value = "Female"),
         copy = TRUE, in_place = TRUE
@@ -130,7 +130,7 @@ test_that("can't push stratum level outside of defined levels", {
   expect_no_error({
     tbl(conn, "patient_stratum") |>
       rows_append(
-        tibble(patient_id = added_petient_id,
+        tibble(patient_id = added_patient_id,
                stratum_id = 1,
                fct_value = "F"),
         copy = TRUE, in_place = TRUE
@@ -166,7 +166,7 @@ test_that("numerical constraints are enforced", {
   expect_no_error({
     tbl(conn, "patient_stratum") |>
       rows_append(
-        tibble(patient_id = added_petient_id,
+        tibble(patient_id = added_patient_id,
                stratum_id = added_stratum_id,
                num_value = 23),
         copy = TRUE, in_place = TRUE
@@ -177,7 +177,7 @@ test_that("numerical constraints are enforced", {
   expect_error({
     tbl(conn, "patient_stratum") |>
       rows_append(
-        tibble(patient_id = added_petient_id,
+        tibble(patient_id = added_patient_id,
                stratum_id = added_stratum_id,
                num_value = 24),
         copy = TRUE, in_place = TRUE
@@ -187,7 +187,7 @@ test_that("numerical constraints are enforced", {
   expect_no_error({
     tbl(conn, "patient_stratum") |>
     rows_delete(
-      tibble(patient_id = added_petient_id,
+      tibble(patient_id = added_patient_id,
              stratum_id = added_stratum_id),
       copy = TRUE, unmatched = "ignore"
     )
@@ -197,7 +197,7 @@ test_that("numerical constraints are enforced", {
   expect_error({
     tbl(conn, "patient_stratum") |>
       rows_append(
-        tibble(patient_id = added_petient_id,
+        tibble(patient_id = added_patient_id,
                stratum_id = added_stratum_id,
                num_value = 16),
         copy = TRUE, in_place = TRUE
