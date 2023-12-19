@@ -163,6 +163,18 @@ test_that("numerical constraints are enforced", {
       )
   })
 
+  # and you can't add an illegal value
+  expect_error({
+    tbl(conn, "patient_stratum") |>
+      rows_append(
+        tibble(patient_id = added_patient_id,
+               stratum_id = added_stratum_id,
+               num_value = 16),
+        copy = TRUE, in_place = TRUE
+      )
+  }, regexp = "New value is lower than minimum")
+
+  # you can add valid value
   expect_no_error({
     tbl(conn, "patient_stratum") |>
       rows_append(
@@ -183,24 +195,4 @@ test_that("numerical constraints are enforced", {
         copy = TRUE, in_place = TRUE
       )
   }, regexp = "duplicate key value violates unique constraint")
-
-  expect_no_error({
-    tbl(conn, "patient_stratum") |>
-    rows_delete(
-      tibble(patient_id = added_patient_id,
-             stratum_id = added_stratum_id),
-      copy = TRUE, unmatched = "ignore"
-    )
-  })
-
-  # and you can't add an illegal value
-  expect_error({
-    tbl(conn, "patient_stratum") |>
-      rows_append(
-        tibble(patient_id = added_patient_id,
-               stratum_id = added_stratum_id,
-               num_value = 16),
-        copy = TRUE, in_place = TRUE
-      )
-  }, regexp = "New value is lower than minimum")
 })
