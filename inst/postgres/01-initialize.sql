@@ -137,9 +137,6 @@ CREATE TABLE factor_constraint (
 CREATE TABLE numeric_constraint (
   stratum_id  INT NOT NULL,
   min_value   FLOAT,
-CREATE TABLE numeric_constraint (
-  stratum_id  INT NOT NULL,
-  min_value   FLOAT,
   max_value   FLOAT,
   sys_period  TSTZRANGE NOT NULL,
   CONSTRAINT numeric_stratum
@@ -217,7 +214,7 @@ CREATE TABLE patient_stratum (
     CHECK (fct_value IS NOT NULL OR num_value IS NOT NULL),
   CONSTRAINT chk_one_value_only
     -- Can't give both factor and numeric value
-    CHECK (fct_value IS NULL OR num_value IS NULL)
+    CHECK (fct_value IS NULL OR num_value IS NULL),
   CONSTRAINT uc_patient_stratum
     UNIQUE (patient_id, stratum_id)
 );
