@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.2.1
+FROM rocker/r-ver:4.2.3
 
 WORKDIR /src/unbiased
 
@@ -34,3 +34,4 @@ ARG github_sha
 ENV GITHUB_SHA=${github_sha}
 
 CMD ["R", "-e", "unbiased::run_unbiased()"]
+

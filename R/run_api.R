@@ -19,6 +19,6 @@ run_unbiased <- function(host = "0.0.0.0", port = 3838, ...) {
     assignInMyNamespace("CONN", NULL)
   })
 
-  plumber::plumb(dir = fs::path_package("unbiased", "api")) |>
+  plumber::plumb_api('unbiased', 'unbiased_api') |>
     plumber::pr_run(host = host, port = port, ...)
 }

@@ -11,13 +11,16 @@ function(api) {
 #* @filter logger
 function(req) {
   cat(
-    "[QUERY]", as.character(Sys.time()), "-",
-    req$REQUEST_METHOD, req$PATH_INFO, "-",
-    req$HTTP_USER_AGENT, "@", req$REMOTE_ADDR, "\n"
+    "[QUERY]",
+    req$REQUEST_METHOD, req$PATH_INFO,
+    "@", req$REMOTE_ADDR, "\n"
   )
   purrr::imap(req$args, function(arg, arg_name) {
     cat("[ARG]", arg_name, "=", as.character(arg), "\n")
   })
+  if (req$postBody != "") {
+    cat("[BODY]", req$postBody, "\n")
+  }
 
   plumber::forward()
 }
@@ -72,7 +75,7 @@ function(study_id, req, res) {
 #*
 #* @param strata:object
 #*
-#* @get /study/<study_id:int>/randomize
+#* @post /study/<study_id:int>/randomize
 function(strata, req, res) {
   # Check whether study with study_id exists, if not, return error
 
@@ -92,12 +95,4 @@ function(strata, req, res) {
     simple = do.call(unbiased:::randomize_simple, params),
     # block = do.call(unbiased:::randomize_blocked, c(params, strata = strata))
   )
-}
-
-#* Return hello world
-#*
-#* @get /simple/hello
-#* @serializer unboxedJSON
-function() {
-  unbiased:::call_hello_world()
 }
