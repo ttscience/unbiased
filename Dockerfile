@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.2.1
+FROM rocker/r-ver:4.2.3
 
 WORKDIR /src/unbiased
 
@@ -7,7 +7,9 @@ RUN apt update && apt-get install -y --no-install-recommends \
   # httpuv
   libz-dev \
   # sodium
-  libsodium-dev
+  libsodium-dev \
+  # RPostgres
+  libpq-dev libssl-dev
 
 ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
 
@@ -31,4 +33,5 @@ EXPOSE 3838
 ARG github_sha
 ENV GITHUB_SHA=${github_sha}
 
-CMD ["R", "-e", "plumber::plumb(dir = fs::path_package('unbiased', 'api')) |> plumber::pr_run(host = '0.0.0.0', port = 3838)"]
+CMD ["R", "-e", "unbiased::run_unbiased()"]
+

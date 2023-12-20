@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, devel]
 
-name: R-CMD-check
+name: Tests
 
 jobs:
   R-CMD-check:
@@ -26,8 +26,11 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - name: Build image
+      - name: Build API image
         run: docker build -t unbiased --build-arg github_sha=${{ github.sha }} .
+
+      - name: Build custom PostgreSQL image
+        run: docker build -t temporal_postgres -f Dockerfile.postgres .
 
       - name: Run tests
         run: docker compose -f "docker-compose.test.yaml" up --abort-on-container-exit --exit-code-from tests

@@ -1,4 +1,6 @@
 library(checkmate)
+library(dplyr)
+library(dbplyr)
 library(httr2)
 
 api_url <- "http://api:3838"
@@ -17,7 +19,7 @@ if (!isTRUE(as.logical(Sys.getenv("CI")))) {
   api <- callr::r_bg(\(path) {
     # 1. Set path to `path`
     # 2. Build a plumber API
-    plumber::plumb(dir = fs::path_package("unbiased", "api")) |>
+    plumber::plumb_api("unbiased", "unbiased_api") |>
       plumber::pr_run(port = 3838)
   }, args = list(path = api_path))
 
