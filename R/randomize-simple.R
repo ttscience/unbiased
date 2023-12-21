@@ -5,9 +5,10 @@
 #' regardless of already performed assignments.
 #'
 #' @param arms `character()`\cr
-#'  Arm names.
-#' @param ratio `numeric()`\cr
-#'  Ratio of patient assignment to each arm. Must be the same length as `arms`.
+#'        Arm names.
+#' @param ratio `integer()`\cr
+#'        Vector of positive integers, equal in length to number of arms,
+#'        named after arms, defaults to equal weight
 #'
 #' @return Selected arm assignment.
 #'
@@ -16,9 +17,22 @@
 #'
 #' @export
 randomize_simple <- function(arms, ratio) {
-  assert_character(arms, any.missing = FALSE, unique = TRUE, min.chars = 1)
-  assert_numeric(
-    ratio, any.missing = FALSE, lower = 0, finite = TRUE, len = length(arms)
+  assert_character(
+    arms,
+    any.missing = FALSE,
+    unique = TRUE,
+    min.chars = 1)
+  assert_integer(
+    ratio,
+    any.missing = FALSE,
+    lower = 0,
+    finite = TRUE,
+    len = length(arms),
+    names = "named"
+  )
+  assert_names(
+    names(ratio),
+    must.include = arms
   )
 
   sample(arms, 1, prob = ratio)
