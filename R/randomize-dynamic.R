@@ -3,7 +3,8 @@
 #' @inheritParams randomize_simple
 #'
 #' @param current_state `data.frame()`\cr
-#'        table of covariates and current arm assignments in column `arm`
+#'        table of covariates and current arm assignments in column `arm`,
+#'        last row contains the new patient with empty string for `arm`
 #' @param weights `numeric()`\cr
 #'        vector of positive weights, equal in length to number of covariates,
 #'        numbered after covariates, defaults to equal weights
@@ -58,23 +59,53 @@ randomize_dynamic <-
            ratio,
            method = "var",
            p = 0.85) {
-    browser()
     # Assertions
 
+    assert_character(
+      arms,
+      min.len = 2,
+      min.chars = 1)
     assert_choice(
       method,
       choices = c("range", "var", "sd")
     )
     assert_data_frame(
-      covariates,
+      current_state,
       any.missing = FALSE,
-      min.cols = 1,
-      null.ok = TRUE
+      min.cols = 2,
+      min.rows = 1,
+      null.ok = FALSE
     )
+    assert_names(
+      colnames(current_state),
+      must.include = "arm"
+    )
+    assert_character(
+      current_state$arm[nrow(current_state)],
+      max.chars = 0)
+    n_covariates <-
+      (ncol(current_state) - 1)
+    n_arms <-
+      length(arms)
+
+    assert_subset(
+      unique(current_state$arm),
+      choices = c(arms, "")
+    )
+    # Validate argument presence and revert to defaults if not provided
+    if (rlang::is_missing(ratio)) {
+      ratio <- rep(1L, n_arms)
+      names(ratio) <- arms
+    }
+    if (rlang::is_missing(weights)) {
+      weights <- rep(1/n_covariates, n_covariates)
+      names(weights) <- colnames(current_state)[colnames(current_state) != "arm"]
+    }
+
     assert_numeric(
       weights,
       any.missing = FALSE,
-      len = arms,
+      len = n_covariates,
       null.ok = FALSE,
       lower = 0,
       finite = TRUE,
@@ -83,15 +114,14 @@ randomize_dynamic <-
     assert_names(
       names(weights),
       must.include =
-        colnames(covariates)[colnames(covariates) != "arms"]
+        colnames(current_state)[colnames(current_state) != "arm"]
     )
     assert_integer(
       ratio,
       any.missing = FALSE,
-      len = ncol(covariates) - 1,
+      len = n_arms,
       null.ok = FALSE,
       lower = 0,
-      finite = TRUE,
       all.missing = FALSE,
       names = "named"
     )
@@ -107,63 +137,65 @@ randomize_dynamic <-
       null.ok = FALSE
       )
 
-
     # Computations
 
-    n_at_the_moment <- nrow(covariates)
-    n_arms <- length(arms)
-    init_patnum <- patnum - 1
+    n_at_the_moment <- nrow(current_state) - 1
 
-    if (patnum < init_patnum) {
-      res <- NA
-    } else {
-      find_trt_group <- apply( # similarity matrix y - randomized patient, x - rest
-        covariates[1:(patnum - 1), , drop = FALSE], 1,
-        function(x, y) {
-          as.numeric(x == y)
-        }, covariates[patnum, ]
-      )
-
-      n_duplicate_trt_group <- matrix(0, ncol(covariates), no_of_trt)
-
-      n_duplicate_trt_group <- sapply(1:no_of_trt, function(x) {
-        apply( # sum of similar variants
-          as.matrix(
-            find_trt_group[, current_state[1:(patnum - 1)] == arms[x]]
-          ), 1, sum
-        )
-      })
-
-      imbalance <- sapply(1:no_of_trt, function(x) {
-        tmp <- n_duplicate_trt_group
-        tmp[, x] <- tmp[, x] + 1
-        num_lvl <- tmp %*% diag(1 / ratio)
-        imb_margin <- apply(num_lvl, 1, get(method)) # switch range, sd, var
-        if (method == "range") {
-          imb_margin <- imb_margin[2, ] - imb_margin[1, ]
-        }
-        sum(weights %*% imb_margin)
-      })
+    if (n_at_the_moment == 0) {
+      return(randomize_simple(arms, ratio))
     }
 
-    high_prob <- arms[which.min(imbalance)] # trt_mini
-    low_prob <- arms[-high_prob]
+    browser()
 
-    res <-
-      if (length(high_prob) < no_of_trt) {
-        res <-
-          sample(c(high_prob, low_prob), 1,
-            prob = c(
-              rep(p / length(high_prob), length(high_prob)),
-              rep(
-                (1 - p) / length(low_prob),
-                length(low_prob)
-              )
-            )
-          )
-      } else {
-        res <-
-          sample(arms, 1, prob = rep(1 / no_of_trt, no_of_trt))
+    current_state |>
+      dplyr::filter(arm != "") |>
+      dplyr::transmute()
+
+    covariate_similarity <- apply(
+      current_state[-nrow(current_state), names(current_state) != "arm"], 1,
+      function(x, y) {
+        x == y
+      }, current_state[nrow(current_state), names(current_state) != "arm"]
+    )
+
+    rownames(covariate_similarity) <-
+      names(current_state)[names(current_state) != "arm"]
+
+    arms_similarity <- sapply(arms, function(x) {
+      apply( # sum of similar variants
+        as.matrix(
+          covariate_similarity[, current_state$arm[1:n_at_the_moment] == x]
+        ), 1, sum
+      )
+    })
+
+    imbalance <- sapply(arms, function(x) {
+      arms_similarity[, which(colnames(arms_similarity) == x)] <-
+        arms_similarity[, which(colnames(arms_similarity) == x)] + 1
+      num_lvl <- arms_similarity %*% diag(1 / ratio)
+      covariate_imbalance <- apply(num_lvl, 1, get(method)) # range, sd, var
+      if (method == "range") {
+        covariate_imbalance <- covariate_imbalance[2, ] -
+          covariate_imbalance[1, ]
       }
-    return(res)
+      sum(weights %*% covariate_imbalance)
+    })
+
+    high_prob_arms <- names(which.min(imbalance))
+    low_prob_arms <- arms[!arms %in% high_prob_arms]
+
+    if (length(high_prob_arms) == n_arms) {
+      return(randomize_simple(arms, ratio))
+    }
+
+    sample(
+      c(high_prob_arms, low_prob_arms), 1,
+      prob = c(
+        rep(p / length(high_prob_arms), length(high_prob_arms)),
+        rep(
+          (1 - p) / length(low_prob_arms),
+          length(low_prob_arms)
+        )
+      )
+    )
   }

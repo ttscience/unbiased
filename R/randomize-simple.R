@@ -17,16 +17,25 @@
 #'
 #' @export
 randomize_simple <- function(arms, ratio) {
+  # Validate argument presence and revert to defaults if not provided
+  if (rlang::is_missing(ratio)) {
+    ratio <- rep(1, rep(length(arms)))
+    names(ratio) <- arms
+  }
+
+  # Argument assertions
   assert_character(
     arms,
     any.missing = FALSE,
     unique = TRUE,
     min.chars = 1)
+  if (condition) {
+
+  }
   assert_integer(
     ratio,
     any.missing = FALSE,
     lower = 0,
-    finite = TRUE,
     len = length(arms),
     names = "named"
   )

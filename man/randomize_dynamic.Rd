@@ -18,7 +18,8 @@ randomize_dynamic(
 Arm names.}
 
 \item{current_state}{\code{data.frame()}\cr
-table of covariates and current arm assignments in column \code{arm}}
+table of covariates and current arm assignments in column \code{arm},
+last row contains the new patient with empty string for \code{arm}}
 
 \item{weights}{\code{numeric()}\cr
 vector of positive weights, equal in length to number of covariates,
