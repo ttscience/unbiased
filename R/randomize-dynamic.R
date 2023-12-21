@@ -1,4 +1,39 @@
-#' Dynamic randomization
+#' Randomize Dynamic Algorithm for Patient Allocation
+#'
+#' The `randomize_dynamic` function implements the dynamic randomization
+#' algorithm using the minimization method proposed by Pocock (Pocock and Simon
+#' 1975). It requires defining basic study parameters: the number of arms (k),
+#' covariate values, patient allocation ratios (\(a_{k}\)), weights for the
+#' covariates (\(w_{i}\)), and the maximum probability of assigning a patient to
+#' the group with the smallest total unbalance multiplied by the respective
+#' weights (\(G_{k}\)). As the total unbalance for the first patient is the same
+#' regardless of the assigned arm, this patient is randomly allocated to a given
+#' arm. Subsequent patients are randomized based on the calculation of the
+#' unbalance depending on the selected method: "range", "var" (variance), or
+#' "sd" (standard deviation). In the case of two arms, the "range" method is
+#' equivalent to the "sd" method.
+#'
+#' Initially, the algorithm creates a matrix of results comparing a newly
+#' randomized patient with the current balance of patients based on the defined
+#' covariates (C). In the next step, for each arm and specified covariate,
+#' various scenarios of patient allocation are calculated. The existing results
+#' (n) are updated with the new patient, and then, considering the ratio
+#' coefficients, the results are divided by the specific allocation ratio
+#' (\(a_{k}\)). Depending on the method, the total unbalance is then calculated,
+#' taking into account the allocation (\(a_{k}\)) and the number of covariates,
+#' where i = 1,2,…,C.
+#'
+#' - `range`: \(G_{k} = \ \sum_{i = 1}^{c}w_{i}\lbrack RANGE(\frac{n_{ir_{i}1}}{a_{1}},\frac{n_{ir_{i}1}}{a_{2}},\ldots,\ \frac{n_{ir_{i}k}}{a_{k}})|\),
+#' - `var`: \(G_{k} = \ \sum_{i = 1}^{c}w_{i}\lbrack VAR(\frac{n_{ir_{i}1}}{a_{1}},\frac{n_{ir_{i}1}}{a_{2}},\ldots,\ \frac{n_{ir_{i}k}}{a_{k}})|\),
+#' - `sd`: \(G_{k} = \ \sum_{i = 1}^{c}w_{i}\lbrack SD(\frac{n_{ir_{i}1}}{a_{1}},\frac{n_{ir_{i}1}}{a_{2}},\ldots,\ \frac{n_{ir_{i}k}}{a_{k}})|\)
+#'
+#' Based on the number of defined arms (K), the minimum value of \(G_{k}\)
+#' (defined as the weighted sum of the level-based imbalance) selects the arm to
+#' which the patient will be assigned with a predefined probability. The
+#' probability that a patient will be assigned to any other arm will then be
+#' \(\frac{(1 - p)}{(K - 1)}\) for each of the remaining arms.
+#'
+#' @references Pocock, S. J., & Simon, R. (1975). Minimization: A new method of assigning patients to treatment and control groups in clinical trials.
 #'
 #' @inheritParams randomize_simple
 #'
@@ -18,38 +53,30 @@
 #' @return `character()`\cr
 #'         name of the arm assigned to the patient
 #' @examples
-#' n_at_the_moment <- 3
+#' n_at_the_moment <- 10
 #' arms <- c("control", "active low", "active high")
-#' sex <- sample(seq(1, 0),
-#'   3,
-#'   replace = TRUE,
-#'   prob = c(0.4, 0.6)
+#' sex <- sample(c("F", "M"),
+#'               n_at_the_moment + 1,
+#'               replace = TRUE,
+#'               prob = c(0.4, 0.6)
 #' )
-#' diabetes <- sample(c("diabetes", "no diabetes"), nsample, replace = TRUE, prob = c(0.2, 0.8))
-#' mat_of_covars <- cbind(c1, c2)
-#' colnames(mat_of_covars) <- c("Sex", "Diabetes")
-#' covar_class <- c("ordinal", "numeric", "ordinal", "numeric")
-#' wght <- c(1 / 4, 1 / 4, 1 / 4, 1 / 4)
+#' diabetes <-
+#'   sample(c("diabetes", "no diabetes"),
+#'          n_at_the_moment + 1,
+#'          replace = TRUE,
+#'          prob = c(0.2, 0.8)
+#'   )
+#' arm <-
+#'   sample(arms,
+#'          n_at_the_moment,
+#'          replace = TRUE,
+#'          prob = c(0.4, 0.4, 0.2)
+#'   ) |>
+#'   c("")
+#' covar_df <- data.frame(sex, diabetes, arm)
+#' covar_df
 #'
-#' resrand <- integer()
-#' init_pat <- length(c1)
-#' resrand[1:init_pat] <- sample(arms,
-#'   init_pat,
-#'   replace = TRUE,
-#'   prob = ratio / sum(ratio)
-#' )
-#'
-#' randomize_dynamic(
-#'   covariates = mat_of_covars,
-#'   patnum = init_pat + 1,
-#'   weights = wght,
-#'   ratio = ratio,
-#'   no_of_trt = no_of_arms,
-#'   arms = arms,
-#'   current_state = resrand,
-#'   p = 0.85,
-#'   init_patnum = init_pat
-#' )
+#' randomize_dynamic(arms = arms, current_state = covar_df)
 #'
 #' @export
 randomize_dynamic <-
