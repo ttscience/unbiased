@@ -10,7 +10,8 @@ Imports:
     checkmate,
     dbplyr,
     plumber,
-    mathjaxr
+    mathjaxr,
+    tibble
 Suggests: 
     callr,
     httr2,

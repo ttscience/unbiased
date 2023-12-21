@@ -7,8 +7,8 @@
 #' @param arms `character()`\cr
 #'        Arm names.
 #' @param ratio `integer()`\cr
-#'        Vector of positive integers, equal in length to number of arms,
-#'        named after arms, defaults to equal weight
+#'        Vector of positive integers (0 is allowed), equal in length to number
+#'        of arms, named after arms, defaults to equal weight
 #'
 #' @return Selected arm assignment.
 #'
@@ -19,7 +19,7 @@
 randomize_simple <- function(arms, ratio) {
   # Validate argument presence and revert to defaults if not provided
   if (rlang::is_missing(ratio)) {
-    ratio <- rep(1, rep(length(arms)))
+    ratio <- rep(1L, rep(length(arms)))
     names(ratio) <- arms
   }
 
@@ -29,9 +29,7 @@ randomize_simple <- function(arms, ratio) {
     any.missing = FALSE,
     unique = TRUE,
     min.chars = 1)
-  if (condition) {
 
-  }
   assert_integer(
     ratio,
     any.missing = FALSE,
@@ -44,5 +42,5 @@ randomize_simple <- function(arms, ratio) {
     must.include = arms
   )
 
-  sample(arms, 1, prob = ratio)
+  sample(arms, 1, prob = ratio[arms])
 }
