@@ -1,5 +1,6 @@
 #' @import checkmate
 #' @import dplyr
+#' @import mathjaxr
 #'
 #' @keywords internal
 "_PACKAGE"

@@ -9,7 +9,8 @@ License: MIT + file LICENSE
 Imports: 
     checkmate,
     dbplyr,
-    plumber
+    plumber,
+    mathjaxr
 Suggests: 
     callr,
     httr2,
@@ -17,6 +18,7 @@ Suggests:
     testthat (>= 3.0.0),
     usethis,
     withr
+RdMacros: mathjaxr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

@@ -1,5 +1,6 @@
 #' Randomize Dynamic Algorithm for Patient Allocation
 #'
+#' \loadmathjax
 #' The `randomize_dynamic` function implements the dynamic randomization
 #' algorithm using the minimization method proposed by Pocock (Pocock and Simon
 #' 1975). It requires defining basic study parameters: the number of arms (k),
@@ -171,8 +172,6 @@ randomize_dynamic <-
     if (n_at_the_moment == 0) {
       return(randomize_simple(arms, ratio))
     }
-
-    browser()
 
     current_state |>
       dplyr::filter(arm != "") |>

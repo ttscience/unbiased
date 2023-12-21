@@ -42,6 +42,7 @@ vs determinism, defaults to 85\% deterministic}
 name of the arm assigned to the patient
 }
 \description{
+\loadmathjax
 The \code{randomize_dynamic} function implements the dynamic randomization
 algorithm using the minimization method proposed by Pocock (Pocock and Simon
 1975). It requires defining basic study parameters: the number of arms (k),
