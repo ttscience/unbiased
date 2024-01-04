@@ -10,8 +10,9 @@ randomize_simple(arms, ratio)
 \item{arms}{\code{character()}\cr
 Arm names.}
 
-\item{ratio}{\code{numeric()}\cr
-Ratio of patient assignment to each arm. Must be the same length as \code{arms}.}
+\item{ratio}{\code{integer()}\cr
+Vector of positive integers, equal in length to number of arms,
+named after arms, defaults to equal weight}
 }
 \value{
 Selected arm assignment.
