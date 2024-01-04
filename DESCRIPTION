@@ -11,7 +11,8 @@ Imports:
     dbplyr,
     plumber,
     mathjaxr,
-    tibble
+    tibble,
+    tidyr
 Suggests: 
     callr,
     httr2,

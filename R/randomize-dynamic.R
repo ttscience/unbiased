@@ -1,3 +1,32 @@
+#' Compare rows of two dataframes
+#'
+#' Takes dataframe B (presumably with one row / patient) and compares it to all
+#' rows of A (presumably already randomized patietns)
+#'
+#' @param A data.frame with all patients
+#' @param B data.frame with new patient
+#'
+#' @return data.frame with columns as in A and B, filled with TRUE if there is
+#'         match in covariate and FALSE if not
+#'
+#' @examples
+compare_rows <- function(A, B) {
+  # Find common column names
+  common_cols <- intersect(names(A), names(B))
+
+  # Compare each common column of A with B
+  comparisons <- lapply(common_cols, function(col) {
+    A[[col]] == B[[col]]
+  })
+
+  # Combine the comparisons into a new dataframe
+  C <- data.frame(comparisons)
+  names(C) <- common_cols
+  tibble::as_tibble(C)
+}
+
+
+
 #' Randomize Dynamic Algorithm for Patient Allocation
 #'
 #' \loadmathjax
@@ -38,7 +67,7 @@
 #'
 #' @inheritParams randomize_simple
 #'
-#' @param current_state `data.frame()`\cr
+#' @param current_state `tibble()`\cr
 #'        table of covariates and current arm assignments in column `arm`,
 #'        last row contains the new patient with empty string for `arm`
 #' @param weights `numeric()`\cr
@@ -91,7 +120,8 @@ randomize_dynamic <-
     assert_character(
       arms,
       min.len = 2,
-      min.chars = 1)
+      min.chars = 1,
+      unique = TRUE)
     assert_choice(
       method,
       choices = c("range", "var", "sd")
@@ -167,7 +197,6 @@ randomize_dynamic <-
       )
 
     # Computations
-
     n_at_the_moment <- nrow(current_state) - 1
     covariate_names <- names(current_state)[names(current_state) != "arm"]
 
@@ -182,34 +211,33 @@ randomize_dynamic <-
         current_state[nrow(current_state), names(current_state) != "arm"]
       ) |>
       split(current_state$arm[1:n_at_the_moment]) |> # split by arm
-      lapply(colSums) |> # and compute sumber of similarities in each arm
-      dplyr::bind_rows(.id = "arm")
+      lapply(colSums) |> # and compute number of similarities in each arm
+      dplyr::bind_rows(.id = "arm") |>
+      # make sure that every arm has a metric, even if not present in data yet
+      tidyr::complete(arm = arms) |>
+      dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
+                                  ~ tidyr::replace_na(.x, 0)))
 
-    # arms_similarity <- sapply(arms, function(x) {
-    #   # for each arm
-    #   apply(
-    #     # for each covariate within arm (row of covariate_similarity)
-    #     as.matrix(
-    #       covariate_similarity[, current_state$arm[1:n_at_the_moment] == x]
-    #     ), 1, sum # compute sum of similarities
-    #   )
-    # }) |>
-    #   as.matrix()
+    # Define a custom range function
+    range <- function(x) {
+      max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
+    }
 
     imbalance <- sapply(arms, function(x) {
-      browser()
       arms_similarity |>
         # compute scenario where each arm (x) gets new subject
         dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
-                                    ~ dplyr::if_else(arm == x, .x + 1, .x)))
-      # tu skończyłem, teraz przeważyć i dalej
-      num_lvl <- arms_similarity %*% diag(1 / ratio[arms])
-      covariate_imbalance <- apply(num_lvl, 1, get(method)) # range, sd, var
-      if (method == "range") {
-        covariate_imbalance <- covariate_imbalance[2, ] -
-          covariate_imbalance[1, ]
-      }
-      sum(weights[covariate_names] %*% covariate_imbalance)
+                                    ~ dplyr::if_else(arm == x, .x + 1, .x) *
+                                      ratio[arm])) |>
+        # compute dispersion across each covariate
+        dplyr::summarise(dplyr::across(dplyr::where(is.numeric),
+                         ~ get(method)(.x))) |>
+        # multiply each covariate dispersion by covariate weight
+        dplyr::mutate(dplyr::across(dplyr::everything(),
+                                    ~ . * weights[dplyr::cur_column()])) |>
+        # sum all covariate outcomes
+        dplyr::summarize(total = sum(dplyr::c_across(dplyr::everything()))) |>
+        dplyr::pull(total)
     })
 
     high_prob_arms <- names(which(imbalance == min(imbalance)))
@@ -222,7 +250,9 @@ randomize_dynamic <-
     sample(
       c(high_prob_arms, low_prob_arms), 1,
       prob = c(
-        rep(p / length(high_prob_arms), length(high_prob_arms)),
+        rep(
+          p / length(high_prob_arms),
+          length(high_prob_arms)),
         rep(
           (1 - p) / length(low_prob_arms),
           length(low_prob_arms)

@@ -74,7 +74,7 @@ test_that("Function randomizes first patient randomly", {
                     p = 1/3,
                     conf.level = 0.95,
                     correct = FALSE)
-  expect_gt(test$p.value, 0.01)
+  expect_gt(test$p.value, 0.05)
 })
 
 test_that("Function randomizes second patient deterministically", {
@@ -82,11 +82,27 @@ test_that("Function randomizes second patient deterministically", {
   situation <- tibble::tibble(sex = c("F", "F"),
                           arm = c("A", ""))
   randomized <-
+    randomize_dynamic(arms = arms,
+                      current_state = situation,
+                      p = 1)
+
+  expect_equal(randomized, "B")
+})
+
+test_that("Setting proportion of randomness works", {
+  arms <- c("A", "B")
+  situation <- tibble::tibble(sex = c("F", "F"),
+                              arm = c("A", ""))
+
+  randomized <-
     sapply(1:100, function(x) {
       randomize_dynamic(arms = arms,
                         current_state = situation,
-                        p = 1)
+                        p = 0.60)
     })
+  # 60% to minimization arm (B) 40% to other arm (in this case A)
 
-  expect_gt(test$p.value, 0.01)
+  test <- prop.test(table(randomized), p = 0.4, correct = FALSE)
+
+  expect_gt(test$p.value, 0.05)
 })
