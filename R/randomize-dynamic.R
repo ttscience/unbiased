@@ -31,12 +31,12 @@ compare_rows <- function(A, B) {
 #'
 #' \loadmathjax
 #' The `randomize_dynamic` function implements the dynamic randomization
-#' algorithm using the minimization method proposed by Pocock (Pocock and Simon
-#' 1975). It requires defining basic study parameters: the number of arms (k),
-#' covariate values, patient allocation ratios (\(a_{k}\)), weights for the
-#' covariates (\(w_{i}\)), and the maximum probability of assigning a patient to
-#' the group with the smallest total unbalance multiplied by the respective
-#' weights (\(G_{k}\)). As the total unbalance for the first patient is the same
+#' algorithm using the minimization method proposed by Pocock (Pocock and Simon,
+#' 1975). It requires defining basic study parameters: the number of arms (K),
+#' number of covariates (C), patient allocation ratios (\(a_{k}\)) (where k = 1,2,…., K),
+#' weights for the covariates (\(w_{i}\)) (where i = 1,2,…., C), and the maximum probability (p)
+#' of assigning a patient to the group with the smallest total unbalance multiplied by
+#' the respective weights (\(G_{k}\)). As the total unbalance for the first patient is the same
 #' regardless of the assigned arm, this patient is randomly allocated to a given
 #' arm. Subsequent patients are randomized based on the calculation of the
 #' unbalance depending on the selected method: "range", "var" (variance), or
@@ -45,25 +45,22 @@ compare_rows <- function(A, B) {
 #'
 #' Initially, the algorithm creates a matrix of results comparing a newly
 #' randomized patient with the current balance of patients based on the defined
-#' covariates (C). In the next step, for each arm and specified covariate,
+#' covariates. In the next step, for each arm and specified covariate,
 #' various scenarios of patient allocation are calculated. The existing results
 #' (n) are updated with the new patient, and then, considering the ratio
-#' coefficients, the results are divided by the specific allocation ratio
-#' (\(a_{k}\)). Depending on the method, the total unbalance is then calculated,
-#' taking into account the allocation (\(a_{k}\)) and the number of covariates,
-#' where i = 1,2,…,C.
-#'
-#' - `range`: \(G_{k} = \ \sum_{i = 1}^{c}w_{i}\lbrack RANGE(\frac{n_{ir_{i}1}}{a_{1}},\frac{n_{ir_{i}1}}{a_{2}},\ldots,\ \frac{n_{ir_{i}k}}{a_{k}})|\),
-#' - `var`: \(G_{k} = \ \sum_{i = 1}^{c}w_{i}\lbrack VAR(\frac{n_{ir_{i}1}}{a_{1}},\frac{n_{ir_{i}1}}{a_{2}},\ldots,\ \frac{n_{ir_{i}k}}{a_{k}})|\),
-#' - `sd`: \(G_{k} = \ \sum_{i = 1}^{c}w_{i}\lbrack SD(\frac{n_{ir_{i}1}}{a_{1}},\frac{n_{ir_{i}1}}{a_{2}},\ldots,\ \frac{n_{ir_{i}k}}{a_{k}})|\)
-#'
-#' Based on the number of defined arms (K), the minimum value of \(G_{k}\)
+#' coefficients, the results are divided by the specific allocation ratio.
+#' Depending on the method, the total unbalance is then calculated,
+#' taking into account the weights, and the number of covariates using one
+#' of three methods (“sd”, “range”, “var”).
+#' Based on the number of defined arms, the minimum value of (\(G_{k}\))
 #' (defined as the weighted sum of the level-based imbalance) selects the arm to
-#' which the patient will be assigned with a predefined probability. The
-#' probability that a patient will be assigned to any other arm will then be
-#' \(\frac{(1 - p)}{(K - 1)}\) for each of the remaining arms.
-#'
+#' which the patient will be assigned with a predefined probability (p). The
+#' probability that a patient will be assigned to any other arm will then be equal (1-p)/(K-1)
+#' for each of the remaining arms.
+
 #' @references Pocock, S. J., & Simon, R. (1975). Minimization: A new method of assigning patients to treatment and control groups in clinical trials.
+#' @references Minirand Package: Man Jin [aut, cre], Adam Polis [aut], Jonathan Hartzel [aut]. (https://CRAN.R-project.org/package=Minirand)
+#' @note This function's implementation is a refactored adaptation of the codebase from the 'Minirand' package.
 #'
 #' @inheritParams randomize_simple
 #'
