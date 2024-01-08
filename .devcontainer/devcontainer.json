@@ -1,36 +1,38 @@
 {
   "name": "R unbiased",
   "dockerComposeFile": "docker-compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "features": {
     "ghcr.io/rocker-org/devcontainer-features/renv-cache:0": {},
-    "ghcr.io/rocker-org/devcontainer-features/r-apt:0": {
-      "installDevTools": true,
-      "installREnv": true,
-      "installRMarkdown": true,
-      "installRadian": true,
-      "installVscDebugger": true,
-      "useTesting": true,
-      "installBspm": true,
-      "vscodeRSupport": "full"
+    "ghcr.io/rocker-org/devcontainer-features/rstudio-server:0": {
+      "singleUser": true,
+      "version": "stable"
+    }
+  },
+  "postCreateCommand": "R -q -e 'renv::restore()'",
+  // "postAttachCommand": {
+  //   "rstudio-start": "rserver"
+  // },
+  "forwardPorts": [
+    8787
+  ],
+  "portsAttributes": {
+    "8787": {
+      "label": "RStudio IDE"
     }
   },
   "customizations": {
-		"vscode": {
-			"extensions": [
-				"RDebugger.r-debugger",
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
-        "ms-azuretools.vscode-docker",
-        "REditorSupport.r"
-			],
-			"settings": {
+    "vscode": {
+      "extensions": [
+        "RDebugger.r-debugger"
+      ],
+      "settings": {
         "terminal.integrated.shell.linux": "/bin/bash",
-				"r.rterm.linux": "/usr/local/bin/radian",
-				"r.bracketedPaste": true,
-				"r.plot.useHttpgd": true
-			}
-		}
-	}
+        "r.rterm.linux": "/usr/local/bin/radian",
+        "r.bracketedPaste": true,
+        "r.plot.useHttpgd": true
+      }
+    }
+  }
 }
