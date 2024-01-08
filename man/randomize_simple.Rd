@@ -10,8 +10,9 @@ randomize_simple(arms, ratio)
 \item{arms}{\code{character()}\cr
 Arm names.}
 
-\item{ratio}{\code{numeric()}\cr
-Ratio of patient assignment to each arm. Must be the same length as \code{arms}.}
+\item{ratio}{\code{integer()}\cr
+Vector of positive integers (0 is allowed), equal in length to number
+of arms, named after arms, defaults to equal weight}
 }
 \value{
 Selected arm assignment.
@@ -21,6 +22,6 @@ Randomly assigns a patient to one of the arms according to specified ratios,
 regardless of already performed assignments.
 }
 \examples{
-randomize_simple(c("active", "placebo"), c(2, 1))
+randomize_simple(c("active", "placebo"), c("active" = 2, "placebo" = 1))
 
 }

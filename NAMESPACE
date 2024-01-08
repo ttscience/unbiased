@@ -2,6 +2,7 @@
 
 export(define_study)
 export(list_studies)
+export(randomize_minimisation_pocock)
 export(randomize_simple)
 export(read_study_details)
 export(run_unbiased)
@@ -9,3 +10,4 @@ export(run_unbiased_db)
 export(study_exists)
 import(checkmate)
 import(dplyr)
+import(mathjaxr)
