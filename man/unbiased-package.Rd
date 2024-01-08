@@ -4,9 +4,9 @@
 \name{unbiased-package}
 \alias{unbiased}
 \alias{unbiased-package}
-\title{unbiased: What the Package Does (One Line, Title Case)}
+\title{unbiased: Diverse Randomization Algorithms for Clinical Trials}
 \description{
-What the package does (one paragraph).
+The Unbiased package offers a comprehensive suite of randomization algorithms for clinical trials, encompassing dynamic strategies like the minimization method, simple randomization approaches, and block randomization techniques. Its primary purpose is to provide a harmonized set of functions that will seamlessly integrate with a production-ready plumber API, also contained within the package. This integration is designed to facilitate a smooth and efficient interface with electronic Case Report Form (eCRF) systems, enhancing the capability of clinical trials to manage patient allocation.
 }
 \seealso{
 Useful links:
@@ -16,7 +16,20 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Kamil Sijko \email{kamil.sijko@ttsi.com.pl} (\href{https://orcid.org/0000-0002-2203-1065}{ORCID})
+
+Authors:
+\itemize{
+  \item Kinga Sałata \email{kinga.salata@ttsi.com.pl}
+  \item Aleksandra Duda \email{aleksandra.duda@ttsi.com.pl}
+  \item Łukasz Wałejko \email{lukasz.walejko@ttsi.com.pl}
+}
+
+Other contributors:
+\itemize{
+  \item Michał Seweryn \email{michal.seweryn@biol.uni.lodz.pl} (\href{https://orcid.org/0000-0002-9090-3435}{ORCID}) [contractor]
+  \item Transition Technologies Science Sp. z o.o. [funder, copyright holder]
+}
 
 }
 \keyword{internal}

@@ -13,7 +13,7 @@
 #' @return Selected arm assignment.
 #'
 #' @examples
-#' randomize_simple(c("active", "placebo"), c(2, 1))
+#' randomize_simple(c("active", "placebo"), c("active" = 2, "placebo" = 1))
 #'
 #' @export
 randomize_simple <- function(arms, ratio) {
@@ -24,20 +24,20 @@ randomize_simple <- function(arms, ratio) {
   }
 
   # Argument assertions
-  assert_character(
+  checkmate::assert_character(
     arms,
     any.missing = FALSE,
     unique = TRUE,
     min.chars = 1)
 
-  assert_integer(
+  checkmate::assert_integerish(
     ratio,
     any.missing = FALSE,
     lower = 0,
     len = length(arms),
     names = "named"
   )
-  assert_names(
+  checkmate::assert_names(
     names(ratio),
     must.include = arms
   )

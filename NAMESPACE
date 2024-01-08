@@ -2,7 +2,7 @@
 
 export(define_study)
 export(list_studies)
-export(randomize_dynamic)
+export(randomize_minimisation_pocock)
 export(randomize_simple)
 export(read_study_details)
 export(run_unbiased)

@@ -8,8 +8,6 @@
 #'
 #' @return data.frame with columns as in A and B, filled with TRUE if there is
 #'         match in covariate and FALSE if not
-#'
-#' @examples
 compare_rows <- function(A, B) {
   # Find common column names
   common_cols <- intersect(names(A), names(B))
@@ -27,7 +25,7 @@ compare_rows <- function(A, B) {
 
 
 
-#' Randomize Dynamic Algorithm for Patient Allocation
+#' Patient Randomization Using Minimization Method
 #'
 #' \loadmathjax
 #' The `randomize_dynamic` function implements the dynamic randomization
@@ -59,7 +57,7 @@ compare_rows <- function(A, B) {
 #' for each of the remaining arms.
 
 #' @references Pocock, S. J., & Simon, R. (1975). Minimization: A new method of assigning patients to treatment and control groups in clinical trials.
-#' @references Minirand Package: Man Jin [aut, cre], Adam Polis [aut], Jonathan Hartzel [aut]. (https://CRAN.R-project.org/package=Minirand)
+#' @references Minirand Package: Man Jin, Adam Polis, Jonathan Hartzel. (https://CRAN.R-project.org/package=Minirand)
 #' @note This function's implementation is a refactored adaptation of the codebase from the 'Minirand' package.
 #'
 #' @inheritParams randomize_simple
@@ -100,13 +98,19 @@ compare_rows <- function(A, B) {
 #'          prob = c(0.4, 0.4, 0.2)
 #'   ) |>
 #'   c("")
-#' covar_df <- tibble(sex, diabetes, arm)
+#' covar_df <- tibble::tibble(sex, diabetes, arm)
 #' covar_df
 #'
-#' randomize_dynamic(arms = arms, current_state = covar_df)
+#' randomize_minimisation_pocock(arms = arms, current_state = covar_df)
+#' randomize_minimisation_pocock(arms = arms, current_state = covar_df,
+#'                               ratio = c("control" = 1,
+#'                                         "active low" = 2,
+#'                                         "active high" = 2),
+#'                               weights = c("sex" = 0.5,
+#'                                           "diabetes" = 1))
 #'
 #' @export
-randomize_dynamic <-
+randomize_minimisation_pocock <-
   function(arms,
            current_state,
            weights,
@@ -114,27 +118,27 @@ randomize_dynamic <-
            method = "var",
            p = 0.85) {
     # Assertions
-    assert_character(
+    checkmate::assert_character(
       arms,
       min.len = 2,
       min.chars = 1,
       unique = TRUE)
-    assert_choice(
+    checkmate::assert_choice(
       method,
       choices = c("range", "var", "sd")
     )
-    assert_tibble(
+    checkmate::assert_tibble(
       current_state,
       any.missing = FALSE,
       min.cols = 2,
       min.rows = 1,
       null.ok = FALSE
     )
-    assert_names(
+    checkmate::assert_names(
       colnames(current_state),
       must.include = "arm"
     )
-    assert_character(
+    checkmate::assert_character(
       current_state$arm[nrow(current_state)],
       max.chars = 0, .var.name = "Last value of 'arm'")
 
@@ -143,7 +147,7 @@ randomize_dynamic <-
     n_arms <-
       length(arms)
 
-    assert_subset(
+    checkmate::assert_subset(
       unique(current_state$arm),
       choices = c(arms, ""),
       .var.name = "'arm' variable in dataframe"
@@ -158,7 +162,7 @@ randomize_dynamic <-
       names(weights) <- colnames(current_state)[colnames(current_state) != "arm"]
     }
 
-    assert_numeric(
+    checkmate::assert_numeric(
       weights,
       any.missing = FALSE,
       len = n_covariates,
@@ -167,12 +171,12 @@ randomize_dynamic <-
       finite = TRUE,
       all.missing = FALSE
     )
-    assert_names(
+    checkmate::assert_names(
       names(weights),
       must.include =
         colnames(current_state)[colnames(current_state) != "arm"]
     )
-    assert_integer(
+    checkmate::assert_integerish(
       ratio,
       any.missing = FALSE,
       len = n_arms,
@@ -181,11 +185,11 @@ randomize_dynamic <-
       all.missing = FALSE,
       names = "named"
     )
-    assert_names(
+    checkmate::assert_names(
       names(ratio),
       must.include = arms
     )
-    assert_number(
+    checkmate::assert_number(
       p,
       na.ok = FALSE,
       lower = 0,

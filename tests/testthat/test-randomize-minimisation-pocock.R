@@ -23,42 +23,42 @@ covar_df <- tibble::tibble(sex, diabetes, arm)
 
 test_that("You can call function and it returns arm", {
   expect_subset(
-    randomize_dynamic(arms = arms, current_state = covar_df), choices = arms
+    randomize_minimisation_pocock(arms = arms, current_state = covar_df), choices = arms
   )
 })
 
 test_that("Assertions work", {
-  expect_error(randomize_dynamic(arms = c(1, 2), current_state = covar_df),
+  expect_error(randomize_minimisation_pocock(arms = c(1, 2), current_state = covar_df),
                regexp = "Must be of type 'character'")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df,
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df,
                                  method = "nonexistent"),
                regexp = "Must be element of set .'range','var','sd'., but is 'nonexistent'")
-  expect_error(randomize_dynamic(arms = arms, current_state = "5 patietns OK"),
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = "5 patietns OK"),
                regexp = "Assertion on 'current_state' failed: Must be a tibble, not character")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df[, 1:2]),
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df[, 1:2]),
                regexp = "Names must include the elements .'arm'.")
   # Last subject already randomized
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df[1:3,]),
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df[1:3,]),
                regexp = "must have at most 0 characters")
-  expect_error(randomize_dynamic(arms = c("foo", "bar"),
+  expect_error(randomize_minimisation_pocock(arms = c("foo", "bar"),
                                  current_state = covar_df),
                regexp = "Must be a subset of .'foo','bar',''.")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df,
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df,
                                  weights = c("sex" = -1, "diabetes" = 2)),
                regexp = "Element 1 is not >= 0")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df,
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df,
                                  weights = c("wrong" = 1, "diabetes" = 2)),
                regexp = "is missing elements .'sex'.")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df,
-                                 ratio = c("control" = 1,
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df,
+                                 ratio = c("control" = 1.5,
                                            "active low" = 2,
                                            "active high" = 1)),
-               regexp = "Must be of type 'integer', not 'double'")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df,
+               regexp = "element 1 is not close to an integer")
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df,
                                  ratio = c("control" = 1L,
                                            "active high" = 1L)),
                regexp = "Must have length 3, but has length 2")
-  expect_error(randomize_dynamic(arms = arms, current_state = covar_df,
+  expect_error(randomize_minimisation_pocock(arms = arms, current_state = covar_df,
                                  p = 12),
                regexp = "Assertion on 'p' failed: Element 1 is not <= 1")
 })
@@ -66,7 +66,7 @@ test_that("Assertions work", {
 test_that("Function randomizes first patient randomly", {
   randomized <-
     sapply(1:100, function(x) {
-    randomize_dynamic(arms = arms,
+    randomize_minimisation_pocock(arms = arms,
                       current_state = covar_df[nrow(covar_df), ])
     })
   test <- prop.test(x = sum(randomized == "control"),
@@ -82,7 +82,7 @@ test_that("Function randomizes second patient deterministically", {
   situation <- tibble::tibble(sex = c("F", "F"),
                           arm = c("A", ""))
   randomized <-
-    randomize_dynamic(arms = arms,
+    randomize_minimisation_pocock(arms = arms,
                       current_state = situation,
                       p = 1)
 
@@ -96,7 +96,7 @@ test_that("Setting proportion of randomness works", {
 
   randomized <-
     sapply(1:100, function(x) {
-      randomize_dynamic(arms = arms,
+      randomize_minimisation_pocock(arms = arms,
                         current_state = situation,
                         p = 0.60)
     })
