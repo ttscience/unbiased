@@ -13,7 +13,6 @@ watchmedo auto-restart \
     --directory="./R" \
     --directory="./inst" \
     --directory="./tests" \
-    --verbose \
     --debounce-interval 1 \
     --no-restart-on-command-exit \
     "$@"
