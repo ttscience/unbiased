@@ -1,10 +1,3 @@
-CREATE TABLE method_history (LIKE method);
-
-CREATE TRIGGER method_versioning
-BEFORE INSERT OR UPDATE OR DELETE ON method
-FOR EACH ROW
-EXECUTE PROCEDURE versioning('sys_period', 'method_history', true);
-
 CREATE TABLE study_history (LIKE study);
 
 CREATE TRIGGER study_versioning

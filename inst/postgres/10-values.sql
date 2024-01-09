@@ -1,2 +1,2 @@
-INSERT INTO method (name)
-VALUES ('simple'), ('blocked');
+INSERT INTO study (method)
+VALUES ('simple'), ('minimise_pocock');
