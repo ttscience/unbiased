@@ -37,7 +37,7 @@ connect_to_db <- purrr::insistently(function() {
     RPostgres::Postgres(),
     dbname = Sys.getenv("POSTGRES_DB"),
     host = Sys.getenv("POSTGRES_HOST"),
-    port = Sys.getenv("POSTGRES_PORT"),
+    port = Sys.getenv("POSTGRES_PORT", 5432),
     user = Sys.getenv("POSTGRES_USER"),
     password = Sys.getenv("POSTGRES_PASSWORD")
   )
