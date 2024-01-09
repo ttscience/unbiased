@@ -769,6 +769,22 @@
       ],
       "Hash": "8b65a7a00ef8edc5ddc6fabf0aff1194"
     },
+    "pool": {
+      "Package": "pool",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "DBI",
+        "R",
+        "R6",
+        "later",
+        "methods",
+        "rlang",
+        "withr"
+      ],
+      "Hash": "52d086ff1a2ccccbae6d462cb0773835"
+    },
     "praise": {
       "Package": "praise",
       "Version": "1.0.0",
