@@ -1,15 +1,3 @@
--- Table: method
--- Purpose: Holds the available randomization methods used in clinical studies.
--- Each method is uniquely identified by an auto-incrementing ID.
--- The 'name' column stores the name of the randomization method.
--- The 'sys_period' column, of type TSTZRANGE, is used for temporal versioning,
--- tracking the period during which each record is considered valid and current.
-CREATE TABLE method (
-  id          SERIAL PRIMARY KEY,
-  name        VARCHAR(255) NOT NULL,
-  sys_period  TSTZRANGE NOT NULL
-);
-
 -- Table: study
 -- Purpose: Stores information about various studies conducted.
 -- 'id' is an auto-incrementing primary key uniquely identifying each study.
@@ -22,7 +10,7 @@ CREATE TABLE study (
   id          SERIAL PRIMARY KEY,
   identifier  VARCHAR(12) NOT NULL,
   name        VARCHAR(255) NOT NULL,
-  method_id   INT NOT NULL,
+  method      VARCHAR(255) NOT NULL,
   parameters  JSONB,
   timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
   sys_period  TSTZRANGE NOT NULL,
