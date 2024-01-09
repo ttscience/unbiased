@@ -4,7 +4,7 @@ skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
 
 # Setup constants ----
 versioned_tables <- c(
-  "method", "study", "arm", "stratum", "factor_constraint",
+  "study", "arm", "stratum", "factor_constraint",
   "numeric_constraint", "patient", "patient_stratum"
 )
 nonversioned_tables <- c("settings")
