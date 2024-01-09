@@ -59,13 +59,15 @@ define_study <- function(name, identifier, arms,
 
   assert_list(parameters, names = "unique", null.ok = TRUE)
 
-  method_id <- tbl(CONN, "method") |>
+  conn_from_pool <- pool::localCheckout(db_connection_pool)
+
+  method_id <- tbl(conn_from_pool, "method") |>
     filter(name == !!method) |>
     pull(id)
   assert_int(method_id)
 
   # Actual code
-  study_id <- tbl(CONN, "study") |>
+  study_id <- tbl(conn_from_pool, "study") |>
     rows_append(
       tibble(
         identifier = identifier,
@@ -79,7 +81,7 @@ define_study <- function(name, identifier, arms,
     pull(id)
 
   purrr::walk2(arms, ratio, function(arm, prop) {
-    tbl(CONN, "arm") |>
+    tbl(conn_from_pool, "arm") |>
       rows_append(
         tibble(
           study_id = study_id,
@@ -93,7 +95,7 @@ define_study <- function(name, identifier, arms,
   purrr::iwalk(strata, function(stratum, name) {
     if (is.numeric(stratum)) {
       # Numeric case
-      stratum_id <- tbl(CONN, "stratum") |>
+      stratum_id <- tbl(conn_from_pool, "stratum") |>
         rows_append(
           tibble(
             study_id = study_id,
@@ -108,7 +110,7 @@ define_study <- function(name, identifier, arms,
       # TODO: how to set min/max values?
     } else {
       # Factor case
-      stratum_id <- tbl(CONN, "stratum") |>
+      stratum_id <- tbl(conn_from_pool, "stratum") |>
         rows_append(
           tibble(
             study_id = study_id,
@@ -121,7 +123,7 @@ define_study <- function(name, identifier, arms,
         pull(id)
 
       purrr::walk(stratum, function(value) {
-        tbl(CONN, "factor_constraint") |>
+        tbl(conn_from_pool, "factor_constraint") |>
           rows_append(
             tibble(
               stratum_id = stratum_id,

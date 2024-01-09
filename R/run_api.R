@@ -12,11 +12,11 @@
 #'
 #' @export
 run_unbiased <- function(host = "0.0.0.0", port = 3838, ...) {
-  assignInMyNamespace("CONN", connect_to_db())
+  assignInMyNamespace("db_connection_pool", create_db_connection_pool())
 
   on.exit({
-    DBI::dbDisconnect(CONN)
-    assignInMyNamespace("CONN", NULL)
+    pool::poolClose(db_connection_pool)
+    assignInMyNamespace("db_connection_pool", NULL)
   })
 
   plumber::plumb_api('unbiased', 'unbiased_api') |>

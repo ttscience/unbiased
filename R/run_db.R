@@ -1,4 +1,4 @@
-CONN <- NULL
+db_connection_pool <- NULL
 
 #' Run local DB
 #'
@@ -32,7 +32,7 @@ run_unbiased_db <- function() {
   ))
 }
 
-connect_to_db <- purrr::insistently(function() {
+create_db_connection_pool <- purrr::insistently(function() {
   pool::dbPool(
     RPostgres::Postgres(),
     dbname = Sys.getenv("POSTGRES_DB"),
