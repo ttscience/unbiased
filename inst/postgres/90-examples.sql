@@ -1,5 +1,5 @@
-INSERT INTO study (identifier, name, method_id, parameters)
-VALUES ('TEST', 'Badanie testowe', 1, '{}');
+INSERT INTO study (identifier, name, method, parameters)
+VALUES ('TEST', 'Badanie testowe', 'minimisation_pocock', '{"method": "var", "p": 0.85, "weights": [1,1,1]}');
 
 INSERT INTO arm (study_id, name, ratio)
 VALUES (1, 'placebo', 2),

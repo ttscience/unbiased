@@ -1,34 +1,19 @@
--- Table: method
--- Purpose: Holds the available randomization methods used in clinical studies.
--- Each method is uniquely identified by an auto-incrementing ID.
--- The 'name' column stores the name of the randomization method.
--- The 'sys_period' column, of type TSTZRANGE, is used for temporal versioning,
--- tracking the period during which each record is considered valid and current.
-CREATE TABLE method (
-  id          SERIAL PRIMARY KEY,
-  name        VARCHAR(255) NOT NULL,
-  sys_period  TSTZRANGE NOT NULL
-);
-
 -- Table: study
 -- Purpose: Stores information about various studies conducted.
 -- 'id' is an auto-incrementing primary key uniquely identifying each study.
 -- 'identifier' is a unique, short textual identifier for the study (max 12 characters).
 -- 'name' provides the full name or title of the study.
--- 'method_id' is a foreign key linking to the 'method' table, indicating the randomization method used in the study.
+-- 'method' is a randomization method name
 -- 'sys_period' is of type TSTZRANGE, used for temporal versioning to track the validity period of each record.
 -- The 'study_method' constraint ensures referential integrity, linking each study to a valid randomization method.
 CREATE TABLE study (
   id          SERIAL PRIMARY KEY,
   identifier  VARCHAR(12) NOT NULL,
   name        VARCHAR(255) NOT NULL,
-  method_id   INT NOT NULL,
+  method      VARCHAR(255) NOT NULL,
   parameters  JSONB,
   timestamp   TIMESTAMPTZ NOT NULL DEFAULT now(),
-  sys_period  TSTZRANGE NOT NULL,
-  CONSTRAINT study_method
-    FOREIGN KEY (method_id)
-    REFERENCES method (id)
+  sys_period  TSTZRANGE NOT NULL
 );
 
 -- Table: arm
