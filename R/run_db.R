@@ -33,7 +33,7 @@ run_unbiased_db <- function() {
 }
 
 connect_to_db <- purrr::insistently(function() {
-  DBI::dbConnect(
+  pool::dbPool(
     RPostgres::Postgres(),
     dbname = Sys.getenv("POSTGRES_DB"),
     host = Sys.getenv("POSTGRES_HOST"),
