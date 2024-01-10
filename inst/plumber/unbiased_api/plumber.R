@@ -1,9 +1,32 @@
+#* @apiTitle Unbiased
+#* @apiDescription This API provides a diverse range of randomization algorithms specifically designed for use in clinical trials. It supports dynamic strategies such as the minimization method, as well as simpler approaches including standard and block randomization. The main goal of this API is to ensure seamless integration with electronic Case Report Form (eCRF) systems, facilitating efficient patient allocation management in clinical trials.
+#* @apiContact list(name = "GitHub", url = "https://ttscience.github.io/unbiased/")
+#* @apiLicense list(name = "MIT", url = "https://github.com/ttscience/unbiased/LICENSE.md")
+#* @apiVersion 0.0.0.9003
+#* @apiTag initialize Endpoints that initialize study with chosen randomization method and parameters.
+#* @apiTag randomize Endpoints that randomize individual patients after the study was created.
+#* @apiTag other Other endpoints (helpers etc.).
+#*
 #* @plumber
 function(api) {
   meta <- plumber::pr("meta.R")
+  minimisation_pocock <- plumber::pr("minimisation_pocock.R")
 
   api |>
-    plumber::pr_mount("/meta", meta)
+    plumber::pr_mount("/meta", meta) |>
+    plumber::pr_mount("/study", minimisation_pocock) |>
+    plumber::pr_set_api_spec(function(spec) {
+      # example of how to define arms
+      spec$paths$`/study/minimisation_pocock`$post$requestBody$content$`application/json`$schema$properties$arms$example <-
+        list("placebo" = 1, "active" = 1)
+      # example of how to define covariates in minimisation pocock
+      spec$paths$`/study/minimisation_pocock`$post$requestBody$content$`application/json`$schema$properties$covariates$example <-
+        list(sex = list(weight = 1,
+                        levels = c("female", "male")),
+             weight = list(weight = 1,
+                           levels = c("up to 60kg", "61-80 kg", "81 kg or more")))
+      spec
+    })
 }
 
 #* Log request data
@@ -23,76 +46,4 @@ function(req) {
   }
 
   plumber::forward()
-}
-
-#* Define study to randomize
-#*
-#* @param identifier:str Study code, at most 12 characters.
-#* @param name:str Full study name.
-#* @param method:str Randomization method to apply.
-#* @param arms:[str] Arm names to use.
-#* @param ratio:[int] Arm ratios, must be the same length as arm names.
-#* @param strata:object List of character vectors, each list element being a stratum and each string being a possible stratum value. Could possibly take a numeric structure as well instead of a character vector, e.g. `{"min": 1, "max": 10}`. It just needs handling by checking whether the inner list is named or not, I'd say.
-#* @param parameters:object Parameters to pass to randomization.
-#*
-#* @post /study
-function(identifier, name, method, arms, ratio, strata, parameters, req, res) {
-  # Coerce types (plumber doesn't do that)
-  ratio <- as.integer(ratio)
-
-  # Assertions
-
-
-  # Define study
-  unbiased:::define_study(
-    name, identifier, arms, method,
-    strata = strata, parameters = parameters, ratio = ratio
-  )
-}
-
-#* Get available studies
-#*
-#* @get /study
-function(req, res) {
-  unbiased:::list_studies()
-}
-
-#* Get study details
-#*
-#* @get /study/<study_id:int>
-function(study_id, req, res) {
-  study_id <- as.integer(study_id)
-
-  if (!unbiased:::study_exists(study_id)) {
-    res$status <- 404
-    return(list(error = glue::glue("Study {study_id} does not exist.")))
-  }
-
-  unbiased:::read_study_details(study_id)
-}
-
-#* Randomize one patient
-#*
-#* @param strata:object
-#*
-#* @post /study/<study_id:int>/randomize
-function(strata, req, res) {
-  # Check whether study with study_id exists, if not, return error
-
-  # Retrieve study details, especially the ones about randomization
-  method <- NULL
-  params <- list(
-    arms = character(),
-    ratio = numeric()
-  )
-
-  # Assert that patient has the same strata as study
-  #  and that patient's values are allowed in study
-
-  # Dispatch based on randomization method
-  switch(
-    method,
-    simple = do.call(unbiased:::randomize_simple, params),
-    # block = do.call(unbiased:::randomize_blocked, c(params, strata = strata))
-  )
 }
