@@ -3,6 +3,7 @@
 #* Each release of the API is based on some Github commit. This endpoint allows
 #* the user to easily check the SHA of the deployed API version.
 #*
+#* @tag other
 #* @get /sha
 #* @serializer unboxedJSON
 function(res) {
