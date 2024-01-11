@@ -29,13 +29,27 @@ function(study_id, current_state, req, res) {
   params <-
     switch(
       method_randomization,
-      simple = do.call(unbiased:::parse_simple_randomization, list(CONN, study_id, current_state)),
-      minimisation_pocock = do.call(unbiased:::parse_pocock_parameters, list(CONN, study_id, current_state))
-      )
+      # simple = do.call(unbiased:::parse_simple_randomization, list(CONN, study_id, current_state)),
+      minimisation_pocock = tryCatch({
+        do.call(unbiased:::parse_pocock_parameters, list(CONN, study_id, current_state))
+      }, error = function(e) {
+        res$status <- 400
+        res$body = glue::glue("Error message: {conditionMessage(e)}")
+      })
+    )
 
   switch(
     method_randomization,
-    simple = do.call(unbiased:::randomize_simple, params),
-    minimisation_pocock = do.call(unbiased:::randomize_minimisation_pocock, params)
+    # simple = do.call(unbiased:::randomize_simple, params),
+    minimisation_pocock = tryCatch({
+      do.call(unbiased:::randomize_minimisation_pocock, params)
+    }, error = function(e) {
+      # browser()
+      res$status <- 400
+      res$body = glue::glue("Error message: {conditionMessage(e)}")
+    }
+    )
   )
+
 }
+
