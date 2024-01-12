@@ -33,9 +33,10 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
     req_url_path("study", response_body$study$id, "patient") |>
     req_method("POST") |>
     req_body_json(
-      data = tibble::tibble("sex" = c("female", "male"),
+      data = list(current_state =
+                    tibble::tibble("sex" = c("female", "male"),
                             "weight" = c("61-80 kg", "81 kg or more"),
-                            "arm" = c("placebo", ""))
+                            "arm" = c("placebo", "")))
     ) |>
     req_perform()
   response_patient_body <-
@@ -43,5 +44,5 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
     resp_body_json()
 
   expect_number(response_patient$status_code, lower = 200, upper = 200)
-  expect_number(response_patient_body$study$id, lower = 1, upper = 200)
+  expect_number(response_patient_body$patient_id, lower = 1, upper = 200)
 })

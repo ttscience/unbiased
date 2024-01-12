@@ -11,11 +11,9 @@
 function(api) {
   meta <- plumber::pr("meta.R")
   minimisation_pocock <- plumber::pr("minimisation_pocock.R")
-  randomization_patient <- plumber::pr("randomization_patient.R")
 
   api |>
     plumber::pr_mount("/meta", meta) |>
-    plumber::pr_mount("/study/patient", randomization_patient) |>
     plumber::pr_mount("/study", minimisation_pocock) |>
     plumber::pr_set_api_spec(function(spec) {
       spec$
@@ -41,7 +39,10 @@ function(api) {
             levels = c("up to 60kg", "61-80 kg", "81 kg or more")
           )
         )
-      spec$paths$`/study/patient/study/{study_id}/patient`$post$requestBody$content$`application/json`$schema$properties$current_state$example <-
+      spec$
+        paths$`/study/{study_id}/patient`$
+        post$requestBody$content$`application/json`$
+        schema$properties$current_state$example <-
         tibble::tibble("sex" = c("female", "male"),
                        "weight" = c("61-80 kg", "81 kg or more"),
                        "arm" = c("placebo", ""))
