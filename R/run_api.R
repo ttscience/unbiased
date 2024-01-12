@@ -12,13 +12,23 @@
 #'
 #' @export
 run_unbiased <- function(host = "0.0.0.0", port = 3838, ...) {
-  assignInMyNamespace("db_connection_pool", create_db_connection_pool())
-
+  assign("db_connection_pool", create_db_connection_pool(), envir = globalenv())
   on.exit({
     pool::poolClose(db_connection_pool)
-    assignInMyNamespace("db_connection_pool", NULL)
+    assign("db_connection_pool", NULL, envir = globalenv())
   })
 
-  plumber::plumb_api('unbiased', 'unbiased_api') |>
+  plumber::plumb_api("unbiased", "unbiased_api") |>
+    plumber::pr_run(host = host, port = port, ...)
+}
+
+run_unbiased_local <- function(host = "0.0.0.0", port = 3838, ...) {
+  assign("db_connection_pool", create_db_connection_pool(), envir = globalenv())
+  on.exit({
+    pool::poolClose(db_connection_pool)
+    assign("db_connection_pool", NULL, envir = globalenv())
+  })
+
+  plumber::plumb("./inst/plumber/unbiased_api/plumber.R") |>
     plumber::pr_run(host = host, port = port, ...)
 }

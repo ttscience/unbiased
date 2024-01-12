@@ -16,15 +16,29 @@ function(api) {
     plumber::pr_mount("/meta", meta) |>
     plumber::pr_mount("/study", minimisation_pocock) |>
     plumber::pr_set_api_spec(function(spec) {
-      # example of how to define arms
-      spec$paths$`/study/minimisation_pocock`$post$requestBody$content$`application/json`$schema$properties$arms$example <-
-        list("placebo" = 1, "active" = 1)
+      spec$
+        paths$
+        `/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$schema$properties$
+        arms$example <- list("placebo" = 1, "active" = 1)
       # example of how to define covariates in minimisation pocock
-      spec$paths$`/study/minimisation_pocock`$post$requestBody$content$`application/json`$schema$properties$covariates$example <-
-        list(sex = list(weight = 1,
-                        levels = c("female", "male")),
-             weight = list(weight = 1,
-                           levels = c("up to 60kg", "61-80 kg", "81 kg or more")))
+      spec$
+        paths$`/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$
+        schema$properties$
+        covariates$example <-
+        list(
+          sex = list(
+            weight = 1,
+            levels = c("female", "male")
+          ),
+          weight = list(
+            weight = 1,
+            levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+          )
+        )
       spec
     })
 }
@@ -46,4 +60,9 @@ function(req) {
   }
 
   plumber::forward()
+}
+
+add_payload_example <- function(spec, endpoint, example) {
+  spec$paths[[endpoint]]$post$requestBody$content$`application/json`$schema$example <- example
+  spec
 }
