@@ -1,0 +1,42 @@
+{
+  "name": "R unbiased",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/rocker-org/devcontainer-features/renv-cache:0": {},
+    "ghcr.io/rocker-org/devcontainer-features/rstudio-server:0": {
+      "singleUser": true,
+      "version": "stable"
+    }
+  },
+  "postCreateCommand": "R -q -e 'renv::restore()'",
+  // "postAttachCommand": {
+  //   "rstudio-start": "rserver"
+  // },
+  "forwardPorts": [
+    8787,
+    5454
+  ],
+  "portsAttributes": {
+    "8787": {
+      "label": "RStudio IDE"
+    },
+    "5454": {
+      "label": "PGAdmin"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "RDebugger.r-debugger"
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash",
+        "r.rterm.linux": "/usr/local/bin/radian",
+        "r.bracketedPaste": true,
+        "r.plot.useHttpgd": true
+      }
+    }
+  }
+}

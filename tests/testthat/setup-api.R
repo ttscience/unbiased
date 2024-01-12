@@ -29,7 +29,12 @@ if (!isTRUE(as.logical(Sys.getenv("CI")))) {
   }
 
   # Close API upon exiting
-  withr::defer({ api$kill() }, teardown_env())
+  withr::defer(
+    {
+      api$kill()
+    },
+    teardown_env()
+  )
 }
 
 # Retry a request until the API starts
