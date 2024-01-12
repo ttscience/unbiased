@@ -270,7 +270,7 @@ function(study_id, current_state, req, res) {
 
   save_patient(study_id, arm$arm_id) |>
     dplyr::mutate(arm_name = arm$name) |>
-    rename(patient_id = id) |>
+    dplyr::rename(patient_id = id) |>
     as.list()
 }
 
