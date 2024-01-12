@@ -5,11 +5,10 @@
 #' @return params List of parameters
 
 
-parse_pocock_parameters <- function(CONN, study_id, current_state){
-
+parse_pocock_parameters <- function(db_connetion_pool, study_id, current_state){
   parameters <-
-    dplyr::tbl(CONN, "study") |>
-    dplyr::filter(study_id == study_id) |>
+    dplyr::tbl(db_connetion_pool, "study") |>
+    dplyr::filter(id == study_id) |>
     dplyr::select(parameters) |>
     dplyr::pull()
 
@@ -32,8 +31,8 @@ parse_pocock_parameters <- function(CONN, study_id, current_state){
   # parameters <- jsonlite::fromJSON('{"method": "var", "p": 0.85, "weights": {"gender": 1, "age_group" : 2, "height" : 1}}')
 
   ratio_arms <-
-    dplyr::tbl(CONN, "arm") |>
-    dplyr::filter(study_id == study_id) |>
+    dplyr::tbl(db_connetion_pool, "arm") |>
+    dplyr::filter(study_id == !!study_id) |>
     dplyr::select(name, ratio) |>
     dplyr::collect()
 
