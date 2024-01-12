@@ -117,12 +117,14 @@ randomize_minimisation_pocock <-
            ratio,
            method = "var",
            p = 0.85) {
+
     # Assertions
     checkmate::assert_character(
       arms,
       min.len = 2,
       min.chars = 1,
       unique = TRUE)
+
     checkmate::assert_choice(
       method,
       choices = c("range", "var", "sd")
