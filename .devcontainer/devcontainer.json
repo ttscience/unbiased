@@ -15,11 +15,15 @@
   //   "rstudio-start": "rserver"
   // },
   "forwardPorts": [
-    8787
+    8787,
+    5454
   ],
   "portsAttributes": {
     "8787": {
       "label": "RStudio IDE"
+    },
+    "5454": {
+      "label": "PGAdmin"
     }
   },
   "customizations": {

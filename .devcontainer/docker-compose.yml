@@ -24,6 +24,22 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_HOST: db
 
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: db
+      PGADMIN_DEFAULT_EMAIL: pgadmin@example.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin
+    volumes:
+      - pga-data:/tmp/dev/pga/data
+    depends_on:
+      - db
+    ports:
+      - "5454:80"
+
   db:
     build:
       context: ..
@@ -35,9 +51,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
-
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
 
 volumes:
   postgres-data:
+  pga-data:
