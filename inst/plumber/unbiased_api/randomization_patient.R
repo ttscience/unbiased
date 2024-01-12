@@ -12,18 +12,20 @@ function(study_id, current_state, req, res) {
   checkmate::assert(DBI::dbIsValid(CONN), .var.name = "DB connection")
 
   # Check whether study with study_id exists
-  checkmate::expect_subset(x = tbl(CONN, "study") |>
-                             select(id) |>
-                             pull(),
+  checkmate::expect_subset(x =
+                             dplyr::tbl(CONN, "study") |>
+                             dplyr::select(id) |>
+                             dplyr::pull(),
                            choices = req$args$study_id)
 
   #DF validation - error handling
 
   # Retrieve study details, especially the ones about randomization
-  method_randomization <- tbl(CONN, "study") |>
-    filter(study_id == study_id) |>
-    select(method) |>
-    pull()
+  method_randomization <-
+    dplyr::tbl(CONN, "study") |>
+    dplyr::filter(study_id == study_id) |>
+    dplyr::select(method) |>
+    dplyr::pull()
 
   # Dispatch based on randomization method to parse parameters
   params <-
@@ -50,6 +52,5 @@ function(study_id, current_state, req, res) {
     }
     )
   )
-
 }
 
