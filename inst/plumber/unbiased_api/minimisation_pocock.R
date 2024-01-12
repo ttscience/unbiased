@@ -16,6 +16,8 @@
 #* @serializer unboxedJSON
 #*
 function(identifier, name, method, arms, covariates, p, req, res) {
+  source("study-repository.R")
+  source("validation-utils.R")
   validation_errors <- vector()
 
   err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
@@ -233,11 +235,12 @@ function(study_id, current_state, req, res) {
   # asercja jeden element
 
   # Dispatch based on randomization method to parse parameters
+  source("parse_pocock.R")
   params <-
     switch(
       method_randomization,
       minimisation_pocock = tryCatch({
-        do.call(unbiased:::parse_pocock_parameters, list(db_connection_pool, study_id, current_state))
+        do.call(parse_pocock_parameters, list(db_connection_pool, study_id, current_state))
       }, error = function(e) {
         res$status <- 400
         res$body = glue::glue("Error message: {conditionMessage(e)}")
