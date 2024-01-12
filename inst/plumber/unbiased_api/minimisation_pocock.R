@@ -17,9 +17,7 @@
 #*
 function(identifier, name, method, arms, covariates, p, req, res) {
   validation_errors <- vector()
-  
-  logger::log_debug("Validating input")
-  
+
   err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
   if (err != TRUE) {
     validation_errors <- append_error(
@@ -167,7 +165,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   weights <- lapply(covariates, function(covariate) covariate$weight)
 
   # Write study to DB -------------------------------------------------------
-  new_study <- create_study(
+  r <- create_study(
     name = name,
     identifier = identifier,
     method = "minimisation_pocock",
@@ -182,8 +180,16 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 
   # Response ----------------------------------------------------------------
 
+  if (!is.null(r$error)) {
+    res$status <- 409
+    return(list(
+      error = "There was a problem creating the study",
+      details = r$error
+    ))
+  }
+
   response <- list(
-    study = new_study
+    study = r$study
   )
   if (nrow(similar_studies) >= 1) {
     response <- c(response, list(similar_studies = similar_studies))
