@@ -1,7 +1,14 @@
 if (is_CI()) {
   # Define connection ----
-  conn <- connect_to_db()
+  db_pool <- create_db_connection_pool()
+  conn <- pool::poolCheckout(db_pool)
 
   # Close DB connection upon exiting
-  withr::defer({ DBI::dbDisconnect(conn) }, teardown_env())
+  withr::defer(
+    {
+      pool::poolReturn(conn)
+      pool::poolClose(db_pool)
+    },
+    teardown_env()
+  )
 }

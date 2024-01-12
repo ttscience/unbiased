@@ -3,7 +3,7 @@
 -- 'id' is an auto-incrementing primary key uniquely identifying each study.
 -- 'identifier' is a unique, short textual identifier for the study (max 12 characters).
 -- 'name' provides the full name or title of the study.
--- 'method' is the randomization method used in the study.
+-- 'method' is a randomization method name
 -- 'sys_period' is of type TSTZRANGE, used for temporal versioning to track the validity period of each record.
 CREATE TABLE study (
   id          SERIAL PRIMARY KEY,

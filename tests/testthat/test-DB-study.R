@@ -24,7 +24,7 @@ test_that("it is enough to provide a name, an identifier, and a method id", {
         tibble(
           identifier = "FINE",
           name = "Correctly working study",
-          method_id = 1
+          method = "minimisation_pocock"
         ),
         copy = TRUE, in_place = TRUE
       )
@@ -34,20 +34,6 @@ test_that("it is enough to provide a name, an identifier, and a method id", {
 new_study_id <- tbl(conn, "study") |>
   filter(identifier == "FINE") |>
   pull(id)
-
-test_that("can't insert a study that references a non-existing method", {
-  expect_error({
-    tbl(conn, "study") |>
-      rows_append(
-        tibble(
-          identifier = "error",
-          name = "Exception-throwing study",
-          method_id = 28
-        ),
-        copy = TRUE, in_place = TRUE
-      )
-  }, regexp = "violates foreign key constraint")
-})
 
 test_that("deleting archivizes a study", {
   expect_no_error({
@@ -67,7 +53,7 @@ test_that("deleting archivizes a study", {
       id = new_study_id,
       identifier = "FINE",
       name = "Correctly working study",
-      method_id = 1L
+      method = "minimisation_pocock"
     )
   )
 })

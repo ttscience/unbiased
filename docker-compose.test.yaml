@@ -2,6 +2,9 @@ version: "3.9"
 services:
   postgres:
     image: temporal_postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     container_name: unbiased_postgres
     environment:
       - POSTGRES_PASSWORD=postgres
@@ -13,6 +16,9 @@ services:
         target: /docker-entrypoint-initdb.d/
   api:
     image: unbiased
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: unbiased_api
     depends_on:
       - postgres
@@ -25,7 +31,10 @@ services:
     networks:
       - test_net
   tests:
-    image: unbiased
+    # image: unbiased
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: unbiased_tests
     depends_on:
       - api
