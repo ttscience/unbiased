@@ -5,7 +5,6 @@
 -- 'name' provides the full name or title of the study.
 -- 'method' is a randomization method name
 -- 'sys_period' is of type TSTZRANGE, used for temporal versioning to track the validity period of each record.
--- The 'study_method' constraint ensures referential integrity, linking each study to a valid randomization method.
 CREATE TABLE study (
   id          SERIAL PRIMARY KEY,
   identifier  VARCHAR(12) NOT NULL,
