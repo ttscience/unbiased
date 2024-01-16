@@ -45,4 +45,10 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
 
   expect_number(response_patient$status_code, lower = 200, upper = 200)
   expect_number(response_patient_body$patient_id, lower = 1, upper = 200)
+
+  # Endpoint Response Structure Test
+  expect_names(names(response_patient_body), identical.to = c("patient_id", "arm_id", "arm_name"))
+  expect_list(response_patient_body, any.missing = TRUE, null.ok = FALSE, len = 3, type = c("numeric", "numeric", "character"))
 })
+
+

@@ -223,8 +223,6 @@ function(study_id, current_state, req, res) {
                              dplyr::select(id) |>
                              dplyr::pull())
 
-  #DF validation - error handling
-
   # Retrieve study details, especially the ones about randomization
   method_randomization <-
     dplyr::tbl(db_connection_pool, "study") |>
@@ -232,7 +230,7 @@ function(study_id, current_state, req, res) {
     dplyr::select(method) |>
     dplyr::pull()
 
-  # asercja jeden element
+  checkmate::assert_scalar(method_randomization, null.ok = FALSE)
 
   # Dispatch based on randomization method to parse parameters
   source("parse_pocock.R")
