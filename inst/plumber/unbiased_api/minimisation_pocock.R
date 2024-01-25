@@ -18,140 +18,92 @@
 function(identifier, name, method, arms, covariates, p, req, res) {
   source("study-repository.R")
   source("validation-utils.R")
-  validation_errors <- vector()
 
-  err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors, "name", err
-    )
-  }
+  validation <- ValidationErrors$new()
 
-  err <- checkmate::check_character(identifier, min.chars = 1, max.chars = 12)
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors,
+  validation$
+    validate_field(
+      "name",
+      checkmate::check_character(name, min.chars = 1, max.chars = 255)
+    )$
+    validate_field(
       "identifier",
-      err
-    )
-  }
-
-  err <- checkmate::check_choice(method, choices = c("range", "var", "sd"))
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors,
+      checkmate::check_character(identifier, min.chars = 1, max.chars = 12)
+    )$
+    validate_field(
       "method",
-      err
-    )
-  }
-
-  err <-
-    checkmate::check_list(
-      arms,
-      types = "integerish",
-      any.missing = FALSE,
-      min.len = 2,
-      names = "unique"
-    )
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors,
+      checkmate::check_choice(method, choices = c("range", "var", "sd"))
+    )$
+    validate_field(
       "arms",
-      err
+      checkmate::check_list(
+        arms,
+        types = "integerish",
+        any.missing = FALSE,
+        min.len = 2,
+        names = "unique"
+      )
+    )$
+    validate_field(
+      "covariates",
+      checkmate::check_list(
+        covariates,
+        types = c("numeric", "list", "character"),
+        any.missing = FALSE,
+        min.len = 2,
+        names = "unique"
+      )
     )
-  }
 
-  err <-
-    checkmate::check_list(
-      covariates,
-      types = c("numeric", "list", "character"),
-      any.missing = FALSE,
-      min.len = 2,
-      names = "unique"
-    )
-  if (err != TRUE) {
-    validation_errors <-
-      append_error(validation_errors, "covariates", err)
-  }
-
-  response <- list()
   for (c_name in names(covariates)) {
     c_content <- covariates[[c_name]]
 
-    err <- checkmate::check_list(
-      c_content,
-      any.missing = FALSE,
-      len = 2,
-    )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}]"),
-          err
+    validation$validate_field(
+      glue::glue("covariates[{c_name}]"),
+      checkmate::check_list(
+        c_content,
+        any.missing = FALSE,
+        len = 2,
+      ),
+      checkmate::check_names(
+          names(c_content),
+          permutation.of = c("weight", "levels"),
         )
-    }
-    err <- checkmate::check_names(
-      names(c_content),
-      permutation.of = c("weight", "levels"),
     )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}]"),
-          err
-        )
-    }
 
-    # check covariate weight
-    err <- checkmate::check_numeric(c_content$weight,
-      lower = 0,
-      finite = TRUE,
-      len = 1,
-      null.ok = FALSE
+    validation$validate_field(
+      glue::glue("covariates[{c_name}][weight]"),
+      checkmate::check_numeric(c_content$weight,
+        lower = 0,
+        finite = TRUE,
+        len = 1,
+        null.ok = FALSE
+      )
     )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}][weight]"),
-          err
-        )
-    }
 
-    err <- checkmate::check_character(c_content$levels,
-      min.chars = 1,
-      min.len = 2,
-      unique = TRUE
+    validation$validate_field(
+      glue::glue("covariates[{c_name}][levels]"),
+      checkmate::check_character(c_content$levels,
+        min.chars = 1,
+        min.len = 2,
+        unique = TRUE
+      )
     )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}][levels]"),
-          err
-        )
-    }
   }
 
   # check probability
   p <- as.numeric(p)
-  err <- checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
-  if (err != TRUE) {
-    validation_errors <-
-      append_error(
-        validation_errors,
-        "p",
-        err
-      )
-  }
 
-  if (length(validation_errors) > 0) {
+  validation$validate_field(
+    "p",
+    checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
+  )
+
+  if(validation$has_errors()) {
     res$status <- 400
     return(list(
       error = "Input validation failed",
-      validation_errors = validation_errors
+      validation_errors = validation$get_errors()
     ))
   }
 
