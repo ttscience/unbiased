@@ -565,7 +565,8 @@ Lists of randomization codes were generated for each iteration based on the func
 rand_data <- tibble::tibble()
 
 for (i in unique(data$simnr)) {
-  simulation_result <-   block_rand(
+  simulation_result <-   
+    block_rand(
     N = n,
     block = c(3, 6, 9),
     n_groups = 3,
@@ -578,21 +579,11 @@ for (i in unique(data$simnr)) {
         age = c("0", "1"),
         wound_size = c("0", "1")
       )
-  )
+  ) |> dplyr::mutate(simnr = i) |>
+    select(simnr, everything())
   
   rand_data <- dplyr::bind_rows(rand_data, simulation_result)
 }
-```
-
-```{r, rand-data-2}
-# add number of iterations
-rand_data <-
-  cbind(simnr = rep(
-    unique(data$simnr),
-    times = rep(1, times = length(unique(data$simnr))) * nrow(rand_data) /
-      2
-  ), rand_data) %>%
-  mutate(simnr = as.factor(simnr))
 ```
 
 In the next step, patients were assigned to research groups using the `block_results` function. For each iteration, the first available code from the randomization list that meets specific conditions is selected, and then it is removed from the list of available codes. Based on this, research arms are generated to ensure the appropriate number of patients in each group (based on the assumed ratio of 1:1:1).
@@ -607,7 +598,7 @@ block_results <- function(data, datarand) {
       
     datay <- datarand[datarand$simnr == k, ]
       
-    for (i in data$id) {
+    for (i in datax$id) {
       
        matching_rows <-
         which(
