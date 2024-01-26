@@ -3,10 +3,10 @@
 #* Set up a new study for randomization defining it's parameters
 #*
 #*
-#* @param identifier:str Study code, at most 12 characters.
-#* @param name:str Full study name.
-#* @param method:str Function used to compute within-arm variability, must be one of: sd, var, range
-#* @param p:dbl Proportion of randomness (0, 1) in the randomization vs determinism (e.g. 0.85 equals 85% deterministic)
+#* @param identifier:object Study code, at most 12 characters.
+#* @param name:object Full study name.
+#* @param method:object Function used to compute within-arm variability, must be one of: sd, var, range
+#* @param p:object Proportion of randomness (0, 1) in the randomization vs determinism (e.g. 0.85 equals 85% deterministic)
 #* @param arms:object Arm names (character) with their ratios (integer).
 #* @param covariates:object Covariate names (character), allowed levels (character) and covariate weights (double).
 #*
@@ -183,7 +183,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   # Response ----------------------------------------------------------------
 
   if (!is.null(r$error)) {
-    res$status <- 409
+    res$status <- 503
     return(list(
       error = "There was a problem creating the study",
       details = r$error
@@ -212,16 +212,19 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 #*
 
 function(study_id, current_state, req, res) {
+  collection <- checkmate::makeAssertCollection()
   # Assertion connection with DB
-  checkmate::assert(DBI::dbIsValid(db_connection_pool), .var.name = "DB connection")
+  checkmate::assert(DBI::dbIsValid(db_connection_pool), .var.name = "DB connection",
+                    add = collection)
 
 
   # Check whether study with study_id exists
-  checkmate::expect_subset(x = req$args$study_id,
+  checkmate::assert(checkmate::check_subset(x = req$args$study_id,
                            choices =
                              dplyr::tbl(db_connection_pool, "study") |>
                              dplyr::select(id) |>
-                             dplyr::pull())
+                             dplyr::pull()), .var.name = "Study ID",
+                    add = collection)
 
   # Retrieve study details, especially the ones about randomization
   method_randomization <-
@@ -230,7 +233,17 @@ function(study_id, current_state, req, res) {
     dplyr::select(method) |>
     dplyr::pull()
 
-  checkmate::assert_scalar(method_randomization, null.ok = FALSE)
+  checkmate::assert(checkmate::check_scalar(method_randomization, null.ok = FALSE),
+                    .var.name = "Randomization method",
+                    add = collection)
+
+  if (length(collection$getMessages()) > 0) {
+    res$status <- 400
+    return(list(
+      error = "Study input validation failed",
+      validation_errors = collection$getMessages()
+    ))
+  }
 
   # Dispatch based on randomization method to parse parameters
   source("parse_pocock.R")
@@ -253,7 +266,6 @@ function(study_id, current_state, req, res) {
       minimisation_pocock = tryCatch({
         do.call(unbiased:::randomize_minimisation_pocock, params)
       }, error = function(e) {
-        # browser()
         res$status <- 400
         res$body = glue::glue("Error message: {conditionMessage(e)}")
         logger::log_error("Error: {err}", err=e)
@@ -267,8 +279,8 @@ function(study_id, current_state, req, res) {
     dplyr::collect()
 
   save_patient(study_id, arm$arm_id) |>
-    dplyr::mutate(arm_name = arm$name) |>
-    dplyr::rename(patient_id = id) |>
-    as.list()
+      dplyr::mutate(arm_name = arm$name) |>
+      dplyr::rename(patient_id = id) |>
+      as.list()
 }
 
