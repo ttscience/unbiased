@@ -213,11 +213,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 
 function(study_id, current_state, req, res) {
   collection <- checkmate::makeAssertCollection()
-  # Assertion connection with DB
-  checkmate::assert(DBI::dbIsValid(db_connection_pool), .var.name = "DB connection",
-                    add = collection)
-
-
+ 
   # Check whether study with study_id exists
   checkmate::assert(checkmate::check_subset(x = req$args$study_id,
                            choices =
