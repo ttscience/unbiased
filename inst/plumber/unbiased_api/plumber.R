@@ -22,6 +22,30 @@ function(api) {
         post$requestBody$
         content$`application/json`$schema$properties$
         arms$example <- list("placebo" = 1, "active" = 1)
+      spec$
+        paths$
+        `/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$schema$properties$
+        identifier$example <- "CSN"
+      spec$
+        paths$
+        `/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$schema$properties$
+        p$example <- 0.85
+      spec$
+        paths$`/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$
+        schema$properties$
+        name$example <- "Clinical Study Name"
+      spec$
+        paths$`/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$
+        schema$properties$
+        method$example <- "range"
       # example of how to define covariates in minimisation pocock
       spec$
         paths$`/study/minimisation_pocock`$
