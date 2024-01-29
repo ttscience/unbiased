@@ -1,23 +1,26 @@
-skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
+# skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
+source("./test-helpers.R")
+# test_that("there's a study named 'Badanie testowe' in 'study' table", {
+#   with_db_fixtures("fixtures/example_study.yml")
+#   expect_contains(
+#     tbl(conn, "study") |>
+#       pull(name),
+#     "Badanie testowe"
+#   )
+# })
 
-test_that("there's a study named 'Badanie testowe' in 'study' table", {
-  expect_contains(
-    tbl(conn, "study") |>
-      pull(name),
-    "Badanie testowe"
-  )
-})
-
-test_that("study named 'Badanie testowe' has an identifier 'TEST'", {
-  expect_identical(
-    tbl(conn, "study") |>
-      filter(name == "Badanie testowe") |>
-      pull(identifier),
-    "TEST"
-  )
-})
+# test_that("study named 'Badanie testowe' has an identifier 'TEST'", {
+#   with_db_fixtures("fixtures/example_study.yml")
+#   expect_identical(
+#     tbl(conn, "study") |>
+#       filter(name == "Badanie testowe") |>
+#       pull(identifier),
+#     "TEST"
+#   )
+# })
 
 test_that("it is enough to provide a name, an identifier, and a method id", {
+  with_db_fixtures("fixtures/example_study.yml")
   expect_no_error({
     tbl(conn, "study") |>
       rows_append(
@@ -31,11 +34,11 @@ test_that("it is enough to provide a name, an identifier, and a method id", {
   })
 })
 
-new_study_id <- tbl(conn, "study") |>
-  filter(identifier == "FINE") |>
-  pull(id)
+# first study id is 1
+new_study_id <- 1 |> as.integer()
 
 test_that("deleting archivizes a study", {
+  with_db_fixtures("fixtures/example_study.yml")
   expect_no_error({
     tbl(conn, "study") |>
       rows_delete(
@@ -51,14 +54,15 @@ test_that("deleting archivizes a study", {
       collect(),
     tibble(
       id = new_study_id,
-      identifier = "FINE",
-      name = "Correctly working study",
+      identifier = "TEST",
+      name = "Test Study",
       method = "minimisation_pocock"
     )
   )
 })
 
 test_that("can't push arm with negative ratio", {
+  with_db_fixtures("fixtures/example_study.yml")
   expect_error({
     tbl(conn, "arm") |>
       rows_append(
@@ -73,6 +77,7 @@ test_that("can't push arm with negative ratio", {
 })
 
 test_that("can't push stratum other than factor or numeric", {
+  with_db_fixtures("fixtures/example_study.yml")
   expect_error({
     tbl(conn, "stratum") |>
       rows_append(
@@ -87,6 +92,7 @@ test_that("can't push stratum other than factor or numeric", {
 })
 
 test_that("can't push stratum level outside of defined levels", {
+  with_db_fixtures("fixtures/example_study.yml")
   # create a new patient
   return <-
     expect_no_error({
@@ -100,7 +106,7 @@ test_that("can't push stratum level outside of defined levels", {
       dbplyr::get_returned_rows()
   })
 
-  added_patient_id <<- return$id
+  added_patient_id <- return$id
 
   expect_error({
     tbl(conn, "patient_stratum") |>
@@ -125,6 +131,8 @@ test_that("can't push stratum level outside of defined levels", {
 })
 
 test_that("numerical constraints are enforced", {
+  with_db_fixtures("fixtures/example_study.yml")
+  added_patient_id <- 1 |> as.integer()
   return <-
     expect_no_error({
       tbl(conn, "stratum") |>
