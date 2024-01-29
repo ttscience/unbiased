@@ -1,23 +1,4 @@
-# skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
 source("./test-helpers.R")
-# test_that("there's a study named 'Badanie testowe' in 'study' table", {
-#   with_db_fixtures("fixtures/example_study.yml")
-#   expect_contains(
-#     tbl(conn, "study") |>
-#       pull(name),
-#     "Badanie testowe"
-#   )
-# })
-
-# test_that("study named 'Badanie testowe' has an identifier 'TEST'", {
-#   with_db_fixtures("fixtures/example_study.yml")
-#   expect_identical(
-#     tbl(conn, "study") |>
-#       filter(name == "Badanie testowe") |>
-#       pull(identifier),
-#     "TEST"
-#   )
-# })
 
 test_that("it is enough to provide a name, an identifier, and a method id", {
   with_db_fixtures("fixtures/example_study.yml")

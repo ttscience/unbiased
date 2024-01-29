@@ -1,6 +1,5 @@
 # Named with '0' to make sure that this one runs first because it validates
 # basic properties of the database
-# skip_if_not(is_CI(), "DB tests require complex setup through Docker Compose")
 
 source("./test-helpers.R")
 
