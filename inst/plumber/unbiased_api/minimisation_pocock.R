@@ -106,10 +106,10 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 
     # check covariate weight
     err <- checkmate::check_numeric(c_content$weight,
-      lower = 0,
-      finite = TRUE,
-      len = 1,
-      null.ok = FALSE
+                                    lower = 0,
+                                    finite = TRUE,
+                                    len = 1,
+                                    null.ok = FALSE
     )
     if (err != TRUE) {
       validation_errors <-
@@ -121,9 +121,9 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     }
 
     err <- checkmate::check_character(c_content$levels,
-      min.chars = 1,
-      min.len = 2,
-      unique = TRUE
+                                      min.chars = 1,
+                                      min.len = 2,
+                                      unique = TRUE
     )
     if (err != TRUE) {
       validation_errors <-
@@ -136,7 +136,6 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   }
 
   # check probability
-  p <- as.numeric(p)
   err <- checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
   if (err != TRUE) {
     validation_errors <-
@@ -220,10 +219,10 @@ function(study_id, current_state, req, res) {
 
   # Check whether study with study_id exists
   checkmate::assert(checkmate::check_subset(x = req$args$study_id,
-                           choices =
-                             dplyr::tbl(db_connection_pool, "study") |>
-                             dplyr::select(id) |>
-                             dplyr::pull()), .var.name = "Study ID",
+                                            choices =
+                                              dplyr::tbl(db_connection_pool, "study") |>
+                                              dplyr::select(id) |>
+                                              dplyr::pull()), .var.name = "Study ID",
                     add = collection)
 
   # Retrieve study details, especially the ones about randomization
@@ -278,9 +277,22 @@ function(study_id, current_state, req, res) {
     dplyr::select(arm_id = id, name, ratio) |>
     dplyr::collect()
 
-  save_patient(study_id, arm$arm_id) |>
+  randomized_patient <- save_patient(study_id, arm$arm_id)
+
+  if (!is.null(randomized_patient$error)) {
+    res$status <- 503
+    return(list(
+      error = "There was a problem randomizing a patient",
+      details = randomized_patient$error
+    ))
+  } else {
+    randomized_patient <-
+      randomized_patient |>
       dplyr::mutate(arm_name = arm$name) |>
       dplyr::rename(patient_id = id) |>
       as.list()
+
+    return(randomized_patient)
+  }
 }
 

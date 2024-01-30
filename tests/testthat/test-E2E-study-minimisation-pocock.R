@@ -45,7 +45,7 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
     resp_body_json()
 
   testthat::expect_equal(response$status_code, 200)
-  expect_number(response_patient_body$patient_id, lower = 1)
+  checkmate::expect_number(response_patient_body$patient_id, lower = 1)
 
   # Endpoint Response Structure Test
   checkmate::expect_names(names(response_patient_body), identical.to = c("patient_id", "arm_id", "arm_name"))
@@ -68,6 +68,7 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
     }, error = function(e) e)
 
   checkmate::expect_set_equal(response_study$status, 400, label = "HTTP status code")
+
 
   })
 
