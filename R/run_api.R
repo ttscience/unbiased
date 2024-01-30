@@ -12,8 +12,15 @@
 #'
 #' @export
 run_unbiased <- function(host = "0.0.0.0", port = 3838, ...) {
-  assign("db_connection_pool", create_db_connection_pool(), envir = globalenv())
+  host <- Sys.getenv("UNBIASED_HOST", "0.0.0.0")
+  port <- as.integer(Sys.getenv("UNBIASED_PORT", "3838"))
+  assign("db_connection_pool",
+    unbiased:::create_db_connection_pool(),
+    envir = globalenv()
+  )
+
   on.exit({
+    db_connection_pool <- get("db_connection_pool", envir = globalenv())
     pool::poolClose(db_connection_pool)
     assign("db_connection_pool", NULL, envir = globalenv())
   })
