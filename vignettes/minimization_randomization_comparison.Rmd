@@ -1,0 +1,707 @@
+---
+title: "Comparison of Minimization Randomization with Other Randomization Methods - balance of covariates"
+author: "Aleksandra Duda - Tranistion Technologies Science"
+date: "`r Sys.Date()`"
+output:
+  html_vignette:
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{Comparison of Minimization Randomization with Other Randomization Methods - balance of covariates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: references.bib
+link-citations: true
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+)
+```
+
+## Introduction
+
+Randomization in clinical trials is the gold standard and is widely considered the best design for evaluating the effectiveness of new treatments compared to alternative treatments (standard of care) or placebo. Indeed, the selection of an appropriate randomisation is as important as the selection of an appropriate statistical analysis for the study and the analysis strategy, whether based on randomisation or on a population model (@berger2021roadmap).
+
+One of the primary advantages of randomization, particularly simple randomization (usually using flipping a coin method), is its ability to balance confounding variables across treatment groups. This is especially effective in large sample sizes (n > 200), where the random allocation of participants helps to ensure that both known and unknown confounders are evenly distributed between the study arms. This balanced distribution contributes significantly to the internal validity of the study, as it minimizes the risk of selection bias and confounding influencing the results (@lim2019randomization).
+
+It's important to note, however, that while simple randomization is powerful in large trials, it may not always guarantee an even distribution of confounding factors in trials with smaller sample sizes (n < 100). In such cases, the random allocation might result in imbalances in baseline characteristics between groups, which can affect the interpretation of the treatment's effectiveness. This potential limitation sets the stage for considering additional methods, such as stratified randomization, or dynamic minimization algorithms to address these challenges in smaller trials (@kang2008issues).
+
+This document provides a summary of the comparison of three randomization methods: simple randomization, block randomization, and adaptive randomization. Simple randomization and adaptive randomization (minimization method) are tools available in the `unbiased` package as `randomize_simple` and `randomize_minimisation_pocock` functions (@unbiased). The comparison aims to demonstrate the superiority of adaptive randomization (minimization method) over other methods in assessing the least imbalance of accompanying variables between therapeutic groups. Monte Carlo simulations were used to generate data, utilizing the `simstudy` package (@goldfeld2020simstudy). Parameters for the binary distribution of variables were based on data from the publication by @mrozikiewicz2023allogenic and information from researchers.
+
+The document structure is as follows: first, data will be simulated using the Monte-Carlo method, in the next step, for each of the given simulations, study groups will be assigned to all patients using the three randomisation methods - these data will be summarised for the first iteration using statistical tests, finally, the results based on the standardised mean difference (SMD) test will be discussed in visual form (boxplot, violin plot) and as a percentage of success achieved in each method for the given precision (tabular summary).
+
+```{r setup, warning = FALSE, message=FALSE}
+# load packages
+library(unbiased)
+library(dplyr)
+library(devtools)
+library(simstudy)
+library(tableone)
+library(checkmate)
+library(ggplot2)
+library(gt)
+library(gtsummary)
+library(truncnorm)
+library(tidyr)
+library(randomizeR)
+```
+
+## The randomization methods considered for comparison 
+
+In the process of comparing the balance of covariates among randomization methods, three randomization methods have been selected for evaluation:
+
+- **simple randomization** - simple coin toss, algorithm that gives participants equal chances of being assigned to a particular arm. The method's advantage lies in its simplicity and the elimination of predictability. However, due to its complete randomness, it may lead to imbalance in sample sizes between arms and imbalances between prognostic factors. For a large sample size (n > 200), simple randomisation gives a similar number of generated participants in each group. For a small sample size (n < 100), it results in an imbalance (@kang2008issues).
+
+- **block randomization** - a randomization method that takes into account defined covariates for patients. The method involves assigning patients to therapeutic arms in blocks of a fixed size, with the recommendation that the blocks have different sizes. This, to some extent, reduces the risk of researchers predicting future arm assignments. In contrast to simple randomization, the block method aims to balance the number of patients within the block, hence reducing the overall imbalance between arms (@rosenberger2015randomization).
+
+- **adaptive randomization using minimization method** based on @pocock1975sequential algorithm - - this randomization approach aims to balance prognostic factors across treatment arms within a clinical study. It functions by evaluating the total imbalance of these factors each time a new patient is considered for the study. The minimization method computes the overall imbalance for each potential arm assignment of the new patient, considering factors like variance or other specified criteria. The patient is then assigned to the arm where their addition results in the smallest total imbalance. This assignment is not deterministic but is made with a predetermined probability, ensuring some level of randomness in arm allocation. This method is particularly useful in trials with multiple prognostic factors or in smaller studies where traditional randomization might fail to achieve balance.
+
+## Assessment of covariate balance
+
+In the proposed approach to the assessment of randomization methods, the primary objective is to evaluate each method in terms of achieving balance in the specified covariates. The assessment of balance aims to determine whether the distributions of covariates are similarly balanced in each therapeutic group. Based on the literature, standardized mean differences (SMD) have been employed for assessing balance (@berger2021roadmap).
+
+The SMD method is one of the most commonly used statistics for assessing the balance of covariates, regardless of the unit of measurement. It is a statistical measure for comparing differences between two groups. The covariates in the examined case are expressed as binary variables. In the case of categorical variables, SMD is calculated using the following formula (@zhang2019balance):
+
+\[ SMD = \frac{{p_1 - p_2}}{{\sqrt{\frac{{p_1 \cdot (1 - p_1) + p_2 \cdot (1 - p_2)}}{2}}}} \],
+
+where:
+
+- \( p_1 \) is the proportion in the first arm,
+
+- \( p_2 \) is the proportion in the second arm.
+
+## Definied number of patients and number of iterations
+
+In this simulation, we are using a real use case - the planned FootCell study - non-commercial clinical research in the area of civilisation diseases - to guide our data generation process. For the FootCell study, it is anticipated that a total of 105 patients will be randomized into the trial. These patients will be equally divided among three research groups - Group A, Group B, and Group C - with each group comprising 35 patients.
+
+The number of iterations, indicates the number of iterations included in the Monte-Carlo simulations to accumulate data for the given parameters.
+
+```{r, define-parameters}
+# defined number of patients
+n <- 105
+# defined number of iterations
+no_of_iterations <- 20
+```
+
+## Defining parameters for Monte-Carlo simulation
+
+The distribution of parameters for individual covariates, which will subsequently be used to validate randomization methods, has been defined using the publication @mrozikiewicz2023allogenic on allogenic interventions..
+
+The publication describes the effectiveness of comparing therapy using ADSC (Adipose-Derived Stem Cells) gel versus standard therapy with fibrin gel for patients in diabetic foot ulcer treatment. The FootCell study also aims to assess the safety of advanced therapy involving live ASCs (Adipose-Derived Stem Cells) in the treatment of diabetic foot syndrome, considering two groups treated with ADSCs (one or two administrations) compared to fibrin gel. Therefore, appropriate population data have been extracted from the publication to determine distributions that can be maintained when designing the FootCell study.
+
+In the process of defining the study for randomization, the following covariates have been selected:
+
+- **gender** [male/female],
+
+- **diabetes type** [type I/type II],
+
+- **HbA1c** [up to 9/9 to 11] [%],
+
+- **tpo2** [up to 50/above 50] [mmHg],
+
+- **age** [up to 55/above 55] [years],
+
+- **wound size** [up to 2/above 2] [cm\(^2\)].
+
+In the case of the variables gender and diabetes type in the publication @mrozikiewicz2023allogenic, they were expressed in the form of frequencies. The remaining variables were presented in terms of measures of central tendency along with an indication of variability, as well as minimum and maximum values. To determine the parameters for the binary distribution, the truncated normal distribution available in the `truncnorm` package was utilized. The truncated normal distribution is often used in statistics and probability modeling when dealing with data that is constrained to a certain range. It is particularly useful when you want to model a random variable that cannot take values beyond certain limits (@burkardt2014truncated).
+
+To generate the necessary information for the remaining covariates, a function `simulate_proportions_trunc` was written, utilizing the `rtruncnorm function` (@truncnorm). The parameters `mean`, `sd`, `lower`, `upper` were taken from the publication and based on expertise regarding the ranges for the parameters.
+
+The results are presented in a table, assuming that the outcome refers to the first category of each parameter.
+
+```{r, simulate-proportions-function}
+# simulate parameters using truncated normal distribution
+simulate_proportions_trunc <-
+  function(n, lower, upper, mean, sd, threshold) {
+    simulate_data <-
+      rtruncnorm(
+        n = n,
+        a = lower,
+        b = upper,
+        mean = mean,
+        sd = sd) <= threshold
+    
+    sum(simulate_data == TRUE)/n
+  }
+```
+
+```{r, parameters-result-table, tab.cap = "Summary of literature verification about strata selected parameters (Mrozikiewicz-Rakowska et. al., 2023)"}
+
+set.seed(123)
+
+data.frame(
+  hba1c = simulate_proportions_trunc(1000, 0, 11, 7.41, 1.33, 9),
+  tpo2 = simulate_proportions_trunc(1000, 30, 100, 53.4, 18.4, 50),
+  age = simulate_proportions_trunc(1000, 0, 100, 59.2, 9.7, 55),
+  wound_size = simulate_proportions_trunc(1000, 0, 20, 2.7, 2.28, 2)
+) |>
+  rename('wound size' = wound_size) |>
+  pivot_longer(cols = everything(),
+               names_to = "parametr",
+               values_to = "proportions") |>
+mutate('first catogory of strata' = c('<=9', '<=50', '<=55', '<=2')) |>
+gt()
+```
+
+## Generate data using Monte-Carlo simulations
+
+Monte-Carlo simulations were used to accumulate the data. This method is designed to model variables based on defined parameters. Variables were defined using the `simstudy` package, utilizing the `defData` function (@goldfeld2020simstudy). As all variables specify proportions, `dist = 'binary'` was used to define the variables. Due to the likely association between the type of diabetes and age – meaning that the older the patient, the higher the probability of having type II diabetes – a relationship with diabetes was established when defining the `age` variable using a logit function `link = "logit"`. The proportions for gender and diabetes were defined by the researchers and were consistent with the literature @mrozikiewicz2023allogenic.
+
+Using the `simulate_data_monte_carlo` function (using `genData` function - `simstudy` package), a data frame was generated with an artificially adopted variable `arm`, which will be filled in by subsequent randomization methods in the arm allocation process for all `n` patients in each iteration.
+
+```{r, defdata}
+# male - 0.9
+def <- simstudy::defData(varname = "sex", formula = "0.9", dist = "binary")
+# type I - 0.15
+def <- simstudy::defData(def, varname = "diabetes_type", formula = "0.15", dist = "binary")
+# <= 9 - 0.888
+def <- simstudy::defData(def, varname = "hba1c", formula = "0.888", dist = "binary")
+# <= 50 - 0.354
+def <- simstudy::defData(def, varname = "tpo2", formula = "0.354", dist = "binary")
+# correlation with diabetes type
+def = simstudy::defData(def, varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary")
+# <= 2 - 0.302
+def = simstudy::defData(def, varname = "wound_size", formula = "0.302", dist = "binary")
+```
+
+```{r, monte-carlo-function}
+simulate_data_monte_carlo <-
+  function(def, n, iterations) {
+    data <- tibble::tibble()
+    
+    for (i in 1:iterations) {
+      generated_data <- genData(n, def) |>
+        dplyr::mutate(simnr = i)
+      data <- rbind(data, generated_data) |>
+        select(simnr, everything())
+      
+    }
+    return(data)
+  }
+```
+
+```{r, create-data}
+data <-
+  simulate_data_monte_carlo(def, n, iterations = no_of_iterations)|>
+  mutate(
+    sex = as.character(sex),
+    age = as.character(age),
+    diabetes_type = as.character(diabetes_type),
+    hba1c = as.character(hba1c),
+    tpo2 = as.character(tpo2),
+    wound_size = as.character(wound_size)
+  ) |> as_tibble()
+```
+
+```{r, data-generate}
+# add arm to tibble
+data <-
+  data |>
+  tibble::add_column(arm = "")
+```
+
+```{r, data-show}
+# first 5 rows of the data
+data[1:5, 2:ncol(data)] |>
+  gt()
+```
+
+## Minimization randomization
+
+To generate appropriate research arms for each simulation, a function called `minimize_results` was written, utilizing the `randomize_minimisation_pocock` function available within the `unbiased` package (@unbiased). The probability parameter was set at the level defined within the function (p = 0.85). In the case of minimization randomization, to verify which type of minimization (with equal weights or unequal weights) was used, three calls to the minimize_results function were prepared:
+
+- **minimize_equal_weights** - each covariate weight takes a value equal to 1 divided by the number of covariates. In this case, the weight is 1/6,
+
+- **minimize_unequal_weights** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 2. The remaining covariates have been assigned a weight of 1.
+
+- **minimize_unequal_weights_2** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 3. The remaining covariates have been assigned a weight of 1.
+
+The tables present information about allocations for the first 5 patients in the initial iteration of the simulation.
+      
+```{r, minimize-results}
+# drawing an arm for each patient
+minimize_results <-
+  function(data, arms, weights) {
+    for (i in unique(data$simnr))
+    {
+      for (j in 1:n)
+      {
+        current_data <- data[data$simnr == i, ]
+        
+        current_state <- current_data[1:j, 3:ncol(current_data)]
+        
+        start <- 1 + (i - 1) * n
+        end <- i * n
+        
+        data[start:end,]$arm[j] <-
+          randomize_minimisation_pocock(
+            arms = arms,
+            current_state = current_state,
+            weights = weights
+          )
+        
+        
+      }
+    }
+    return(data)
+  }
+```
+
+```{r, minimize-equal}
+set.seed(123)
+# eqal weights - 1/6
+minimize_equal_weights <-
+  minimize_results(
+    data = data,
+    arms = c("armA", "armB", "armC")
+  )
+
+minimize_equal_weights[1:5, 2:ncol(minimize_equal_weights)] |>
+  gt()
+```
+
+```{r, minimize-unequal-1}
+set.seed(123)
+# double weights where the covariant is of high clinical significance
+minimize_unequal_weights <-
+  minimize_results(
+    data = data,
+    arms = c("armA", "armB", "armC"),
+    weights = c(
+      "sex" = 1,
+      "diabetes_type" = 1,
+      "hba1c" = 2,
+      "tpo2" = 2,
+      "age" = 1,
+      "wound_size" = 2
+    )
+  )
+
+minimize_unequal_weights[1:5, 2:ncol(minimize_unequal_weights)] |>
+  gt()
+```
+
+```{r, minimize-unequal-2}
+set.seed(123)
+# triple weights where the covariant is of high clinical significance
+minimize_unequal_weights_2 <-
+  minimize_results(
+    data = data,
+    arms = c("armA", "armB", "armC"),
+    weights = c(
+      "sex" = 1,
+      "diabetes_type" = 1,
+      "hba1c" = 3,
+      "tpo2" = 3,
+      "age" = 1,
+      "wound_size" = 3
+    )
+  )
+
+minimize_unequal_weights_2[1:5, 2:ncol(minimize_unequal_weights_2)] |>
+  gt()
+```
+
+The `statistic_table` function was developed to provide information on: the distribution of the number of patients across research arms, and the distribution of covariates across research arms, along with p-value information for statistical analyses used to compare proportions - chi^2, and the exact Fisher's test, typically used for small samples.
+
+The function relies on the use of the `tbl_summary` function available in the `gtsummary` package (@gtsummary).
+
+```{r, statistics-table}
+# generation of frequency and chi^2 statistic values or fisher exact test
+statistics_table <-
+  function(data) {
+    data |>
+      filter(simnr == 1) |>
+      mutate(
+        sex = ifelse(sex == '1', "men", "women"),
+        diabetes_type = ifelse(diabetes_type == "1", "type1", "type2"),
+        hba1c = ifelse(hba1c == '1', "<=9", "(9,11>"),
+        tpo2 = ifelse(tpo2 == '1', "<=50", ">50"),
+        age = ifelse(age == '1', "<=55", ">50"),
+        wound_size = ifelse(wound_size == '1', "<=2", ">2")
+      ) |>
+      tbl_summary(
+        include = c(sex, diabetes_type, hba1c, tpo2, age, wound_size),
+        by = arm
+      ) |>
+      modify_header(label = "") |>
+      modify_header(all_stat_cols() ~  "**{level}**, N = {n}")  |>
+      bold_labels() |>
+      add_p()
+  }
+```
+
+The table presents a statistical summary of results for the first iteration for:
+
+- **Minimization with all weights equal to 1/6**.
+
+```{r, chi2-1, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
+statistics_table(minimize_equal_weights) 
+```
+
+- **Minimization with weights 2:1**.
+
+```{r, chi2-2, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
+statistics_table(minimize_unequal_weights) 
+```
+
+- **Minimization with weights 3:1**.
+
+```{r, chi2-3, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
+statistics_table(minimize_unequal_weights_2) 
+```
+
+## Simple randomization
+
+In the next step, appropriate arms were generated for patients using simple randomization, available through the `unbiased` package - the `randomize_simple` function (@unbiased). The `simple_results` function was called within `simple_data`, considering the initial assumption of assigning patients to three arms in a 1:1:1 ratio.
+
+Since this is simple randomization, it does not take into account the initial covariates, and treatment assignment occurs randomly (flip coin method). The tables illustrate an example of data output for simple randomization in the first iteration and summary statistics including a summary of the statistical tests.
+
+```{r, simple-result}
+# simple randomization
+simple_results <-
+  function(data, arms, ratio) {
+    for (i in unique(data$simnr))
+    {
+      for (j in 1:n)
+      {
+        current_data <- data[data$simnr == i, ]
+        
+        start <- 1 + (i - 1) * n
+        end <- i * n
+        
+        data[start:end,]$arm[j] <-
+           randomize_simple(arms, ratio)
+        
+        
+      }
+    }
+    return(data)
+  }
+```
+
+```{r, simple-data}
+set.seed(123)
+
+simple_data <-
+  simple_results(data, c("armA", "armB", "armC"), c("armB" = 1L,"armA" = 1L, "armC" = 1L))
+
+simple_data[1:5, 2:ncol(simple_data)] |>
+  gt()
+```
+
+```{r, chi2-4, tab.cap = "Summary of proportion test for simple randomization"}
+statistics_table(simple_data)
+```
+
+## Block randomization
+
+Block randomization, as opposed to minimization and simple randomization methods, was developed based on the `rbprPar` function available in the `randomizeR` package (@randomizeR). Using this, the `block_rand` function was created, which, based on the defined number of patients, arms, and a list of stratifying factors, generates a randomization list with a length equal to the number of patients multiplied by the product of categories in each covariate. In the case of the specified data in the document, for one iteration, it amounts to **105 * 2^6 = 6720 rows**. This ensures that there is an appropriate number of randomisation codes for each opportunity. In the case of equal characteristics, it is certain that there are the right number of codes for the defined `n` patients.
+
+Based on the `block_rand` function, it is possible to generate a randomisation list, based on which patients will be allocated, with characteristics from the output `data` frame. Due to the 3 arms and the need to blind the allocation of consecutive patients, block sizes 3,6 and 9 were used for the calculations.
+
+In the next step, patients were assigned to research groups using the `block_results` function (based on the list generated by the function `block_rand`). For each iteration, the first available code from the randomization list that meets specific conditions is selected, and then it is removed from the list of available codes. Based on this, research arms are generated to ensure the appropriate number of patients in each group (based on the assumed ratio of 1:1:1).
+
+The tables show the assignment of patients to groups using block randomisation for the first 5 rows, first iteration and summary statistics including a summary of the statistical tests.
+
+```{r, block-rand}
+# Function to generate a randomisation list
+block_rand <-
+  function(N, block, n_groups, strata) {
+    strata_grid = expand.grid(strata)
+    
+    strata_n = nrow(strata_grid)
+    
+    ratio = rep(1, n_groups)
+    
+    arm_names = LETTERS[1:n_groups]
+    
+    genSeq_list <- lapply(seq_len(strata_n), function(i) {
+      rand <- rpbrPar(
+        N = N,
+        rb = block,
+        K = n_groups,
+        ratio = ratio,
+        groups = arm_names,
+        filledBlock = FALSE
+      )
+      getRandList(genSeq(rand))[1,]
+    })
+    df_list = tibble::tibble()
+    for (i in seq_len(strata_n)) {
+      local_df <- strata_grid |>
+        dplyr::slice(i) |>
+        dplyr::mutate(count = N) |>
+        tidyr::uncount(count) |>
+        tibble::add_column(rand_arm = genSeq_list[[i]])
+      df_list <- rbind(local_df, df_list)
+    }
+    return(df_list)
+  }
+```
+
+```{r, block-results}
+# Generate a research arm for patients in each iteration
+block_results <- function(data) {
+  rand_data <- tibble::tibble()
+  
+  for (i in unique(data$simnr)) {
+    simulation_result <-
+      block_rand(
+        N = n,
+        block = c(3, 6, 9),
+        n_groups = 3,
+        strata =
+          list(
+            sex = c("0", "1"),
+            diabetes_type = c("0", "1"),
+            hba1c = c("0", "1"),
+            tpo2 = c("0", "1"),
+            age = c("0", "1"),
+            wound_size = c("0", "1")
+          )
+      ) |> dplyr::mutate(simnr = i) |>
+      select(simnr, everything())
+    
+    rand_data <- dplyr::bind_rows(rand_data, simulation_result)
+  }
+  
+  datarand <- rand_data
+  
+  for (k in unique(data$simnr)) {
+    datax <- data[data$simnr == k, ]
+    
+    datay <- datarand[datarand$simnr == k, ]
+    
+    for (i in data$id) {
+      matching_rows <-
+        which(
+          datay[2] == datax[3][datax[2] == i] &
+            datay[3] == datax[4][datax[2] == i] &
+            datay[4] == datax[5][datax[2] == i] &
+            datay[5] == datax[6][datax[2] == i] &
+            datay[6] == datax[7][datax[2] == i] &
+            datay[7] == datax[8][datax[2] == i]
+        )
+      
+      if (length(matching_rows) > 0) {
+        id <- i
+        arm <- datay$rand_arm[matching_rows[1]]
+        
+        start <- 1 + (k - 1) * n
+        end <- k * n
+        
+        data[start:end,]$arm[i] <- arm
+        
+        # Delate row with randomization list
+        datay <- datay[-matching_rows[1], , drop = FALSE]
+      }
+    }
+  }
+  
+  return(data)
+}
+```
+
+```{r, block-data-show}
+set.seed(123)
+
+block_data <-
+  block_results(data)
+
+block_data[1:5, 2:ncol(block_data)] |>
+  gt()
+```
+
+```{r, chi2-5,  tab.cap = "Summary of proportion test for simple randomization"}
+statistics_table(block_data)
+```
+
+## Check balance using smd test
+
+In order to select the test and define the precision at a specified level, above which we assume no imbalance, a literature analysis was conducted based on publications such as @lee2021estimating, @austin2009balance, @doah2021impact, @brown2020novel, @nguyen2017double, @sanchez2003effect, @lee2022propensity, @berger2021roadmap.
+
+To assess the balance for covariates between the research groups A, B, C, the Standardized Mean Difference (SMD) test was employed, which compares two groups. Since there are three groups in the example, the SMD test is computed for each pair of comparisons: A vs B, A vs C, and B vs C. The average SMD test for a given covariate is then calculated based on these comparisons.
+
+In the literature analysis, the precision level ranged between 0.1-0.2. For small samples, it was expected that the SMD test would exceed 0.2 (@austin2009balance). Additionally, according to the publication by @sanchez2003effect, there is no golden standard that dictates a specific threshold for the SMD test to be considered balanced. Generally, the smaller the SMD test, the smaller the difference in covariate imbalance.
+
+In the analyzed example, due to the sample size of 105 patients, a threshold of 0.2 for the SMD test was adopted.
+
+A function called `smd_covariants_data` was written to generate frames that produce the SMD test for each covariate in each iteration, utilizing the `CreateTableOne` function available in the `tableone` package (@tableone). In cases where the test result is <0.001, a value of 0 was assigned.
+
+The results for each randomization method were stored in the `cov_balance_data`.
+
+```{r, define-strata-vars}
+# definied covariants, and strata
+vars = c("sex", "age", "diabetes_type", "wound_size", "tpo2", "hba1c")
+strata = "arm"
+```
+
+```{r, smd-covariants-data}
+smd_covariants_data <-
+  function(data, vars, strata) {
+    x <-
+      rep(unique(data$simnr), times = rep(1, times = length(unique(data$simnr))) * length(vars))
+    
+    result_table <-
+      data.frame(simnr = x, covariants = rep(vars, length(unique(data$simnr)))) |>
+      tibble::add_column(results = "")
+    
+    for (i in 1:length(unique(data$simnr))) {
+      current_data <- data[data$simnr == i,]
+      
+      # check SMD for any covariants
+      tab <-
+        CreateTableOne(vars = vars,
+                       data = current_data,
+                       strata = strata)
+      results_smd <- print(tab, smd = TRUE, TEST = FALSE) |>
+        as.data.frame()
+      results_smd <-
+        results_smd[2:nrow(results_smd),] |>
+        mutate(SMD = case_when(SMD == "<0.001" ~ "0",
+                               TRUE ~ SMD),
+               SMD = as.numeric(SMD)) 
+      results <- as.numeric(results_smd$SMD)
+      
+      start <- 1 + (i - 1) * length(vars)
+      end <- i * length(vars)
+      
+      result_table[start:end, ]$results <- results
+    }
+    result_table <-
+      result_table |>
+      mutate(results = as.numeric(results))
+    return(result_table)
+  }
+```
+
+```{r, cov-balance-data, echo = TRUE, results='hide'}
+cov1 <-
+  smd_covariants_data(data = minimize_equal_weights,
+                vars = vars,
+                strata = strata) |>
+  tibble::add_column(method = "minimize equal")
+cov2 <-
+  smd_covariants_data(data = minimize_unequal_weights,
+                vars = vars,
+                strata = strata) |>
+  tibble::add_column(method = "minimize unequal 2:1")
+cov3 <-
+  smd_covariants_data(data = simple_data,
+                vars = vars,
+                strata = strata) |>
+  tibble::add_column(method = "simple randomization")
+
+cov4 <-
+  smd_covariants_data(
+    data = block_data,
+    vars = vars,
+    strata = strata
+  ) |>
+  tibble::add_column(method = "block randomization")
+
+cov5 <-
+  smd_covariants_data(
+    data = minimize_unequal_weights_2,
+    vars = vars,
+    strata = strata
+  ) |>
+  tibble::add_column(method = "minimize unequal 3:1")
+
+
+cov_balance_data <-
+  bind_rows(cov1, cov2, cov3, cov4, cov5)
+```
+
+Below are the results of the SMD test presented in the form of boxplot and violin plot, depicting the outcomes for each randomization method. The red dashed line indicates the adopted precision threshold.
+
+- **Boxplot of the combined results**
+
+```{r, boxplot, fig.cap= "Summary average smd in each randomization methods", warning=FALSE, fig.width=9, fig.height=6}
+# boxplot
+cov_balance_data |>
+  select(simnr, results, method) |>
+  group_by(simnr, method) |>
+  mutate(results = mean(results)) |>
+  distinct()  |>
+  ggplot(aes(x = method, y = results, fill = method)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0.2, linetype = "dashed", color = "red") +
+  theme_bw()
+```
+
+- **Violin plot**
+
+```{r, violinplot, fig.cap= "Summary smd in each randomization methods in each covariants", warning = FALSE, fig.width=9, fig.height=6}
+# violin plot 
+cov_balance_data |>
+  ggplot(aes(x = method, y = results, fill = covariants)) +
+  geom_violin() +
+  geom_hline(yintercept = 0.2,
+             linetype = "dashed",
+             color = "red") +
+  theme_bw()
+```
+
+- **Summary table of success**
+
+Based on the specified precision threshold of 0.2, a function defining randomization success, named `success_power`, was developed. If the SMD test value for each covariate in a given iteration is above 0.2, the function defines the analysis data as 'failure' - 0; otherwise, it is defined as 'success' - 1.
+
+The final success power is calculated as the sum of successes in each iteration divided by the total number of specified iterations.
+
+The results  are summarized in a table as the percentage of success for each randomization method.
+
+```{r, success-power}
+# function defining success of randomisation
+success_power <-
+  function(cov_data) {
+    result_table <-
+      data.frame(simnr = unique(cov_data$simnr),
+                 results = numeric(length(unique(cov_data$simnr))))
+    for (i in 1:length(unique(data$simnr))) {
+      current_data <- cov_data[cov_data$simnr == i,]
+      
+      results <- ifelse(any(current_data$results > 0.2), 0, 1)
+      result_table$results[i] <- results
+      
+      success <-
+        sum(result_table$results) / nrow(result_table) * 100
+      
+    }
+    
+    return(success)
+    
+  }
+```
+
+```{r, success-result-data, tab.cap = "Summary of percent success in each randomization methods"}
+data.frame(
+  method = c(
+    'minimize equal weights',
+    'minimize unequal weights 2:1',
+    'simple randomization',
+    'block randomization',
+    'minimize unequal weights 3:1'
+  ),
+  results_power = c(success_power(cov1), success_power(cov2), success_power(cov3), success_power(cov4), success_power(cov5))
+) |>
+  as.data.frame() |>
+  rename(`power results [%]` = results_power) |>
+  gt()
+```
+
+## Conclusion
+
+Considering all three randomization methods: minimization, block randomization, and simple randomization, minimization performs the best in terms of covariate balance. Simple randomization has a significant drawback, as patient allocation to arms occurs randomly with equal probability. This leads to an imbalance in both the number of patients and covariate balance, which is also random. This is particularly the case with small samples. Balancing the number of patients is possible for larger samples for n > 200.
+
+On the other hand, block randomization performs very well in balancing the number of patients in groups in a specified allocation ratio. However, compared to adaptive randomisation using the minimisation method, block randomisation has a lower probability in terms of balancing the co-variables.
+
+Minimization method, provides the highest success power by ensuring balance across covariates between groups. This is made possible by an appropriate algorithm implemented as part of minimisation randomisation. When assigning the next patient to a group, the method examines the total imbalance and then assigns the patient to the appropriate study group with a specified probability to balance the sample in terms of size, and covariates.
+
+# References
+
+---
+nocite: '@*'
+...
