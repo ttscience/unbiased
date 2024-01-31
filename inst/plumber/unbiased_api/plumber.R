@@ -10,11 +10,11 @@
 #* @plumber
 function(api) {
   meta <- plumber::pr("meta.R")
-  minimisation_pocock <- plumber::pr("minimisation_pocock.R")
+  study <- plumber::pr("study.R")
 
   api |>
     plumber::pr_mount("/meta", meta) |>
-    plumber::pr_mount("/study", minimisation_pocock) |>
+    plumber::pr_mount("/study", study) |>
     plumber::pr_set_api_spec(function(spec) {
       spec$
         paths$

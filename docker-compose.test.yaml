@@ -5,28 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.postgres
-    container_name: unbiased_postgres
     environment:
-      - POSTGRES_PASSWORD=postgres
-    networks:
-      - test_net
-    volumes:
-      - type: bind
-        source: ./inst/postgres/
-        target: /docker-entrypoint-initdb.d/
-  api:
-    image: unbiased
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: unbiased_api
-    depends_on:
-      - postgres
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     networks:
       - test_net
@@ -35,9 +14,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: unbiased_tests
     depends_on:
-      - api
+      - postgres
     environment:
       - CI=true
       - POSTGRES_DB=postgres
@@ -47,7 +25,7 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - test_net
-    command: R -e "testthat::test_package('unbiased')"
+    command: R -e "install.packages('covr'); covr::package_coverage()"
 
 networks:
   test_net:

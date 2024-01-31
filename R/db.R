@@ -1,5 +1,17 @@
 #' Defines methods for interacting with the study in the database
 
+create_db_connection_pool <- purrr::insistently(function() {
+  pool::dbPool(
+    RPostgres::Postgres(),
+    dbname = Sys.getenv("POSTGRES_DB"),
+    host = Sys.getenv("POSTGRES_HOST"),
+    port = Sys.getenv("POSTGRES_PORT", 5432),
+    user = Sys.getenv("POSTGRES_USER"),
+    password = Sys.getenv("POSTGRES_PASSWORD")
+  )
+}, rate = purrr::rate_delay(2, max_times = 5))
+
+
 get_similar_studies <- function(name, identifier) {
   similar <-
     dplyr::tbl(db_connection_pool, "study") |>
@@ -122,4 +134,3 @@ save_patient <- function(study_id, arm_id){
 
   return(randomized_patient)
 }
-
