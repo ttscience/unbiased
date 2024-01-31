@@ -42,11 +42,12 @@ jobs:
       
       - name: Instal system dependencies
         run: |
-          apt-get update && apt-get install -y --no-install-recommends \
-          libz-dev \
-          libsodium-dev \
-          libpq-dev libssl-dev postgresql-client \
-          libxt-dev
+          sudo apt-get update && \
+          sudo apt-get install -y --no-install-recommends \
+            libz-dev \
+            libsodium-dev \
+            libpq-dev libssl-dev postgresql-client \
+            libxt-dev
       
       - uses: r-lib/actions/setup-renv@v2
 
