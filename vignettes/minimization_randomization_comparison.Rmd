@@ -81,7 +81,7 @@ The number of iterations, indicates the number of iterations included in the Mon
 # defined number of patients
 n <- 105
 # defined number of iterations
-no_of_iterations <- 20
+no_of_iterations <- 5
 ```
 
 ## Defining parameters for Monte-Carlo simulation
@@ -474,7 +474,7 @@ block_results <- function(data) {
     
     datay <- datarand[datarand$simnr == k, ]
     
-    for (i in data$id) {
+    for (i in datax$id) {
       matching_rows <-
         which(
           datay[2] == datax[3][datax[2] == i] &
