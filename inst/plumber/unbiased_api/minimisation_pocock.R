@@ -18,139 +18,104 @@
 function(identifier, name, method, arms, covariates, p, req, res) {
   source("study-repository.R")
   source("validation-utils.R")
-  validation_errors <- vector()
+  collection <- checkmate::makeAssertCollection()
 
-  err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors, "name", err
-    )
-  }
+  checkmate::assert(
+    checkmate::check_character(name, min.chars = 1, max.chars = 255),
+    .var.name = "name",
+    add = collection
+  )
 
-  err <- checkmate::check_character(identifier, min.chars = 1, max.chars = 12)
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors,
-      "identifier",
-      err
-    )
-  }
+  checkmate::assert(
+    checkmate::check_character(identifier, min.chars = 1, max.chars = 12),
+    .var.name = "identifier",
+    add = collection
+  )
 
-  err <- checkmate::check_choice(method, choices = c("range", "var", "sd"))
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors,
-      "method",
-      err
-    )
-  }
+  checkmate::assert(
+    checkmate::check_choice(method, choices = c("range", "var", "sd")),
+                    .var.name = "method",
+                    add = collection)
 
-  err <-
+  checkmate::assert(
     checkmate::check_list(
       arms,
       types = "integerish",
       any.missing = FALSE,
       min.len = 2,
       names = "unique"
-    )
-  if (err != TRUE) {
-    validation_errors <- append_error(
-      validation_errors,
-      "arms",
-      err
-    )
-  }
+    ),
+    .var.name = "arms",
+    add = collection
+  )
 
-  err <-
+  checkmate::assert(
     checkmate::check_list(
       covariates,
       types = c("numeric", "list", "character"),
       any.missing = FALSE,
       min.len = 2,
       names = "unique"
-    )
-  if (err != TRUE) {
-    validation_errors <-
-      append_error(validation_errors, "covariates", err)
-  }
+    ),
+    .var.name = "covariates",
+    add = collection
+  )
 
   response <- list()
   for (c_name in names(covariates)) {
     c_content <- covariates[[c_name]]
 
-    err <- checkmate::check_list(
+    checkmate::assert(
+      checkmate::check_list(
       c_content,
       any.missing = FALSE,
       len = 2,
-    )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}]"),
-          err
-        )
-    }
-    err <- checkmate::check_names(
+    ),
+    .var.name = "covariates",
+    add = collection)
+
+    checkmate::assert(
+      checkmate::check_names(
       names(c_content),
       permutation.of = c("weight", "levels"),
-    )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}]"),
-          err
-        )
-    }
+    ),
+    .var.name = "covariates",
+    add = collection)
 
     # check covariate weight
-    err <- checkmate::check_numeric(c_content$weight,
+    checkmate::assert(
+      checkmate::check_numeric(c_content$weight,
                                     lower = 0,
                                     finite = TRUE,
                                     len = 1,
                                     null.ok = FALSE
-    )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}][weight]"),
-          err
-        )
-    }
+    ),
+    .var.name = "weight",
+    add = collection)
 
-    err <- checkmate::check_character(c_content$levels,
+    checkmate::assert(
+      checkmate::check_character(c_content$levels,
                                       min.chars = 1,
                                       min.len = 2,
                                       unique = TRUE
-    )
-    if (err != TRUE) {
-      validation_errors <-
-        append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}][levels]"),
-          err
-        )
-    }
+    ),
+    .var.name = "levels",
+    add = collection)
   }
 
   # check probability
-  err <- checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
-  if (err != TRUE) {
-    validation_errors <-
-      append_error(
-        validation_errors,
-        "p",
-        err
-      )
-  }
+  checkmate::assert(
+    checkmate::check_numeric(p, lower = 0, upper = 1, len = 1,
+                             any.missing = FALSE, null.ok = FALSE),
+    .var.name = "p",
+    add = collection)
 
-  if (length(validation_errors) > 0) {
+
+  if (length(collection$getMessages()) > 0) {
     res$status <- 400
     return(list(
-      error = "Input validation failed",
-      validation_errors = validation_errors
+      error = "There was a problem with the input data to create the study",
+      validation_errors = collection$getMessages()
     ))
   }
 
@@ -184,7 +149,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   if (!is.null(r$error)) {
     res$status <- 503
     return(list(
-      error = "There was a problem creating the study",
+      error = "There was a problem saving created study to the database",
       details = r$error
     ))
   }
@@ -199,6 +164,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   return(response)
 }
 
+
 #* Randomize one patient
 #*
 #*
@@ -212,17 +178,14 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 
 function(study_id, current_state, req, res) {
   collection <- checkmate::makeAssertCollection()
-  # Assertion connection with DB
-  checkmate::assert(DBI::dbIsValid(db_connection_pool), .var.name = "DB connection",
-                    add = collection)
-
 
   # Check whether study with study_id exists
   checkmate::assert(checkmate::check_subset(x = req$args$study_id,
                                             choices =
                                               dplyr::tbl(db_connection_pool, "study") |>
                                               dplyr::select(id) |>
-                                              dplyr::pull()), .var.name = "Study ID",
+                                              dplyr::pull()),
+                    .var.name = "study_id",
                     add = collection)
 
   # Retrieve study details, especially the ones about randomization
@@ -232,14 +195,15 @@ function(study_id, current_state, req, res) {
     dplyr::select(method) |>
     dplyr::pull()
 
-  checkmate::assert(checkmate::check_scalar(method_randomization, null.ok = FALSE),
-                    .var.name = "Randomization method",
+  checkmate::assert(
+    checkmate::check_scalar(method_randomization, null.ok = FALSE),
+                    .var.name = "method_randomization",
                     add = collection)
 
   if (length(collection$getMessages()) > 0) {
     res$status <- 400
     return(list(
-      error = "Study input validation failed",
+      error = "There was a problem with the randomization preparation",
       validation_errors = collection$getMessages()
     ))
   }
@@ -249,27 +213,14 @@ function(study_id, current_state, req, res) {
   params <-
     switch(
       method_randomization,
-      minimisation_pocock = tryCatch({
-        do.call(parse_pocock_parameters, list(db_connection_pool, study_id, current_state))
-      }, error = function(e) {
-        res$status <- 400
-        res$body = glue::glue("Error message: {conditionMessage(e)}")
-        logger::log_error("Error: {err}", err=e)
-      })
+      minimisation_pocock = do.call(parse_pocock_parameters, list(db_connection_pool, study_id, current_state))
     )
 
   arm_name <-
     switch(
       method_randomization,
       # simple = do.call(unbiased:::randomize_simple, params),
-      minimisation_pocock = tryCatch({
-        do.call(unbiased:::randomize_minimisation_pocock, params)
-      }, error = function(e) {
-        res$status <- 400
-        res$body = glue::glue("Error message: {conditionMessage(e)}")
-        logger::log_error("Error: {err}", err=e)
-      }
-      )
+      minimisation_pocock = do.call(unbiased:::randomize_minimisation_pocock, params)
     )
 
   arm <- dplyr::tbl(db_connection_pool, "arm") |>
@@ -282,7 +233,7 @@ function(study_id, current_state, req, res) {
   if (!is.null(randomized_patient$error)) {
     res$status <- 503
     return(list(
-      error = "There was a problem randomizing a patient",
+      error = "There was a problem saving randomized patient to the database",
       details = randomized_patient$error
     ))
   } else {
@@ -295,4 +246,5 @@ function(study_id, current_state, req, res) {
     return(randomized_patient)
   }
 }
+
 

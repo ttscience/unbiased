@@ -69,6 +69,23 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
 
   checkmate::expect_set_equal(response_study$status, 400, label = "HTTP status code")
 
+  # A randomized patient is not assigned an arm at entry
+
+  response_study <-
+    tryCatch({
+      request(api_url) |>
+        req_url_path("study", response_body$study$id, "patient") |>
+        req_method("POST") |>
+        req_body_json(
+          data = list(current_state =
+                        tibble::tibble("sex" = c("female", "male"),
+                                       "weight" = c("61-80 kg", "81 kg or more"),
+                                       "arm" = c("placebo", "control")))
+        ) |>
+        req_perform()
+    }, error = function(e) e)
+
+  checkmate::expect_set_equal(response_study$status, 400, label = "HTTP status code")
 
   })
 
