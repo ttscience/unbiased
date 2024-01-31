@@ -12,8 +12,8 @@ create_db_connection_pool <- purrr::insistently(function() {
 }, rate = purrr::rate_delay(2, max_times = 5))
 
 
-get_similar_studies <- function(name, identifier, envir = parent.env()) {
-  db_connection_pool <- get("db_connection_pool", envir = envir)
+get_similar_studies <- function(name, identifier) {
+  db_connection_pool <- get("db_connection_pool")
   similar <-
     dplyr::tbl(db_connection_pool, "study") |>
     dplyr::select(id, name, identifier) |>
@@ -23,8 +23,8 @@ get_similar_studies <- function(name, identifier, envir = parent.env()) {
 }
 
 create_study <- function(
-    name, identifier, method, parameters, arms, strata, envir = parent.env()) {
-  db_connection_pool <- get("db_connection_pool", envir = envir)
+    name, identifier, method, parameters, arms, strata) {
+  db_connection_pool <- get("db_connection_pool", envir = .GlobalEnv)
   connection <- pool::localCheckout(db_connection_pool)
 
   r <- tryCatch(

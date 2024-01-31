@@ -12,7 +12,8 @@ all_tables <- c(
 )
 
 with_db_fixtures <- function(test_data_path, env = parent.frame()) {
-  conn <- get("conn", envir = .GlobalEnv)
+  pool <- get("db_connection_pool", envir = .GlobalEnv)
+  conn <- pool::localCheckout(pool)
 
   # load test data in yaml format
   test_data <- yaml::read_yaml(test_data_path)
@@ -42,9 +43,11 @@ with_db_fixtures <- function(test_data_path, env = parent.frame()) {
 }
 
 truncate_tables <- function(tables) {
+  pool <- get("db_connection_pool", envir = .GlobalEnv)
+  conn <- pool::localCheckout(pool)
   DBI::dbExecute(
     "SET client_min_messages TO WARNING;",
-    conn = get("conn", envir = .GlobalEnv)
+    conn = conn
   )
   tables |>
     rev() |>
@@ -52,8 +55,8 @@ truncate_tables <- function(tables) {
       \(table_name) {
         glue::glue_sql(
           "TRUNCATE TABLE {`table_name`} RESTART IDENTITY CASCADE;",
-          .con = get("conn", envir = .GlobalEnv)
-        ) |> DBI::dbExecute(conn = get("conn", envir = .GlobalEnv))
+          .con = conn
+        ) |> DBI::dbExecute(conn = conn)
       }
     )
 }

@@ -8,6 +8,9 @@ source("./test-helpers.R")
 
 # Test values ----
 test_that("database contains base tables", {
+  conn <- pool::localCheckout(
+    get("db_connection_pool", envir = globalenv())
+  )
   with_db_fixtures("fixtures/example_study.yml")
   expect_contains(
     DBI::dbListTables(conn),
@@ -16,6 +19,9 @@ test_that("database contains base tables", {
 })
 
 test_that("database contains history tables", {
+  conn <- pool::localCheckout(
+    get("db_connection_pool", envir = globalenv())
+  )
   with_db_fixtures("fixtures/example_study.yml")
   expect_contains(
     DBI::dbListTables(conn),

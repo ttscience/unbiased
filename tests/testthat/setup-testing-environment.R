@@ -30,6 +30,12 @@ run_migrations <- function() {
   port <- Sys.getenv("POSTGRES_PORT", "5432")
   db <- Sys.getenv("POSTGRES_DB")
 
+  print(
+    glue::glue(
+      "Running migrations on database {db} at {host}:{port}"
+    )
+  )
+
   migrations_path <- glue::glue(
     "{root_repo_directory}/inst/db/migrations"
   )
@@ -56,6 +62,15 @@ run_migrations <- function() {
   )
 
   system2(command, args)
+}
+
+setup_test_db_connection_pool <- function() {
+  # We will create a connection pool to the database
+  # and store it in the global environment
+  # so that we can use it in the tests
+  # without having to pass it around
+  db_connection_pool <- unbiased:::create_db_connection_pool()
+  assign("db_connection_pool", db_connection_pool, envir = globalenv())
 }
 
 
@@ -202,6 +217,8 @@ withr::defer(
 # go back to the original working directory
 # that is used by the testthat package
 setwd(current_working_dir)
+
+setup_test_db_connection_pool()
 
 # Retry a request until the API starts
 print("Waiting for the API to start...")
