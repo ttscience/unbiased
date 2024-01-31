@@ -25,7 +25,6 @@ services:
       - POSTGRES_PASSWORD=postgres
     networks:
       - test_net
-    command: R -e "install.packages('covr'); covr::package_coverage()"
-
+    command: R -e "covr::package_coverage()"
 networks:
   test_net:

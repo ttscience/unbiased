@@ -1,15 +1,17 @@
 # Start with the official PostgreSQL image based on Debian
-FROM postgres:16
+FROM postgres:16-alpine
 
 # Run package updates and install necessary packages
-RUN apt-get update \
-    # Install PostgreSQL development headers and PGXN client
-    && apt-get install -y \
-        postgresql-server-dev-16 \
-        pgxnclient \
-        make \
-        gcc \
+RUN apk --no-cache add \
+    python3 \
+    py3-pip \
+    cmake \
+    make \
+    gcc \
+    g++ \
+    clang15 \
+    llvm15 \
+    postgresql-dev \
+    && pip install pgxnclient --break-system-packages \
     # Install the 'temporal_tables' extension using PGXN
-    && pgxn install temporal_tables \
-    # Clear apt cache to reduce image size
-    && rm -rf /var/lib/apt/lists/*
+    && pgxn install temporal_tables

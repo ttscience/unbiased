@@ -26,7 +26,7 @@ COPY inst/ ./inst
 COPY R/ ./R
 COPY tests/ ./inst/tests
 
-RUN R CMD INSTALL --no-multiarch .
+# RUN R CMD INSTALL --no-multiarch .
 
 EXPOSE 3838
 
