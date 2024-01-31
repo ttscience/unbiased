@@ -62,8 +62,8 @@ jobs:
         run: |
           curl -L https://packagecloud.io/golang-migrate/migrate/gpgkey | \
             sudo apt-key add - && \
-          sudo echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ focal main" \
-            > /etc/apt/sources.list.d/migrate.list && \
+          echo "deb https://packagecloud.io/golang-migrate/migrate/ubuntu/ focal main" | \
+            sudo tee /etc/apt/sources.list.d/migrate.list && \
           sudo apt-get update && \
           sudo apt-get install -y migrate
 
