@@ -1,14 +1,9 @@
 version: "3.9"
 services:
   postgres:
-    image: temporal_postgres
-    build:
-      context: .
-      dockerfile: Dockerfile.postgres
+    image: ghcr.io/ttscience/postgres-temporal-tables/postgres-temporal-tables:latest
     environment:
       - POSTGRES_PASSWORD=postgres
-    networks:
-      - test_net
   tests:
     # image: unbiased
     build:
@@ -17,14 +12,9 @@ services:
     depends_on:
       - postgres
     environment:
-      - CI=true
       - POSTGRES_DB=postgres
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    networks:
-      - test_net
     command: R -e "covr::package_coverage()"
-networks:
-  test_net:
