@@ -42,7 +42,7 @@ jobs:
       
       - name: Instal system dependencies
         run: |
-          apt update && apt-get install -y --no-install-recommends \
+          apt-get update && apt-get install -y --no-install-recommends \
           libz-dev \
           libsodium-dev \
           libpq-dev libssl-dev postgresql-client \
