@@ -1,4 +1,4 @@
-test_that("endpoint returns the study id, can randomize 2 patients", {
+test_that("positive input validation tests", {
   response <- request(api_url) |>
     req_url_path("study", "minimisation_pocock") |>
     req_method("POST") |>
@@ -51,6 +51,67 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
   checkmate::expect_names(names(response_patient_body), identical.to = c("patient_id", "arm_id", "arm_name"))
   checkmate::expect_list(response_patient_body, any.missing = TRUE, null.ok = FALSE, len = 3, type = c("numeric", "numeric", "character"))
 
+  # Test one covariate with two levels
+
+  response_cov <-
+      request(api_url) |>
+        req_url_path("study", "minimisation_pocock") |>
+        req_method("POST") |>
+        req_body_json(
+          data = list(
+            identifier = "ABC-X",
+            name = "Study ABC-X",
+            method = "var",
+            p = 0.85,
+            arms = list(
+              "placebo" = 1,
+              "active" = 1),
+            covariates = list(
+              sex = list(
+                weight = 1,
+                levels = c("female", "male")
+              ))
+            )
+        ) |>
+        req_perform()
+
+  response_cov_body <-
+    response_cov |>
+    resp_body_json()
+
+  testthat::expect_equal(response_cov$status_code, 200)
+})
+
+test_that("negative input validation tests", {
+
+  response <- request(api_url) |>
+    req_url_path("study", "minimisation_pocock") |>
+    req_method("POST") |>
+    req_body_json(
+      data = list(
+        identifier = "ABC-X",
+        name = "Study ABC-X",
+        method = "var",
+        p = 0.85,
+        arms = list(
+          "placebo" = 1,
+          "active" = 1),
+        covariates = list(
+          sex = list(
+            weight = 1,
+            levels = c("female", "male")
+          ),
+          weight = list(
+            weight = 1,
+            levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+          )
+        ))
+    ) |>
+    req_perform()
+  response_body <-
+    response |>
+    resp_body_json()
+
   # Incorrect Study ID
 
   response_study <-
@@ -63,15 +124,15 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
                         tibble::tibble("sex" = c("female", "male"),
                                        "weight" = c("61-80 kg", "81 kg or more"),
                                        "arm" = c("placebo", "")))
-          ) |>
+        ) |>
         req_perform()
     }, error = function(e) e)
 
-  checkmate::expect_set_equal(response_study$status, 400, label = "HTTP status code")
+  testthat::expect_equal(response_study$status, 400, label = "HTTP status code")
 
-  # A randomized patient is not assigned an arm at entry
+  # A randomized patient is assigned an arm at entry (current_state)
 
-  response_study <-
+  response_current_state <-
     tryCatch({
       request(api_url) |>
         req_url_path("study", response_body$study$id, "patient") |>
@@ -85,7 +146,198 @@ test_that("endpoint returns the study id, can randomize 2 patients", {
         req_perform()
     }, error = function(e) e)
 
-  checkmate::expect_set_equal(response_study$status, 400, label = "HTTP status code")
+  testthat::expect_equal(response_current_state$status, 500, label = "HTTP status code")
 
-  })
+  # Test for validating the covariantes
 
+  response_cov <-
+    tryCatch({
+      request(api_url) |>
+        req_url_path("study", "minimisation_pocock") |>
+        req_method("POST") |>
+        req_body_json(
+          data = list(
+            identifier = "ABC-X",
+            name = "Study ABC-X",
+            method = "var",
+            p = 0.85,
+            arms = list(
+              "placebo" = 1,
+              "active" = 1),
+            covariates = list(
+              sex = list(
+                weight = 1,
+                levels = c("female")
+              ),
+              weight = list(
+                weight = 1,
+                levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+              )
+            ))
+        ) |>
+        req_perform()},
+      error = function(e) e)
+
+  testthat::expect_equal(response_cov$status, 400)
+
+  # Test for validating the 'p' parameter
+
+  response_p <-
+    tryCatch({
+      request(api_url) |>
+    req_url_path("study", "minimisation_pocock") |>
+    req_method("POST") |>
+    req_body_json(
+      data = list(
+        identifier = "ABC-X",
+        name = "Study ABC-X",
+        method = "var",
+        p = "A",
+        arms = list(
+          "placebo" = 1,
+          "active" = 1),
+        covariates = list(
+          sex = list(
+            weight = 1,
+            levels = c("female", "male")
+          ),
+          weight = list(
+            weight = 1,
+            levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+          )
+        ))
+    ) |>
+    req_perform()},
+    error = function(e) e)
+
+  testthat::expect_equal(response_p$status, 400)
+
+  # Test for validating the 'arms' parameter
+
+  response_arms <-
+    tryCatch({
+      request(api_url) |>
+        req_url_path("study", "minimisation_pocock") |>
+        req_method("POST") |>
+        req_body_raw('{
+          "identifier": "ABC-X",
+        "name": "Study ABC-X",
+        "method": "var",
+        "p": 0.85,
+        "arms": {
+          "placebo": 1,
+          "placebo": 1
+        },
+        "covariates": {
+          "sex": {
+            "weight": 1,
+            "levels": ["female", "male"]
+          },
+          "weight": {
+            "weight": 1,
+            "levels": ["up to 60kg", "61-80 kg", "81 kg or more"]
+          }
+        }
+      }'
+        ) |>
+        req_perform()},
+      error = function(e) e)
+
+  testthat::expect_equal(response_arms$status, 400)
+
+  # Test for validating the 'method' parameter
+
+  response_method <-
+    tryCatch({
+      request(api_url) |>
+        req_url_path("study", "minimisation_pocock") |>
+        req_method("POST") |>
+        req_body_json(
+          data = list(
+            identifier = "ABC-X",
+            name = "Study ABC-X",
+            method = 1,
+            p = 0.85,
+            arms = list(
+              "placebo" = 1,
+              "control" = 1),
+            covariates = list(
+              sex = list(
+                weight = 1,
+                levels = c("female", "male")
+              ),
+              weight = list(
+                weight = 1,
+                levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+              )
+            ))
+        ) |>
+        req_perform()},
+      error = function(e) e)
+
+  testthat::expect_equal(response_method$status, 400)
+
+  # Test for validating the 'weights' parameter
+  response_weights <-
+    tryCatch({
+      request(api_url) |>
+        req_url_path("study", "minimisation_pocock") |>
+        req_method("POST") |>
+        req_body_json(
+          data = list(
+            identifier = "ABC-X",
+            name = "Study ABC-X",
+            method = "var",
+            p = 0.85,
+            arms = list(
+              "placebo" = 1,
+              "control" = 1),
+            covariates = list(
+              sex = list(
+                weight = "1",
+                levels = c("female", "male")
+              ),
+              weight = list(
+                weight = 1,
+                levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+              )
+            ))
+        ) |>
+        req_perform()},
+      error = function(e) e)
+
+  testthat::expect_equal(response_weights$status, 400)
+
+  # Test for validating the 'ratio' parameter
+
+  response_ratio <-
+    tryCatch({
+      request(api_url) |>
+        req_url_path("study", "minimisation_pocock") |>
+        req_method("POST") |>
+        req_body_json(
+          data = list(
+            identifier = "ABC-X",
+            name = "Study ABC-X",
+            method = "var",
+            p = 0.85,
+            arms = list(
+              "placebo" = "1",
+              "control" = 1),
+            covariates = list(
+              sex = list(
+                weight = 1,
+                levels = c("female", "male")
+              ),
+              weight = list(
+                weight = 1,
+                levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+              )
+            ))
+        ) |>
+        req_perform()},
+      error = function(e) e)
+
+  testthat::expect_equal(response_ratio$status, 400)
+
+})

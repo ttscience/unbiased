@@ -54,10 +54,10 @@ function(identifier, name, method, arms, covariates, p, req, res) {
       covariates,
       types = c("numeric", "list", "character"),
       any.missing = FALSE,
-      min.len = 2,
+      min.len = 1,
       names = "unique"
     ),
-    .var.name = "covariates",
+    .var.name = "covariates3",
     add = collection
   )
 
@@ -71,7 +71,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
       any.missing = FALSE,
       len = 2,
     ),
-    .var.name = "covariates",
+    .var.name = "covariates1",
     add = collection)
 
     checkmate::assert(
@@ -79,7 +79,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
       names(c_content),
       permutation.of = c("weight", "levels"),
     ),
-    .var.name = "covariates",
+    .var.name = "covariates2",
     add = collection)
 
     # check covariate weight
