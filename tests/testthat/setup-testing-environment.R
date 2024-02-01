@@ -64,13 +64,71 @@ run_migrations <- function() {
   system2(command, args)
 }
 
-setup_test_db_connection_pool <- function() {
+create_database <- function(db_name) {
+  # make sure we are not creating the database that we are using for connection
+  assert(
+    db_name != Sys.getenv("POSTGRES_DB"),
+    "Cannot create the database that is used for connection"
+  )
+  print(
+    glue::glue(
+      "Creating database {db_name}"
+    )
+  )
+  run_psql(
+    glue::glue(
+      "CREATE DATABASE {db_name}"
+    )
+  )
+}
+
+drop_database <- function(db_name) {
+  # make sure we are not dropping the database that we are using for connection
+  assert(
+    db_name != Sys.getenv("POSTGRES_DB"),
+    "Cannot drop the database that is used for connection"
+  )
+  # first, terminate all connections to the database
+  print(
+    glue::glue(
+      "Terminating all connections to the database {db_name}"
+    )
+  )
+  run_psql(
+    glue::glue(
+      "SELECT pg_terminate_backend(pg_stat_activity.pid)
+      FROM pg_stat_activity
+      WHERE pg_stat_activity.datname = '{db_name}'
+        AND pid <> pg_backend_pid();"
+    )
+  )
+  print(
+    glue::glue(
+      "Dropping database {db_name}"
+    )
+  )
+  run_psql(
+    glue::glue(
+      "DROP DATABASE {db_name}"
+    )
+  )
+}
+
+setup_test_db_connection_pool <- function(envir = parent.frame()) {
   # We will create a connection pool to the database
   # and store it in the global environment
   # so that we can use it in the tests
   # without having to pass it around
   db_connection_pool <- unbiased:::create_db_connection_pool()
   assign("db_connection_pool", db_connection_pool, envir = globalenv())
+  withr::defer(
+    {
+      print("Closing database connection pool")
+      db_connection_pool$close()
+      assign("db_connection_pool", NULL, envir = globalenv())
+    },
+    envir = envir
+  )
 }
 
 
@@ -98,11 +156,7 @@ db_name <- Sys.getenv("POSTGRES_DB")
 db_name_test <- glue::glue("{db_name}__test")
 
 # create the test database using connection with the original database
-run_psql(
-  glue::glue(
-    "CREATE DATABASE {db_name_test}"
-  )
-)
+create_database(db_name_test)
 
 # now that the database is created, we can set the environment variable
 # to the test database name
@@ -122,16 +176,7 @@ withr::defer(
       "db_name_test should end with __test"
     )
     setwd(root_repo_directory)
-    print(
-      glue::glue(
-        "Dropping test database {db_name_test}"
-      )
-    )
-    run_psql(
-      glue::glue(
-        "DROP DATABASE {db_name_test}"
-      )
-    )
+    drop_database(db_name_test)
   },
   teardown_env()
 )
@@ -218,7 +263,7 @@ withr::defer(
 # that is used by the testthat package
 setwd(current_working_dir)
 
-setup_test_db_connection_pool()
+setup_test_db_connection_pool(envir = teardown_env())
 
 # Retry a request until the API starts
 print("Waiting for the API to start...")
