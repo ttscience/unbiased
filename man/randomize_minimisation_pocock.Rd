@@ -46,15 +46,16 @@ name of the arm assigned to the patient
 The \code{randomize_dynamic} function implements the dynamic randomization
 algorithm using the minimization method proposed by Pocock (Pocock and Simon,
 1975). It requires defining basic study parameters: the number of arms (K),
-number of covariates (C), patient allocation ratios (\(a_{k}\)) (where k = 1,2,…., K),
-weights for the covariates (\(w_{i}\)) (where i = 1,2,…., C), and the maximum probability (p)
-of assigning a patient to the group with the smallest total unbalance multiplied by
-the respective weights (\(G_{k}\)). As the total unbalance for the first patient is the same
-regardless of the assigned arm, this patient is randomly allocated to a given
-arm. Subsequent patients are randomized based on the calculation of the
-unbalance depending on the selected method: "range", "var" (variance), or
-"sd" (standard deviation). In the case of two arms, the "range" method is
-equivalent to the "sd" method.
+number of covariates (C), patient allocation ratios (\(a_{k}\))
+(where k = 1,2,…., K), weights for the covariates (\(w_{i}\))
+(where i = 1,2,…., C), and the maximum probability (p) of assigning a patient
+to the group with the smallest total unbalance multiplied by
+the respective weights (\(G_{k}\)). As the total unbalance for the first
+patient is the same regardless of the assigned arm, this patient is randomly
+allocated to a given arm. Subsequent patients are randomized based on the
+calculation of the unbalance depending on the selected method: "range",
+"var" (variance), or "sd" (standard deviation). In the case of two arms,
+the "range" method is equivalent to the "sd" method.
 }
 \details{
 Initially, the algorithm creates a matrix of results comparing a newly
@@ -69,47 +70,57 @@ of three methods (“sd”, “range”, “var”).
 Based on the number of defined arms, the minimum value of (\(G_{k}\))
 (defined as the weighted sum of the level-based imbalance) selects the arm to
 which the patient will be assigned with a predefined probability (p). The
-probability that a patient will be assigned to any other arm will then be equal (1-p)/(K-1)
+probability that a patient will be assigned to any other arm will then be
+equal (1-p)/(K-1)
 for each of the remaining arms.
 }
 \note{
-This function's implementation is a refactored adaptation of the codebase from the 'Minirand' package.
+This function's implementation is a refactored adaptation
+of the codebase from the 'Minirand' package.
 }
 \examples{
 n_at_the_moment <- 10
 arms <- c("control", "active low", "active high")
 sex <- sample(c("F", "M"),
-              n_at_the_moment + 1,
-              replace = TRUE,
-              prob = c(0.4, 0.6)
+  n_at_the_moment + 1,
+  replace = TRUE,
+  prob = c(0.4, 0.6)
 )
 diabetes <-
   sample(c("diabetes", "no diabetes"),
-         n_at_the_moment + 1,
-         replace = TRUE,
-         prob = c(0.2, 0.8)
+    n_at_the_moment + 1,
+    replace = TRUE,
+    prob = c(0.2, 0.8)
   )
 arm <-
   sample(arms,
-         n_at_the_moment,
-         replace = TRUE,
-         prob = c(0.4, 0.4, 0.2)
+    n_at_the_moment,
+    replace = TRUE,
+    prob = c(0.4, 0.4, 0.2)
   ) |>
   c("")
 covar_df <- tibble::tibble(sex, diabetes, arm)
 covar_df
 
 randomize_minimisation_pocock(arms = arms, current_state = covar_df)
-randomize_minimisation_pocock(arms = arms, current_state = covar_df,
-                              ratio = c("control" = 1,
-                                        "active low" = 2,
-                                        "active high" = 2),
-                              weights = c("sex" = 0.5,
-                                          "diabetes" = 1))
+randomize_minimisation_pocock(
+  arms = arms, current_state = covar_df,
+  ratio = c(
+    "control" = 1,
+    "active low" = 2,
+    "active high" = 2
+  ),
+  weights = c(
+    "sex" = 0.5,
+    "diabetes" = 1
+  )
+)
 
 }
 \references{
-Pocock, S. J., & Simon, R. (1975). Minimization: A new method of assigning patients to treatment and control groups in clinical trials.
+Pocock, S. J., & Simon, R. (1975). Minimization: A new method
+of assigning patients to treatment and control groups in clinical trials.
 
-Minirand Package: Man Jin, Adam Polis, Jonathan Hartzel. (https://CRAN.R-project.org/package=Minirand)
+Minirand Package: Man Jin, Adam Polis, Jonathan Hartzel.
+(https://CRAN.R-project.org/package=Minirand)
 }
