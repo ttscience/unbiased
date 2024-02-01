@@ -126,6 +126,7 @@ create_study <- function(
 }
 
 save_patient <- function(study_id, arm_id) {
+  db_connection_pool <- get("db_connection_pool")
   randomized_patient <- DBI::dbGetQuery(
     db_connection_pool,
     "INSERT INTO patient (arm_id, study_id)
