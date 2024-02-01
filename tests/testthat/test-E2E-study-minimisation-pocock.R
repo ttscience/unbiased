@@ -47,9 +47,11 @@ test_that("positive input validation tests", {
   testthat::expect_equal(response$status_code, 200)
   checkmate::expect_number(response_patient_body$patient_id, lower = 1)
 
+
   # Endpoint Response Structure Test
   checkmate::expect_names(names(response_patient_body), identical.to = c("patient_id", "arm_id", "arm_name"))
   checkmate::expect_list(response_patient_body, any.missing = TRUE, null.ok = FALSE, len = 3, type = c("numeric", "numeric", "character"))
+
 
   # Test one covariate with two levels
 
@@ -341,3 +343,4 @@ test_that("negative input validation tests", {
   testthat::expect_equal(response_ratio$status, 400)
 
 })
+

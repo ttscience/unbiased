@@ -179,6 +179,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 function(study_id, current_state, req, res) {
   collection <- checkmate::makeAssertCollection()
 
+
   # Check whether study with study_id exists
   checkmate::assert(checkmate::check_subset(x = req$args$study_id,
                                             choices =
@@ -194,6 +195,7 @@ function(study_id, current_state, req, res) {
     dplyr::filter(id == study_id) |>
     dplyr::select(method) |>
     dplyr::pull()
+
 
   checkmate::assert(
     checkmate::check_scalar(method_randomization, null.ok = FALSE),
@@ -227,6 +229,7 @@ function(study_id, current_state, req, res) {
     dplyr::filter(study_id == !!study_id & name == arm_name) |>
     dplyr::select(arm_id = id, name, ratio) |>
     dplyr::collect()
+
 
   randomized_patient <- save_patient(study_id, arm$arm_id)
 
