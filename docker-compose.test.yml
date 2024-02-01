@@ -5,7 +5,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
   tests:
-    # image: unbiased
     build:
       context: .
       dockerfile: Dockerfile

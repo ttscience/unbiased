@@ -9,7 +9,10 @@ RUN apt update && apt-get install -y --no-install-recommends \
   # sodium
   libsodium-dev \
   # RPostgres
-  libpq-dev libssl-dev postgresql-client
+  libpq-dev libssl-dev postgresql-client \
+  # R_X11
+  libxt-dev
+
 
 ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
 
