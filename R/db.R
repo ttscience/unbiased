@@ -50,7 +50,7 @@ create_study <- function(
       study$parameters <- jsonlite::fromJSON(study$parameters)
 
       arm_records <- arms |>
-        purrr::imap(\(x, name) list(name=name, ratio=x)) |>
+        purrr::imap(\(x, name) list(name = name, ratio = x)) |>
         purrr::map(tibble::as_tibble) |>
         purrr::list_c()
       arm_records$study_id <- study$id
@@ -116,7 +116,7 @@ create_study <- function(
       list(study = study)
     },
     error = function(cond) {
-      logger::log_error("Error creating study: {cond}", cond=cond)
+      logger::log_error("Error creating study: {cond}", cond = cond)
       DBI::dbRollback(connection)
       list(error = conditionMessage(cond))
     }
@@ -125,7 +125,7 @@ create_study <- function(
   r
 }
 
-save_patient <- function(study_id, arm_id){
+save_patient <- function(study_id, arm_id) {
   randomized_patient <- DBI::dbGetQuery(
     db_connection_pool,
     "INSERT INTO patient (arm_id, study_id)

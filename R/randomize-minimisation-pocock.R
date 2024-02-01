@@ -1,26 +1,27 @@
 #' Compare rows of two dataframes
 #'
-#' Takes dataframe B (presumably with one row / patient) and compares it to all
-#' rows of A (presumably already randomized patietns)
+#' Takes dataframe all_patients (presumably with one row / patient) and
+#' compares it to all rows of new_patients (presumably already randomized
+#' patients)
 #'
-#' @param A data.frame with all patients
-#' @param B data.frame with new patient
+#' @param all_patients data.frame with all patients
+#' @param new_patients data.frame with new patient
 #'
-#' @return data.frame with columns as in A and B, filled with TRUE if there is
-#'         match in covariate and FALSE if not
-compare_rows <- function(A, B) {
+#' @return data.frame with columns as in all_patients and new_patients,
+#'  filled with TRUE if there is match in covariate and FALSE if not
+compare_rows <- function(all_patients, new_patients) {
   # Find common column names
-  common_cols <- intersect(names(A), names(B))
+  common_cols <- intersect(names(all_patients), names(new_patients))
 
   # Compare each common column of A with B
   comparisons <- lapply(common_cols, function(col) {
-    A[[col]] == B[[col]]
+    all_patients[[col]] == new_patients[[col]]
   })
 
   # Combine the comparisons into a new dataframe
-  C <- data.frame(comparisons)
-  names(C) <- common_cols
-  tibble::as_tibble(C)
+  comparison_df <- data.frame(comparisons)
+  names(comparison_df) <- common_cols
+  tibble::as_tibble(comparison_df)
 }
 
 
@@ -31,15 +32,16 @@ compare_rows <- function(A, B) {
 #' The `randomize_dynamic` function implements the dynamic randomization
 #' algorithm using the minimization method proposed by Pocock (Pocock and Simon,
 #' 1975). It requires defining basic study parameters: the number of arms (K),
-#' number of covariates (C), patient allocation ratios (\(a_{k}\)) (where k = 1,2,…., K),
-#' weights for the covariates (\(w_{i}\)) (where i = 1,2,…., C), and the maximum probability (p)
-#' of assigning a patient to the group with the smallest total unbalance multiplied by
-#' the respective weights (\(G_{k}\)). As the total unbalance for the first patient is the same
-#' regardless of the assigned arm, this patient is randomly allocated to a given
-#' arm. Subsequent patients are randomized based on the calculation of the
-#' unbalance depending on the selected method: "range", "var" (variance), or
-#' "sd" (standard deviation). In the case of two arms, the "range" method is
-#' equivalent to the "sd" method.
+#' number of covariates (C), patient allocation ratios (\(a_{k}\))
+#' (where k = 1,2,…., K), weights for the covariates (\(w_{i}\))
+#' (where i = 1,2,…., C), and the maximum probability (p) of assigning a patient
+#' to the group with the smallest total unbalance multiplied by
+#' the respective weights (\(G_{k}\)). As the total unbalance for the first
+#' patient is the same regardless of the assigned arm, this patient is randomly
+#' allocated to a given arm. Subsequent patients are randomized based on the
+#' calculation of the unbalance depending on the selected method: "range",
+#' "var" (variance), or "sd" (standard deviation). In the case of two arms,
+#' the "range" method is equivalent to the "sd" method.
 #'
 #' Initially, the algorithm creates a matrix of results comparing a newly
 #' randomized patient with the current balance of patients based on the defined
@@ -53,12 +55,16 @@ compare_rows <- function(A, B) {
 #' Based on the number of defined arms, the minimum value of (\(G_{k}\))
 #' (defined as the weighted sum of the level-based imbalance) selects the arm to
 #' which the patient will be assigned with a predefined probability (p). The
-#' probability that a patient will be assigned to any other arm will then be equal (1-p)/(K-1)
+#' probability that a patient will be assigned to any other arm will then be
+#' equal (1-p)/(K-1)
 #' for each of the remaining arms.
 
-#' @references Pocock, S. J., & Simon, R. (1975). Minimization: A new method of assigning patients to treatment and control groups in clinical trials.
-#' @references Minirand Package: Man Jin, Adam Polis, Jonathan Hartzel. (https://CRAN.R-project.org/package=Minirand)
-#' @note This function's implementation is a refactored adaptation of the codebase from the 'Minirand' package.
+#' @references Pocock, S. J., & Simon, R. (1975). Minimization: A new method
+#'  of assigning patients to treatment and control groups in clinical trials.
+#' @references Minirand Package: Man Jin, Adam Polis, Jonathan Hartzel.
+#'  (https://CRAN.R-project.org/package=Minirand)
+#' @note This function's implementation is a refactored adaptation
+#'  of the codebase from the 'Minirand' package.
 #'
 #' @inheritParams randomize_simple
 #'
@@ -81,33 +87,39 @@ compare_rows <- function(A, B) {
 #' n_at_the_moment <- 10
 #' arms <- c("control", "active low", "active high")
 #' sex <- sample(c("F", "M"),
-#'               n_at_the_moment + 1,
-#'               replace = TRUE,
-#'               prob = c(0.4, 0.6)
+#'   n_at_the_moment + 1,
+#'   replace = TRUE,
+#'   prob = c(0.4, 0.6)
 #' )
 #' diabetes <-
 #'   sample(c("diabetes", "no diabetes"),
-#'          n_at_the_moment + 1,
-#'          replace = TRUE,
-#'          prob = c(0.2, 0.8)
+#'     n_at_the_moment + 1,
+#'     replace = TRUE,
+#'     prob = c(0.2, 0.8)
 #'   )
 #' arm <-
 #'   sample(arms,
-#'          n_at_the_moment,
-#'          replace = TRUE,
-#'          prob = c(0.4, 0.4, 0.2)
+#'     n_at_the_moment,
+#'     replace = TRUE,
+#'     prob = c(0.4, 0.4, 0.2)
 #'   ) |>
 #'   c("")
 #' covar_df <- tibble::tibble(sex, diabetes, arm)
 #' covar_df
 #'
 #' randomize_minimisation_pocock(arms = arms, current_state = covar_df)
-#' randomize_minimisation_pocock(arms = arms, current_state = covar_df,
-#'                               ratio = c("control" = 1,
-#'                                         "active low" = 2,
-#'                                         "active high" = 2),
-#'                               weights = c("sex" = 0.5,
-#'                                           "diabetes" = 1))
+#' randomize_minimisation_pocock(
+#'   arms = arms, current_state = covar_df,
+#'   ratio = c(
+#'     "control" = 1,
+#'     "active low" = 2,
+#'     "active high" = 2
+#'   ),
+#'   weights = c(
+#'     "sex" = 0.5,
+#'     "diabetes" = 1
+#'   )
+#' )
 #'
 #' @export
 randomize_minimisation_pocock <-
@@ -117,17 +129,23 @@ randomize_minimisation_pocock <-
            ratio,
            method = "var",
            p = 0.85) {
-
     # Assertions
     checkmate::assert_character(
       arms,
       min.len = 2,
       min.chars = 1,
-      unique = TRUE)
+      unique = TRUE
+    )
+
+    supported_methods <- list(
+      "range" = custom_range,
+      "var" = var,
+      "sd" = sd
+    )
 
     checkmate::assert_choice(
       method,
-      choices = c("range", "var", "sd")
+      choices = names(supported_methods),
     )
     checkmate::assert_tibble(
       current_state,
@@ -142,7 +160,8 @@ randomize_minimisation_pocock <-
     )
     checkmate::assert_character(
       current_state$arm[nrow(current_state)],
-      max.chars = 0, .var.name = "Last value of 'arm'")
+      max.chars = 0, .var.name = "Last value of 'arm'"
+    )
 
     n_covariates <-
       (ncol(current_state) - 1)
@@ -160,8 +179,9 @@ randomize_minimisation_pocock <-
       names(ratio) <- arms
     }
     if (rlang::is_missing(weights)) {
-      weights <- rep(1/n_covariates, n_covariates)
-      names(weights) <- colnames(current_state)[colnames(current_state) != "arm"]
+      weights <- rep(1 / n_covariates, n_covariates)
+      names(weights) <-
+        colnames(current_state)[colnames(current_state) != "arm"]
     }
 
     checkmate::assert_numeric(
@@ -197,11 +217,10 @@ randomize_minimisation_pocock <-
       lower = 0,
       upper = 1,
       null.ok = FALSE
-      )
+    )
 
     # Computations
     n_at_the_moment <- nrow(current_state) - 1
-    covariate_names <- names(current_state)[names(current_state) != "arm"]
 
     if (n_at_the_moment == 0) {
       return(randomize_simple(arms, ratio))
@@ -218,29 +237,32 @@ randomize_minimisation_pocock <-
       dplyr::bind_rows(.id = "arm") |>
       # make sure that every arm has a metric, even if not present in data yet
       tidyr::complete(arm = arms) |>
-      dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
-                                  ~ tidyr::replace_na(.x, 0)))
-
-    # Define a custom range function
-    range <- function(x) {
-      max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
-    }
+      dplyr::mutate(dplyr::across(
+        dplyr::where(is.numeric),
+        ~ tidyr::replace_na(.x, 0)
+      ))
 
     imbalance <- sapply(arms, function(x) {
       arms_similarity |>
         # compute scenario where each arm (x) gets new subject
-        dplyr::mutate(dplyr::across(dplyr::where(is.numeric),
-                                    ~ dplyr::if_else(arm == x, .x + 1, .x) *
-                                      ratio[arm])) |>
+        dplyr::mutate(dplyr::across(
+          dplyr::where(is.numeric),
+          ~ dplyr::if_else(arm == x, .x + 1, .x) *
+            ratio[arm]
+        )) |>
         # compute dispersion across each covariate
-        dplyr::summarise(dplyr::across(dplyr::where(is.numeric),
-                         ~ get(method)(.x))) |>
+        dplyr::summarise(dplyr::across(
+          dplyr::where(is.numeric),
+          ~ supported_methods[[method]](.x)
+        )) |>
         # multiply each covariate dispersion by covariate weight
-        dplyr::mutate(dplyr::across(dplyr::everything(),
-                                    ~ . * weights[dplyr::cur_column()])) |>
+        dplyr::mutate(dplyr::across(
+          dplyr::everything(),
+          ~ . * weights[dplyr::cur_column()]
+        )) |>
         # sum all covariate outcomes
         dplyr::summarize(total = sum(dplyr::c_across(dplyr::everything()))) |>
-        dplyr::pull(total)
+        dplyr::pull("total")
     })
 
     high_prob_arms <- names(which(imbalance == min(imbalance)))
@@ -255,7 +277,8 @@ randomize_minimisation_pocock <-
       prob = c(
         rep(
           p / length(high_prob_arms),
-          length(high_prob_arms)),
+          length(high_prob_arms)
+        ),
         rep(
           (1 - p) / length(low_prob_arms),
           length(low_prob_arms)
@@ -263,3 +286,9 @@ randomize_minimisation_pocock <-
       )
     )
   }
+
+
+# Define a custom range function
+custom_range <- function(x) {
+  max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
+}

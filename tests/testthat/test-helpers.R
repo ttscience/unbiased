@@ -1,4 +1,3 @@
-
 versioned_tables <- c(
   "study", "arm", "stratum", "factor_constraint",
   "numeric_constraint", "patient", "patient_stratum"

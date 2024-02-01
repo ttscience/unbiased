@@ -1,6 +1,5 @@
-api__create_study_minimization_pocock <- function(
-    identifier, name, method, arms, covariates, p, req, res
-) {
+api__minimization_pocock <- function( # nolint: cyclocomp_linter.
+    identifier, name, method, arms, covariates, p, req, res) {
   validation_errors <- vector()
 
   err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)

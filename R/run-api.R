@@ -37,5 +37,4 @@ run_unbiased <- function() {
     plumber::plumb("./inst/plumber/unbiased_api/plumber.R") |>
       plumber::pr_run(host = host, port = port)
   }
-
 }

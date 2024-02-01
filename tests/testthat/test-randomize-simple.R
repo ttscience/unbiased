@@ -1,7 +1,9 @@
 test_that("returns a single string", {
   expect_vector(
-    randomize_simple(c("active", "placebo"),
-                     c("active" = 2L, "placebo" = 1L)),
+    randomize_simple(
+      c("active", "placebo"),
+      c("active" = 2L, "placebo" = 1L)
+    ),
     ptype = character(),
     size = 1
   )
@@ -28,8 +30,10 @@ test_that("incorrect parameters raise an exception", {
   # Incorrect ratio type
   expect_error(randomize_simple(c("roof", "basement"), c("high", "low")))
   # Lengths not matching
-  expect_error(randomize_simple(c("Paris", "Barcelona"),
-                                c("Paris" = 1L, "Barcelona" = 2L, "Warsaw" = 1L)))
+  expect_error(randomize_simple(
+    c("Paris", "Barcelona"),
+    c("Paris" = 1L, "Barcelona" = 2L, "Warsaw" = 1L)
+  ))
   # Missing value
   expect_error(randomize_simple(c("yen", NA)))
   # Empty arm name
@@ -41,26 +45,32 @@ test_that("incorrect parameters raise an exception", {
 test_that("proportions are kept (allocation 1:1)", {
   randomizations <-
     sapply(1:1000, function(x) randomize_simple(c("armA", "armB")))
-  x <- prop.test(x = sum(randomizations == "armA"),
-                 n = length(randomizations),
-                 p = 0.5,
-                 conf.level = 0.95,
-                 correct = FALSE)
+  x <- prop.test(
+    x = sum(randomizations == "armA"),
+    n = length(randomizations),
+    p = 0.5,
+    conf.level = 0.95,
+    correct = FALSE
+  )
 
   # precision 0.01
   expect_gt(x$p.value, 0.01)
 })
 
-test_that("proportions are kept (allocation 2:1), even if ratio is in reverse", {
-  function_result <- sapply(1:1000, function(x) {
-    randomize_simple(c("armA", "armB"), c("armB" = 1L,"armA" = 2L))
-    }
+test_that(
+  "proportions are kept (allocation 2:1), even if ratio is in reverse",
+  {
+    function_result <- sapply(1:1000, function(x) {
+      randomize_simple(c("armA", "armB"), c("armB" = 1L, "armA" = 2L))
+    })
+    x <- prop.test(
+      x = sum(function_result == "armA"),
+      n = length(function_result),
+      p = 2 / 3,
+      conf.level = 0.95,
+      correct = FALSE
     )
-  x <- prop.test(x = sum(function_result == "armA"),
-                 n = length(function_result),
-                 p = 2/3,
-                 conf.level = 0.95,
-                 correct = FALSE)
-  # precision 0.01
-  expect_gt(x$p.value, 0.01)
-})
+    # precision 0.01
+    expect_gt(x$p.value, 0.01)
+  }
+)

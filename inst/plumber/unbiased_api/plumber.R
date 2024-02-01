@@ -1,10 +1,20 @@
 #* @apiTitle Unbiased
-#* @apiDescription This API provides a diverse range of randomization algorithms specifically designed for use in clinical trials. It supports dynamic strategies such as the minimization method, as well as simpler approaches including standard and block randomization. The main goal of this API is to ensure seamless integration with electronic Case Report Form (eCRF) systems, facilitating efficient patient allocation management in clinical trials.
-#* @apiContact list(name = "GitHub", url = "https://ttscience.github.io/unbiased/")
-#* @apiLicense list(name = "MIT", url = "https://github.com/ttscience/unbiased/LICENSE.md")
+#* @apiDescription This API provides a diverse range of randomization
+#*   algorithms specifically designed for use in clinical trials. It supports
+#*   dynamic strategies such as the minimization method, as well as simpler
+#*   approaches including standard and block randomization. The main goal of
+#*   this API is to ensure seamless integration with electronic Case Report
+#*   Form (eCRF) systems, facilitating efficient patient allocation management
+#*   in clinical trials.
+#* @apiContact list(name = "GitHub",
+#*   url = "https://ttscience.github.io/unbiased/")
+#* @apiLicense list(name = "MIT",
+#*   url = "https://github.com/ttscience/unbiased/LICENSE.md")
 #* @apiVersion 0.0.0.9003
-#* @apiTag initialize Endpoints that initialize study with chosen randomization method and parameters.
-#* @apiTag randomize Endpoints that randomize individual patients after the study was created.
+#* @apiTag initialize Endpoints that initialize study with chosen
+#*   randomization method and parameters.
+#* @apiTag randomize Endpoints that randomize individual patients after the
+#*   study was created.
 #* @apiTag other Other endpoints (helpers etc.).
 #*
 #* @plumber
@@ -67,9 +77,11 @@ function(api) {
         paths$`/study/{study_id}/patient`$
         post$requestBody$content$`application/json`$
         schema$properties$current_state$example <-
-        tibble::tibble("sex" = c("female", "male"),
-                       "weight" = c("61-80 kg", "81 kg or more"),
-                       "arm" = c("placebo", ""))
+        tibble::tibble(
+          "sex" = c("female", "male"),
+          "weight" = c("61-80 kg", "81 kg or more"),
+          "arm" = c("placebo", "")
+        )
       spec
     })
 }
@@ -93,4 +105,3 @@ function(req) {
 
   plumber::forward()
 }
-
