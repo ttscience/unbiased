@@ -8,7 +8,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     checkmate::check_subset(
       x = req$args$study_id,
       choices = dplyr::tbl(db_connection_pool, "study") |>
-        dplyr::select(.data$id) |>
+        dplyr::select("id") |>
         dplyr::pull()
     ),
     .var.name = "Study ID",
@@ -19,7 +19,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
   method_randomization <-
     dplyr::tbl(db_connection_pool, "study") |>
     dplyr::filter(.data$id == study_id) |>
-    dplyr::select(.data$method) |>
+    dplyr::select("method") |>
     dplyr::pull()
 
   checkmate::assert(
@@ -70,12 +70,12 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
 
   arm <- dplyr::tbl(db_connection_pool, "arm") |>
     dplyr::filter(study_id == !!study_id & .data$name == arm_name) |>
-    dplyr::select(arm_id = .data$id, .data$name, .data$ratio) |>
+    dplyr::select(arm_id = "id", "name", "ratio") |>
     dplyr::collect()
 
   unbiased:::save_patient(study_id, arm$arm_id) |>
     dplyr::mutate(arm_name = arm$name) |>
-    dplyr::rename(patient_id = .data$id) |>
+    dplyr::rename(patient_id = "id") |>
     as.list()
 }
 
@@ -105,7 +105,7 @@ parse_pocock_parameters <-
     ratio_arms <-
       dplyr::tbl(db_connetion_pool, "arm") |>
       dplyr::filter(study_id == !!study_id) |>
-      dplyr::select(.data$name, .data$ratio) |>
+      dplyr::select("name", "ratio") |>
       dplyr::collect()
 
     params <- list(

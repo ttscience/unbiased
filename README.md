@@ -26,6 +26,8 @@ devtools::load_all()
 testthat::test_package("unbiased")
 ```
 
+Make sure that `devtools` package is installed in your environment.
+
 Ensure that the necessary database connection environment variables are set before running these tests. You can set environment variables using methods such as `Sys.setenv`.
 
 Running these tests will start the Unbiased API on a random port.
@@ -43,8 +45,13 @@ docker compose -f docker-compose.test.yml build
 docker compose -f docker-compose.test.yml run tests
 ```
 
-### Executing with Coverage
+### Code Coverage
 
-For test coverage, use the `covr::report()` method. This will run all tests and provide a coverage report in HTML format. For a simpler code coverage report, use the `covr::package_coverage()` method.
+Unbiased supports code coverage analysis through the `covr` package. This allows you to measure the effectiveness of your tests by showing which parts of your R code in the `R` directory are actually being tested.
 
-You can also use the `run_tests_with_coverage.sh` script to run Unbiased tests with code coverage.
+To calculate code coverage, you will need to install the `covr` package. Once installed, you can use the following methods:
+
+- `covr::report()`: This method runs all tests and generates a detailed coverage report in HTML format.
+- `covr::package_coverage()`: This method provides a simpler, text-based code coverage report.
+
+Alternatively, you can use the provided `run_tests_with_coverage.sh` script to run Unbiased tests with code coverage.

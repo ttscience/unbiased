@@ -210,6 +210,9 @@ github_sha <- Sys.getenv(
   "GITHUB_SHA",
   "6e21b5b689cc9737ba0d24147ed4b634c7146a28"
 )
+if (github_sha == "") {
+  github_sha <- "6e21b5b689cc9737ba0d24147ed4b634c7146a28"
+}
 withr::local_envvar(
   list(
     GITHUB_SHA = github_sha
@@ -236,19 +239,11 @@ withr::defer(
   {
     print("Server STDOUT:")
     while (length(lines <- plumber_process$read_output_lines())) {
-      print(
-        lines |>
-          paste(collapse = "\n") |>
-          stringr::str_squish()
-      )
+      writeLines(lines)
     }
     print("Server STDERR:")
     while (length(lines <- plumber_process$read_error_lines())) {
-      message(
-        lines |>
-          paste(collapse = "\n") |>
-          stringr::str_squish()
-      )
+      writeLines(lines)
     }
     print("Sending SIGINT to plumber process")
     plumber_process$interrupt()
