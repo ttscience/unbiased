@@ -1,5 +1,3 @@
-utils::globalVariables(".data")
-
 api__randomize_patient <- function(study_id, current_state, req, res) {
   collection <- checkmate::makeAssertCollection()
 
@@ -77,7 +75,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
 
   unbiased:::save_patient(study_id, arm$arm_id) |>
     dplyr::mutate(arm_name = arm$name) |>
-    dplyr::rename(patient_id = id) |>
+    dplyr::rename(patient_id = .data$id) |>
     as.list()
 }
 

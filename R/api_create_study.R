@@ -4,14 +4,14 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
 
   err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors, "name", err
     )
   }
 
   err <- checkmate::check_character(identifier, min.chars = 1, max.chars = 12)
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors,
       "identifier",
       err
@@ -20,7 +20,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
 
   err <- checkmate::check_choice(method, choices = c("range", "var", "sd"))
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors,
       "method",
       err
@@ -36,7 +36,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
       names = "unique"
     )
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors,
       "arms",
       err
@@ -53,7 +53,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
     )
   if (err != TRUE) {
     validation_errors <-
-      append_error(validation_errors, "covariates", err)
+      unbiased:::append_error(validation_errors, "covariates", err)
   }
 
   response <- list()
@@ -67,7 +67,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}]"),
           err
@@ -79,7 +79,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}]"),
           err
@@ -95,7 +95,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}][weight]"),
           err
@@ -109,7 +109,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}][levels]"),
           err
@@ -122,7 +122,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
   err <- checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
   if (err != TRUE) {
     validation_errors <-
-      append_error(
+      unbiased:::append_error(
         validation_errors,
         "p",
         err
@@ -137,7 +137,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
     ))
   }
 
-  similar_studies <- get_similar_studies(name, identifier)
+  similar_studies <- unbiased:::get_similar_studies(name, identifier)
 
   strata <- purrr::imap(covariates, function(covariate, name) {
     list(
@@ -149,7 +149,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
   weights <- lapply(covariates, function(covariate) covariate$weight)
 
   # Write study to DB -------------------------------------------------------
-  r <- create_study(
+  r <- unbiased:::create_study(
     name = name,
     identifier = identifier,
     method = "minimisation_pocock",
