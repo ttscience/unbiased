@@ -1,5 +1,19 @@
 #' Defines methods for interacting with the study in the database
 
+#' Create a database connection pool
+#'
+#' This function creates a connection pool to a PostgreSQL database. It uses
+#' environment variables to get the necessary connection parameters. If the
+#' connection fails, it will retry up to 5 times with a delay of 2 seconds
+#' between each attempt.
+#'
+#' @return A pool object representing the connection pool to the database.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' pool <- create_db_connection_pool()
+#' }
 create_db_connection_pool <- purrr::insistently(function() {
   pool::dbPool(
     RPostgres::Postgres(),
