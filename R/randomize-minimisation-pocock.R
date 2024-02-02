@@ -137,6 +137,11 @@ randomize_minimisation_pocock <-
       unique = TRUE
     )
 
+    # Define a custom range function
+    custom_range <- function(x) {
+      max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
+    }
+
     supported_methods <- list(
       "range" = custom_range,
       "var" = var,
@@ -286,9 +291,3 @@ randomize_minimisation_pocock <-
       )
     )
   }
-
-
-# Define a custom range function
-custom_range <- function(x) {
-  max(x, na.rm = TRUE) - min(x, na.rm = TRUE)
-}
