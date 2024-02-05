@@ -1,0 +1,42 @@
+study:
+  - identifier: 'TEST'
+    name: 'Test Study'
+    method: 'minimisation_pocock'
+    parameters: '{"method": "var", "p": 0.85, "weights": {"gender": 1}}'
+    # Waring: id is set automatically by the database
+    # do not set it manually because sequences will be out of sync
+    # and you will get errors
+    # id: 1
+
+arm:
+  - study_id: 1
+    name: 'placebo'
+    ratio: 2
+    # id: 1
+  - study_id: 1
+    name: 'active'
+    ratio: 1
+    # id: 2
+
+stratum:
+  - study_id: 1
+    name: 'gender'
+    value_type: 'factor'
+    # id: 1
+
+factor_constraint:
+  - stratum_id: 1
+    value: 'F'
+  - stratum_id: 1
+    value: 'M'
+
+patient:
+  - study_id: 1
+    arm_id: 1
+    used: true
+    # id: 1
+
+patient_stratum:
+  - patient_id: 1
+    stratum_id: 1
+    fct_value: 'F'

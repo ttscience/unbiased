@@ -4,18 +4,19 @@
 \alias{compare_rows}
 \title{Compare rows of two dataframes}
 \usage{
-compare_rows(A, B)
+compare_rows(all_patients, new_patients)
 }
 \arguments{
-\item{A}{data.frame with all patients}
+\item{all_patients}{data.frame with all patients}
 
-\item{B}{data.frame with new patient}
+\item{new_patients}{data.frame with new patient}
 }
 \value{
-data.frame with columns as in A and B, filled with TRUE if there is
-match in covariate and FALSE if not
+data.frame with columns as in all_patients and new_patients,
+filled with TRUE if there is match in covariate and FALSE if not
 }
 \description{
-Takes dataframe B (presumably with one row / patient) and compares it to all
-rows of A (presumably already randomized patietns)
+Takes dataframe all_patients (presumably with one row / patient) and
+compares it to all rows of new_patients (presumably already randomized
+patients)
 }

@@ -4,6 +4,6 @@ test_that("meta tag endpoint returns the SHA", {
     req_method("GET") |>
     req_perform() |>
     resp_body_json()
-  
+
   expect_string(response, n.chars = 40, pattern = "^[0-9a-f]{40}$")
 })

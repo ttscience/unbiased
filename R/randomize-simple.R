@@ -28,7 +28,8 @@ randomize_simple <- function(arms, ratio) {
     arms,
     any.missing = FALSE,
     unique = TRUE,
-    min.chars = 1)
+    min.chars = 1
+  )
 
   checkmate::assert_integerish(
     ratio,
