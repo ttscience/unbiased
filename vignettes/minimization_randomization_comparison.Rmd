@@ -75,13 +75,10 @@ where:
 
 In this simulation, we are using a real use case - the planned FootCell study - non-commercial clinical research in the area of civilisation diseases - to guide our data generation process. For the FootCell study, it is anticipated that a total of 105 patients will be randomized into the trial. These patients will be equally divided among three research groups - Group A, Group B, and Group C - with each group comprising 35 patients.
 
-The number of iterations, indicates the number of iterations included in the Monte-Carlo simulations to accumulate data for the given parameters.
 
 ```{r, define-parameters}
 # defined number of patients
 n <- 105
-# defined number of iterations
-no_of_iterations <- 20
 ```
 
 ## Defining parameters for Monte-Carlo simulation
@@ -120,14 +117,14 @@ simulate_proportions_trunc <-
         a = lower,
         b = upper,
         mean = mean,
-        sd = sd) <= threshold
-    
-    sum(simulate_data == TRUE)/n
+        sd = sd
+      ) <= threshold
+
+    sum(simulate_data == TRUE) / n
   }
 ```
 
 ```{r, parameters-result-table, tab.cap = "Summary of literature verification about strata selected parameters (Mrozikiewicz-Rakowska et. al., 2023)"}
-
 set.seed(123)
 
 data.frame(
@@ -136,12 +133,14 @@ data.frame(
   age = simulate_proportions_trunc(1000, 0, 100, 59.2, 9.7, 55),
   wound_size = simulate_proportions_trunc(1000, 0, 20, 2.7, 2.28, 2)
 ) |>
-  rename('wound size' = wound_size) |>
-  pivot_longer(cols = everything(),
-               names_to = "parametr",
-               values_to = "proportions") |>
-mutate('first catogory of strata' = c('<=9', '<=50', '<=55', '<=2')) |>
-gt()
+  rename("wound size" = wound_size) |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "parametr",
+    values_to = "proportions"
+  ) |>
+  mutate("first catogory of strata" = c("<=9", "<=50", "<=55", "<=2")) |>
+  gt()
 ```
 
 ## Generate data using Monte-Carlo simulations
@@ -160,30 +159,14 @@ def <- simstudy::defData(def, varname = "hba1c", formula = "0.888", dist = "bina
 # <= 50 - 0.354
 def <- simstudy::defData(def, varname = "tpo2", formula = "0.354", dist = "binary")
 # correlation with diabetes type
-def = simstudy::defData(def, varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary")
+def <- simstudy::defData(def, varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary")
 # <= 2 - 0.302
-def = simstudy::defData(def, varname = "wound_size", formula = "0.302", dist = "binary")
-```
-
-```{r, monte-carlo-function}
-simulate_data_monte_carlo <-
-  function(def, n, iterations) {
-    data <- tibble::tibble()
-    
-    for (i in 1:iterations) {
-      generated_data <- genData(n, def) |>
-        dplyr::mutate(simnr = i)
-      data <- rbind(data, generated_data) |>
-        select(simnr, everything())
-      
-    }
-    return(data)
-  }
+def <- simstudy::defData(def, varname = "wound_size", formula = "0.302", dist = "binary")
 ```
 
 ```{r, create-data}
 data <-
-  simulate_data_monte_carlo(def, n, iterations = no_of_iterations)|>
+  genData(n, def) |>
   mutate(
     sex = as.character(sex),
     age = as.character(age),
@@ -191,7 +174,8 @@ data <-
     hba1c = as.character(hba1c),
     tpo2 = as.character(tpo2),
     wound_size = as.character(wound_size)
-  ) |> as_tibble()
+  ) |>
+  as_tibble()
 ```
 
 ```{r, data-generate}
@@ -215,36 +199,27 @@ To generate appropriate research arms for each simulation, a function called `mi
 
 - **minimize_unequal_weights** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 2. The remaining covariates have been assigned a weight of 1.
 
-- **minimize_unequal_weights_2** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 3. The remaining covariates have been assigned a weight of 1.
+- **minimize_unequal_weights_triple** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 3. The remaining covariates have been assigned a weight of 1.
 
 The tables present information about allocations for the first 5 patients in the initial iteration of the simulation.
       
 ```{r, minimize-results}
 # drawing an arm for each patient
 minimize_results <-
-  function(data, arms, weights) {
-    for (i in unique(data$simnr))
+  function(current_data, arms, weights) {
+    for (n in 1:nrow(current_data))
     {
-      for (j in 1:n)
-      {
-        current_data <- data[data$simnr == i, ]
-        
-        current_state <- current_data[1:j, 3:ncol(current_data)]
-        
-        start <- 1 + (i - 1) * n
-        end <- i * n
-        
-        data[start:end,]$arm[j] <-
-          randomize_minimisation_pocock(
-            arms = arms,
-            current_state = current_state,
-            weights = weights
-          )
-        
-        
-      }
+      current_state <- current_data[1:n, 2:ncol(current_data)]
+
+      current_data$arm[n] <-
+        randomize_minimisation_pocock(
+          arms = arms,
+          current_state = current_state,
+          weights = weights
+        )
     }
-    return(data)
+
+    return(current_data)
   }
 ```
 
@@ -253,7 +228,7 @@ set.seed(123)
 # eqal weights - 1/6
 minimize_equal_weights <-
   minimize_results(
-    data = data,
+    current_data = data,
     arms = c("armA", "armB", "armC")
   )
 
@@ -266,7 +241,7 @@ set.seed(123)
 # double weights where the covariant is of high clinical significance
 minimize_unequal_weights <-
   minimize_results(
-    data = data,
+    current_data = data,
     arms = c("armA", "armB", "armC"),
     weights = c(
       "sex" = 1,
@@ -285,9 +260,9 @@ minimize_unequal_weights[1:5, 2:ncol(minimize_unequal_weights)] |>
 ```{r, minimize-unequal-2}
 set.seed(123)
 # triple weights where the covariant is of high clinical significance
-minimize_unequal_weights_2 <-
+minimize_unequal_weights_triple <-
   minimize_results(
-    data = data,
+    current_data = data,
     arms = c("armA", "armB", "armC"),
     weights = c(
       "sex" = 1,
@@ -299,7 +274,7 @@ minimize_unequal_weights_2 <-
     )
   )
 
-minimize_unequal_weights_2[1:5, 2:ncol(minimize_unequal_weights_2)] |>
+minimize_unequal_weights_triple[1:5, 2:ncol(minimize_unequal_weights_triple)] |>
   gt()
 ```
 
@@ -312,21 +287,20 @@ The function relies on the use of the `tbl_summary` function available in the `g
 statistics_table <-
   function(data) {
     data |>
-      filter(simnr == 1) |>
       mutate(
-        sex = ifelse(sex == '1', "men", "women"),
+        sex = ifelse(sex == "1", "men", "women"),
         diabetes_type = ifelse(diabetes_type == "1", "type1", "type2"),
-        hba1c = ifelse(hba1c == '1', "<=9", "(9,11>"),
-        tpo2 = ifelse(tpo2 == '1', "<=50", ">50"),
-        age = ifelse(age == '1', "<=55", ">50"),
-        wound_size = ifelse(wound_size == '1', "<=2", ">2")
+        hba1c = ifelse(hba1c == "1", "<=9", "(9,11>"),
+        tpo2 = ifelse(tpo2 == "1", "<=50", ">50"),
+        age = ifelse(age == "1", "<=55", ">50"),
+        wound_size = ifelse(wound_size == "1", "<=2", ">2")
       ) |>
       tbl_summary(
         include = c(sex, diabetes_type, hba1c, tpo2, age, wound_size),
         by = arm
       ) |>
       modify_header(label = "") |>
-      modify_header(all_stat_cols() ~  "**{level}**, N = {n}")  |>
+      modify_header(all_stat_cols() ~ "**{level}**, N = {n}") |>
       bold_labels() |>
       add_p()
   }
@@ -337,19 +311,19 @@ The table presents a statistical summary of results for the first iteration for:
 - **Minimization with all weights equal to 1/6**.
 
 ```{r, chi2-1, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
-statistics_table(minimize_equal_weights) 
+statistics_table(minimize_equal_weights)
 ```
 
 - **Minimization with weights 2:1**.
 
 ```{r, chi2-2, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
-statistics_table(minimize_unequal_weights) 
+statistics_table(minimize_unequal_weights)
 ```
 
 - **Minimization with weights 3:1**.
 
 ```{r, chi2-3, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
-statistics_table(minimize_unequal_weights_2) 
+statistics_table(minimize_unequal_weights_triple)
 ```
 
 ## Simple randomization
@@ -361,23 +335,14 @@ Since this is simple randomization, it does not take into account the initial co
 ```{r, simple-result}
 # simple randomization
 simple_results <-
-  function(data, arms, ratio) {
-    for (i in unique(data$simnr))
+  function(current_data, arms, ratio) {
+    for (n in 1:nrow(current_data))
     {
-      for (j in 1:n)
-      {
-        current_data <- data[data$simnr == i, ]
-        
-        start <- 1 + (i - 1) * n
-        end <- i * n
-        
-        data[start:end,]$arm[j] <-
-           randomize_simple(arms, ratio)
-        
-        
-      }
+      current_data$arm[n] <-
+        randomize_simple(arms, ratio)
     }
-    return(data)
+
+    return(current_data)
   }
 ```
 
@@ -385,7 +350,11 @@ simple_results <-
 set.seed(123)
 
 simple_data <-
-  simple_results(data, c("armA", "armB", "armC"), c("armB" = 1L,"armA" = 1L, "armC" = 1L))
+  simple_results(
+    current_data = data,
+    arms = c("armA", "armB", "armC"),
+    ratio = c("armB" = 1L, "armA" = 1L, "armC" = 1L)
+  )
 
 simple_data[1:5, 2:ncol(simple_data)] |>
   gt()
@@ -408,27 +377,25 @@ The tables show the assignment of patients to groups using block randomisation f
 ```{r, block-rand}
 # Function to generate a randomisation list
 block_rand <-
-  function(N, block, n_groups, strata) {
-    strata_grid = expand.grid(strata)
-    
-    strata_n = nrow(strata_grid)
-    
-    ratio = rep(1, n_groups)
-    
-    arm_names = LETTERS[1:n_groups]
-    
+  function(N, block, n_groups, strata, arms = LETTERS[1:n_groups]) {
+    strata_grid <- expand.grid(strata)
+
+    strata_n <- nrow(strata_grid)
+
+    ratio <- rep(1, n_groups)
+
     genSeq_list <- lapply(seq_len(strata_n), function(i) {
       rand <- rpbrPar(
         N = N,
         rb = block,
         K = n_groups,
         ratio = ratio,
-        groups = arm_names,
+        groups = arms,
         filledBlock = FALSE
       )
-      getRandList(genSeq(rand))[1,]
+      getRandList(genSeq(rand))[1, ]
     })
-    df_list = tibble::tibble()
+    df_list <- tibble::tibble()
     for (i in seq_len(strata_n)) {
       local_df <- strata_grid |>
         dplyr::slice(i) |>
@@ -443,64 +410,41 @@ block_rand <-
 
 ```{r, block-results}
 # Generate a research arm for patients in each iteration
-block_results <- function(data) {
-  rand_data <- tibble::tibble()
-  
-  for (i in unique(data$simnr)) {
-    simulation_result <-
-      block_rand(
-        N = n,
-        block = c(3, 6, 9),
-        n_groups = 3,
-        strata =
-          list(
-            sex = c("0", "1"),
-            diabetes_type = c("0", "1"),
-            hba1c = c("0", "1"),
-            tpo2 = c("0", "1"),
-            age = c("0", "1"),
-            wound_size = c("0", "1")
-          )
-      ) |> dplyr::mutate(simnr = i) |>
-      select(simnr, everything())
-    
-    rand_data <- dplyr::bind_rows(rand_data, simulation_result)
-  }
-  
-  datarand <- rand_data
-  
-  for (k in unique(data$simnr)) {
-    datax <- data[data$simnr == k, ]
-    
-    datay <- datarand[datarand$simnr == k, ]
-    
-    for (i in data$id) {
-      matching_rows <-
-        which(
-          datay[2] == datax[3][datax[2] == i] &
-            datay[3] == datax[4][datax[2] == i] &
-            datay[4] == datax[5][datax[2] == i] &
-            datay[5] == datax[6][datax[2] == i] &
-            datay[6] == datax[7][datax[2] == i] &
-            datay[7] == datax[8][datax[2] == i]
-        )
-      
-      if (length(matching_rows) > 0) {
-        id <- i
-        arm <- datay$rand_arm[matching_rows[1]]
-        
-        start <- 1 + (k - 1) * n
-        end <- k * n
-        
-        data[start:end,]$arm[i] <- arm
-        
-        # Delate row with randomization list
-        datay <- datay[-matching_rows[1], , drop = FALSE]
-      }
+block_results <- function(current_data) {
+  simulation_result <-
+    block_rand(
+      N = n,
+      block = c(3, 6, 9),
+      n_groups = 3,
+      strata =
+        list(
+          sex = c("0", "1"),
+          diabetes_type = c("0", "1"),
+          hba1c = c("0", "1"),
+          tpo2 = c("0", "1"),
+          age = c("0", "1"),
+          wound_size = c("0", "1")
+        ),
+      arms = c("armA", "armB", "armC")
+    )
+
+  for (n in 1:nrow(current_data))
+  {
+    # "-1" is for "arm" column
+    current_state <- current_data[n, 2:(ncol(current_data) - 1)]
+
+    matching_rows <- which(apply(simulation_result[, -ncol(simulation_result)], 1, function(row) all(row == current_state)))
+
+    if (length(matching_rows) > 0) {
+      current_data$arm[n] <-
+        simulation_result[matching_rows[1], "rand_arm"]
+
+      # Delete row from randomization list
+      simulation_result <- simulation_result[-matching_rows[1], , drop = FALSE]
     }
   }
-  
-  return(data)
+
+  return(current_data)
 }
 ```
 
@@ -520,6 +464,24 @@ statistics_table(block_data)
 
 ## Check balance using smd test
 
+## Generate 1000 simulations
+
+The number of iterations indicates the number of iterations included in the Monte-Carlo simulations to accumulate data for the given parameters.
+
+```{r, simulations}
+# define number of iterations
+# no_of_iterations <- 1000
+# define number of cores
+# no_of_cores <- 20
+# perform simutations (run carefully!)
+# source("~/unbiased/vignettes/helpers/run_parallel.R")
+
+# read data from file
+sim_data <- readRDS("~/unbiased/vignettes/1000_sim_data.Rds")
+```
+
+We have performed 1000 iterations of data generation with parameters defined above (...) 
+
 In order to select the test and define the precision at a specified level, above which we assume no imbalance, a literature analysis was conducted based on publications such as @lee2021estimating, @austin2009balance, @doah2021impact, @brown2020novel, @nguyen2017double, @sanchez2003effect, @lee2022propensity, @berger2021roadmap.
 
 To assess the balance for covariates between the research groups A, B, C, the Standardized Mean Difference (SMD) test was employed, which compares two groups. Since there are three groups in the example, the SMD test is computed for each pair of comparisons: A vs B, A vs C, and B vs C. The average SMD test for a given covariate is then calculated based on these comparisons.
@@ -533,86 +495,61 @@ A function called `smd_covariants_data` was written to generate frames that prod
 The results for each randomization method were stored in the `cov_balance_data`.
 
 ```{r, define-strata-vars}
-# definied covariants, and strata
-vars = c("sex", "age", "diabetes_type", "wound_size", "tpo2", "hba1c")
-strata = "arm"
+# definied covariants
+vars <- c("sex", "age", "diabetes_type", "wound_size", "tpo2", "hba1c")
 ```
 
 ```{r, smd-covariants-data}
 smd_covariants_data <-
   function(data, vars, strata) {
-    x <-
-      rep(unique(data$simnr), times = rep(1, times = length(unique(data$simnr))) * length(vars))
-    
     result_table <-
-      data.frame(simnr = x, covariants = rep(vars, length(unique(data$simnr)))) |>
-      tibble::add_column(results = "")
-    
-    for (i in 1:length(unique(data$simnr))) {
-      current_data <- data[data$simnr == i,]
-      
-      # check SMD for any covariants
-      tab <-
-        CreateTableOne(vars = vars,
-                       data = current_data,
-                       strata = strata)
-      results_smd <- print(tab, smd = TRUE, TEST = FALSE) |>
-        as.data.frame()
-      results_smd <-
-        results_smd[2:nrow(results_smd),] |>
-        mutate(SMD = case_when(SMD == "<0.001" ~ "0",
-                               TRUE ~ SMD),
-               SMD = as.numeric(SMD)) 
-      results <- as.numeric(results_smd$SMD)
-      
-      start <- 1 + (i - 1) * length(vars)
-      end <- i * length(vars)
-      
-      result_table[start:end, ]$results <- results
-    }
-    result_table <-
-      result_table |>
-      mutate(results = as.numeric(results))
+      lapply(unique(data$simnr), function(i) {
+        current_data <- data[data$simnr == i, ]
+        arms_to_check <- setdiff(names(current_data), c(vars, "id", "simnr"))
+        # check SMD for any covariants
+        lapply(arms_to_check, function(arm) {
+          tab <-
+            CreateTableOne(
+              vars = vars,
+              data = current_data,
+              strata = arm
+            )
+
+          results_smd <-
+            ExtractSmd(tab) |>
+            as.data.frame() %>%
+            tibble::rownames_to_column("covariants") %>%
+            select(covariants, results = average) |>
+            mutate(results = round(as.numeric(results), 3))
+
+          results <-
+            bind_cols(
+              simnr = i,
+              strata = arm,
+              results_smd
+            )
+          return(results)
+        }) |> bind_rows()
+      }) |> bind_rows()
+
     return(result_table)
   }
 ```
 
 ```{r, cov-balance-data, echo = TRUE, results='hide'}
-cov1 <-
-  smd_covariants_data(data = minimize_equal_weights,
-                vars = vars,
-                strata = strata) |>
-  tibble::add_column(method = "minimize equal")
-cov2 <-
-  smd_covariants_data(data = minimize_unequal_weights,
-                vars = vars,
-                strata = strata) |>
-  tibble::add_column(method = "minimize unequal 2:1")
-cov3 <-
-  smd_covariants_data(data = simple_data,
-                vars = vars,
-                strata = strata) |>
-  tibble::add_column(method = "simple randomization")
-
-cov4 <-
-  smd_covariants_data(
-    data = block_data,
-    vars = vars,
-    strata = strata
-  ) |>
-  tibble::add_column(method = "block randomization")
-
-cov5 <-
-  smd_covariants_data(
-    data = minimize_unequal_weights_2,
-    vars = vars,
-    strata = strata
-  ) |>
-  tibble::add_column(method = "minimize unequal 3:1")
-
-
 cov_balance_data <-
-  bind_rows(cov1, cov2, cov3, cov4, cov5)
+  smd_covariants_data(
+    data = sim_data,
+    vars = vars
+  ) %>%
+  mutate(method = case_when(
+    strata == "minimize_equal_weights_arms" ~ "minimize equal",
+    strata == "minimize_unequal_weights_arms" ~ "minimize unequal 2:1",
+    strata == "minimize_unequal_weights_triple_arms" ~ "minimize unequal 3:1",
+    strata == "simple_data_arms" ~ "simple randomization",
+    strata == "block_data_arms" ~ "block randomization"
+  )) %>%
+  select(-strata)
 ```
 
 Below are the results of the SMD test presented in the form of boxplot and violin plot, depicting the outcomes for each randomization method. The red dashed line indicates the adopted precision threshold.
@@ -625,7 +562,7 @@ cov_balance_data |>
   select(simnr, results, method) |>
   group_by(simnr, method) |>
   mutate(results = mean(results)) |>
-  distinct()  |>
+  distinct() |>
   ggplot(aes(x = method, y = results, fill = method)) +
   geom_boxplot() +
   geom_hline(yintercept = 0.2, linetype = "dashed", color = "red") +
@@ -635,13 +572,15 @@ cov_balance_data |>
 - **Violin plot**
 
 ```{r, violinplot, fig.cap= "Summary smd in each randomization methods in each covariants", warning = FALSE, fig.width=9, fig.height=6}
-# violin plot 
+# violin plot
 cov_balance_data |>
   ggplot(aes(x = method, y = results, fill = covariants)) +
   geom_violin() +
-  geom_hline(yintercept = 0.2,
-             linetype = "dashed",
-             color = "red") +
+  geom_hline(
+    yintercept = 0.2,
+    linetype = "dashed",
+    color = "red"
+  ) +
   theme_bw()
 ```
 
@@ -658,35 +597,27 @@ The results  are summarized in a table as the percentage of success for each ran
 success_power <-
   function(cov_data) {
     result_table <-
-      data.frame(simnr = unique(cov_data$simnr),
-                 results = numeric(length(unique(cov_data$simnr))))
-    for (i in 1:length(unique(data$simnr))) {
-      current_data <- cov_data[cov_data$simnr == i,]
-      
-      results <- ifelse(any(current_data$results > 0.2), 0, 1)
-      result_table$results[i] <- results
-      
-      success <-
-        sum(result_table$results) / nrow(result_table) * 100
-      
-    }
-    
+      lapply(unique(cov_data$simnr), function(i) {
+        current_data <- cov_data[cov_data$simnr == i, ]
+
+        current_data %>%
+          group_by(method) %>%
+          summarise(success = ifelse(any(results > 0.2), 0, 1)) %>%
+          tibble::add_column(simnr = i, .before = 1)
+      }) %>% bind_rows()
+
+    success <-
+      result_table %>%
+      group_by(method) %>%
+      summarise(results_power = sum(success) / n() * 100)
+
+
     return(success)
-    
   }
 ```
 
 ```{r, success-result-data, tab.cap = "Summary of percent success in each randomization methods"}
-data.frame(
-  method = c(
-    'minimize equal weights',
-    'minimize unequal weights 2:1',
-    'simple randomization',
-    'block randomization',
-    'minimize unequal weights 3:1'
-  ),
-  results_power = c(success_power(cov1), success_power(cov2), success_power(cov3), success_power(cov4), success_power(cov5))
-) |>
+success_power(cov_balance_data) |>
   as.data.frame() |>
   rename(`power results [%]` = results_power) |>
   gt()
