@@ -1212,6 +1212,21 @@
       ],
       "Hash": "168f9353c76d4c4b0a0bbf72e2c2d035"
     },
+    "sentryR": {
+      "Package": "sentryR",
+      "Version": "1.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "httr",
+        "jsonlite",
+        "stats",
+        "stringr",
+        "tibble",
+        "uuid"
+      ],
+      "Hash": "f37e91d605fbf665d7b5467ded4e539e"
+    },
     "sessioninfo": {
       "Package": "sessioninfo",
       "Version": "1.2.2",
@@ -1505,6 +1520,16 @@
         "R"
       ],
       "Hash": "1fe17157424bb09c48a8b3b550c753bc"
+    },
+    "uuid": {
+      "Package": "uuid",
+      "Version": "1.2-0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "303c19bfd970bece872f93a824e323d9"
     },
     "vctrs": {
       "Package": "vctrs",
