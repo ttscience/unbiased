@@ -5,10 +5,10 @@ pool <- get("db_connection_pool", envir = globalenv())
 test_that("it is enough to provide a name, an identifier, and a method id", {
   conn <- pool::localCheckout(pool)
   with_db_fixtures("fixtures/example_study.yml")
-  expect_no_error({
-    tbl(conn, "study") |>
-      rows_append(
-        tibble(
+  testthat::expect_no_error({
+    dplyr::tbl(conn, "study") |>
+      dplyr::rows_append(
+        tibble::tibble(
           identifier = "FINE",
           name = "Correctly working study",
           method = "minimisation_pocock"
@@ -19,25 +19,25 @@ test_that("it is enough to provide a name, an identifier, and a method id", {
 })
 
 # first study id is 1
-new_study_id <- 1 |> as.integer()
+new_study_id <- as.integer(1)
 
 test_that("deleting archivizes a study", {
   conn <- pool::localCheckout(pool)
   with_db_fixtures("fixtures/example_study.yml")
-  expect_no_error({
-    tbl(conn, "study") |>
-      rows_delete(
-        tibble(id = new_study_id),
+  testthat::expect_no_error({
+    dplyr::tbl(conn, "study") |>
+      dplyr::rows_delete(
+        tibble::tibble(id = new_study_id),
         copy = TRUE, in_place = TRUE, unmatched = "ignore"
       )
   })
 
-  expect_identical(
-    tbl(conn, "study_history") |>
-      filter(id == new_study_id) |>
-      select(-parameters, -sys_period, -timestamp) |>
-      collect(),
-    tibble(
+  testthat::expect_identical(
+    dplyr::tbl(conn, "study_history") |>
+      dplyr::filter(id == new_study_id) |>
+      dplyr::select(-parameters, -sys_period, -timestamp) |>
+      dplyr::collect(),
+    tibble::tibble(
       id = new_study_id,
       identifier = "TEST",
       name = "Test Study",
@@ -49,11 +49,11 @@ test_that("deleting archivizes a study", {
 test_that("can't push arm with negative ratio", {
   conn <- pool::localCheckout(pool)
   with_db_fixtures("fixtures/example_study.yml")
-  expect_error(
+  testthat::expect_error(
     {
-      tbl(conn, "arm") |>
-        rows_append(
-          tibble(
+      dplyr::tbl(conn, "arm") |>
+        dplyr::rows_append(
+          tibble::tibble(
             study_id = 1,
             name = "Exception-throwing arm",
             ratio = -1
@@ -68,7 +68,7 @@ test_that("can't push arm with negative ratio", {
 test_that("can't push stratum other than factor or numeric", {
   conn <- pool::localCheckout(pool)
   with_db_fixtures("fixtures/example_study.yml")
-  expect_error(
+  testthat::expect_error(
     {
       tbl(conn, "stratum") |>
         rows_append(
@@ -89,10 +89,10 @@ test_that("can't push stratum level outside of defined levels", {
   with_db_fixtures("fixtures/example_study.yml")
   # create a new patient
   return <-
-    expect_no_error({
-      tbl(conn, "patient") |>
-        rows_append(
-          tibble(
+    testthat::expect_no_error({
+      dplyr::tbl(conn, "patient") |>
+        dplyr::rows_append(
+          tibble::tibble(
             study_id = 1,
             arm_id = 1,
             used = TRUE
@@ -104,11 +104,11 @@ test_that("can't push stratum level outside of defined levels", {
 
   added_patient_id <- return$id
 
-  expect_error(
+  testthat::expect_error(
     {
-      tbl(conn, "patient_stratum") |>
-        rows_append(
-          tibble(
+      dplyr::tbl(conn, "patient_stratum") |>
+        dplyr::rows_append(
+          tibble::tibble(
             patient_id = added_patient_id,
             stratum_id = 1,
             fct_value = "Female"
@@ -120,10 +120,10 @@ test_that("can't push stratum level outside of defined levels", {
   )
 
   # add legal value
-  expect_no_error({
-    tbl(conn, "patient_stratum") |>
-      rows_append(
-        tibble(
+  testthat::expect_no_error({
+    dplyr::tbl(conn, "patient_stratum") |>
+      dplyr::rows_append(
+        tibble::tibble(
           patient_id = added_patient_id,
           stratum_id = 1,
           fct_value = "F"
@@ -136,12 +136,12 @@ test_that("can't push stratum level outside of defined levels", {
 test_that("numerical constraints are enforced", {
   conn <- pool::localCheckout(pool)
   with_db_fixtures("fixtures/example_study.yml")
-  added_patient_id <- 1 |> as.integer()
+  added_patient_id <- as.integer(1)
   return <-
-    expect_no_error({
-      tbl(conn, "stratum") |>
-        rows_append(
-          tibble(
+    testthat::expect_no_error({
+      dplyr::tbl(conn, "stratum") |>
+        dplyr::rows_append(
+          tibble::tibble(
             study_id = 1,
             name = "age",
             value_type = "numeric"
@@ -153,10 +153,10 @@ test_that("numerical constraints are enforced", {
 
   added_stratum_id <- return$id
 
-  expect_no_error({
-    tbl(conn, "numeric_constraint") |>
-      rows_append(
-        tibble(
+  testthat::expect_no_error({
+    dplyr::tbl(conn, "numeric_constraint") |>
+      dplyr::rows_append(
+        tibble::tibble(
           stratum_id = added_stratum_id,
           min_value = 18,
           max_value = 64
@@ -166,11 +166,11 @@ test_that("numerical constraints are enforced", {
   })
 
   # and you can't add an illegal value
-  expect_error(
+  testthat::expect_error(
     {
-      tbl(conn, "patient_stratum") |>
-        rows_append(
-          tibble(
+      dplyr::tbl(conn, "patient_stratum") |>
+        dplyr::rows_append(
+          tibble::tibble(
             patient_id = added_patient_id,
             stratum_id = added_stratum_id,
             num_value = 16
@@ -182,10 +182,10 @@ test_that("numerical constraints are enforced", {
   )
 
   # you can add valid value
-  expect_no_error({
-    tbl(conn, "patient_stratum") |>
-      rows_append(
-        tibble(
+  testthat::expect_no_error({
+    dplyr::tbl(conn, "patient_stratum") |>
+      dplyr::rows_append(
+        dplyr::tibble(
           patient_id = added_patient_id,
           stratum_id = added_stratum_id,
           num_value = 23
@@ -195,11 +195,11 @@ test_that("numerical constraints are enforced", {
   })
 
   # but you cannot add two values for one patient one stratum
-  expect_error(
+  testthat::expect_error(
     {
-      tbl(conn, "patient_stratum") |>
-        rows_append(
-          tibble(
+      dplyr::tbl(conn, "patient_stratum") |>
+        dplyr::rows_append(
+          tibble::tibble(
             patient_id = added_patient_id,
             stratum_id = added_stratum_id,
             num_value = 24
