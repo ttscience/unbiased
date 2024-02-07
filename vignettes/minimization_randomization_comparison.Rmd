@@ -466,9 +466,9 @@ statistics_table(block_data)
 
 ## Generate 1000 simulations
 
-We have performed 1000 iterations of data generation with parameters defined above. The number of iterations indicates the number of iterations included in the Monte-Carlo simulations to accumulate data for the given parameters This allowed for the generation of data 1000 times for 105 patients to more efficiently assess the effect of randomization methods in the context of covariate balance.
+We have performed 1000 iterations of data generation with parameters defined above. The number of iterations indicates the number of iterations included in the Monte-Carlo simulations to accumulate data for the given parameters. This allowed for the generation of data 1000 times for 105 patients to more efficiently assess the effect of randomization methods in the context of covariate balance.
 
-These data were assigned to the variable sim_data based on the data stored in the .Rds file `1000_sim_data.Rds`, available within the vignette information on the GitHub repository of the `unbiased` package.
+These data were assigned to the variable `sim_data` based on the data stored in the .Rds file `1000_sim_data.Rds`, available within the vignette information on the GitHub repository of the `unbiased` package.
 
 ```{r, simulations}
 # define number of iterations
