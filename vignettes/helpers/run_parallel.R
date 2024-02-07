@@ -1,3 +1,5 @@
+source("helpers/functions.R")
+
 # set cluster
 library(parallel)
 # Start parallel cluster
