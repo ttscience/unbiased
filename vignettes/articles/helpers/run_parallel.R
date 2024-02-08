@@ -35,7 +35,7 @@ results <-
       )
 
     # triple weights where the covariant is of high clinical significance
-    minimize_unequal_weights_triple <-
+    minimize_unequal_weights_3 <-
       minimize_results(
         current_data = data,
         arms = c("armA", "armB", "armC"),
@@ -65,7 +65,7 @@ results <-
       mutate(
         minimize_equal_weights_arms = minimize_equal_weights,
         minimize_unequal_weights_arms = minimize_unequal_weights,
-        minimize_unequal_weights_triple_arms = minimize_unequal_weights_triple,
+        minimize_unequal_weights_triple_arms = minimize_unequal_weights_3,
         simple_data_arms = simple_data,
         block_data_arms = block_data
       ) %>%

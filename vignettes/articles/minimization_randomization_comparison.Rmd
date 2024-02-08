@@ -155,7 +155,9 @@ def <- simstudy::defData(def, varname = "hba1c", formula = "0.888", dist = "bina
 # <= 50 - 0.354
 def <- simstudy::defData(def, varname = "tpo2", formula = "0.354", dist = "binary")
 # correlation with diabetes type
-def <- simstudy::defData(def, varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary")
+def <- simstudy::defData(
+  def, varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary"
+)
 # <= 2 - 0.302
 def <- simstudy::defData(def, varname = "wound_size", formula = "0.302", dist = "binary")
 ```
@@ -196,7 +198,7 @@ To generate appropriate research arms, a function called `minimize_results` was 
 
 - **minimize_unequal_weights** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 2. The remaining covariates have been assigned a weight of 1.
 
-- **minimize_unequal_weights_triple** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 3. The remaining covariates have been assigned a weight of 1.
+- **minimize_unequal_weights_3** - following the expert assessment by physicians, parameters with potentially significant impact on treatment outcomes (hba1c, tpo2, wound size) have been assigned a weight of 3. The remaining covariates have been assigned a weight of 1.
 
 The tables present information about allocations for the first 5 patients.
       
@@ -204,8 +206,7 @@ The tables present information about allocations for the first 5 patients.
 # drawing an arm for each patient
 minimize_results <-
   function(current_data, arms, weights) {
-    for (n in 1:nrow(current_data))
-    {
+    for (n in seq_len(nrow(current_data))) {
       current_state <- current_data[1:n, 2:ncol(current_data)]
 
       current_data$arm[n] <-
@@ -257,7 +258,7 @@ head(minimize_unequal_weights, 5) |>
 ```{r, minimize-unequal-2}
 set.seed(123)
 # triple weights where the covariant is of high clinical significance
-minimize_unequal_weights_triple <-
+minimize_unequal_weights_3 <-
   minimize_results(
     current_data = data,
     arms = c("armA", "armB", "armC"),
@@ -271,7 +272,7 @@ minimize_unequal_weights_triple <-
     )
   )
 
-head(minimize_unequal_weights_triple, 5) |>
+head(minimize_unequal_weights_3, 5) |>
   gt()
 ```
 
@@ -320,7 +321,7 @@ statistics_table(minimize_unequal_weights)
 - **Minimization with weights 3:1**.
 
 ```{r, chi2-3, tab.cap = "Summary of proportion test for minimization randomization with equal weights"}
-statistics_table(minimize_unequal_weights_triple)
+statistics_table(minimize_unequal_weights_3)
 ```
 
 ## Simple randomization
@@ -333,8 +334,7 @@ Since this is simple randomization, it does not take into account the initial co
 # simple randomization
 simple_results <-
   function(current_data, arms, ratio) {
-    for (n in 1:nrow(current_data))
-    {
+    for (n in seq_len(nrow(current_data))) {
       current_data$arm[n] <-
         randomize_simple(arms, ratio)
     }
@@ -374,16 +374,16 @@ The tables show the assignment of patients to groups using block randomisation a
 ```{r, block-rand}
 # Function to generate a randomisation list
 block_rand <-
-  function(N, block, n_groups, strata, arms = LETTERS[1:n_groups]) {
+  function(n, block, n_groups, strata, arms = LETTERS[1:n_groups]) {
     strata_grid <- expand.grid(strata)
 
     strata_n <- nrow(strata_grid)
 
     ratio <- rep(1, n_groups)
 
-    genSeq_list <- lapply(seq_len(strata_n), function(i) {
+    gen_seq_list <- lapply(seq_len(strata_n), function(i) {
       rand <- rpbrPar(
-        N = N,
+        N = n,
         rb = block,
         K = n_groups,
         ratio = ratio,
@@ -398,7 +398,7 @@ block_rand <-
         dplyr::slice(i) |>
         dplyr::mutate(count = N) |>
         tidyr::uncount(count) |>
-        tibble::add_column(rand_arm = genSeq_list[[i]])
+        tibble::add_column(rand_arm = gen_seq_list[[i]])
       df_list <- rbind(local_df, df_list)
     }
     return(df_list)
@@ -410,27 +410,28 @@ block_rand <-
 block_results <- function(current_data) {
   simulation_result <-
     block_rand(
-      N = n,
+      n = n,
       block = c(3, 6, 9),
       n_groups = 3,
-      strata =
-        list(
-          sex = c("0", "1"),
-          diabetes_type = c("0", "1"),
-          hba1c = c("0", "1"),
-          tpo2 = c("0", "1"),
-          age = c("0", "1"),
-          wound_size = c("0", "1")
-        ),
+      strata = list(
+        sex = c("0", "1"),
+        diabetes_type = c("0", "1"),
+        hba1c = c("0", "1"),
+        tpo2 = c("0", "1"),
+        age = c("0", "1"),
+        wound_size = c("0", "1")
+      ),
       arms = c("armA", "armB", "armC")
     )
 
-  for (n in 1:nrow(current_data))
-  {
+  for (n in seq_len(nrow(current_data))) {
     # "-1" is for "arm" column
     current_state <- current_data[n, 2:(ncol(current_data) - 1)]
 
-    matching_rows <- which(apply(simulation_result[, -ncol(simulation_result)], 1, function(row) all(row == current_state)))
+    matching_rows <- which(apply(
+      simulation_result[, -ncol(simulation_result)], 1,
+      function(row) all(row == current_state)
+    ))
 
     if (length(matching_rows) > 0) {
       current_data$arm[n] <-
@@ -467,11 +468,11 @@ These data were assigned to the variable `sim_data` based on the data stored in 
 
 ```{r, simulations}
 # define number of iterations
-# no_of_iterations <- 1000
+# no_of_iterations <- 1000 # nolint
 # define number of cores
-# no_of_cores <- 20
+# no_of_cores <- 20 # nolint
 # perform simulations (run carefully!)
-# source("~/unbiased/vignettes/helpers/run_parallel.R")
+# source("~/unbiased/vignettes/helpers/run_parallel.R") # nolint
 
 # read data from file
 sim_data <- readRDS("1000_sim_data.Rds")
@@ -514,8 +515,8 @@ smd_covariants_data <-
 
           results_smd <-
             ExtractSmd(tab) |>
-            as.data.frame() %>%
-            tibble::rownames_to_column("covariants") %>%
+            as.data.frame() |>
+            tibble::rownames_to_column("covariants") |>
             select(covariants, results = average) |>
             mutate(results = round(as.numeric(results), 3))
 
@@ -526,8 +527,10 @@ smd_covariants_data <-
               results_smd
             )
           return(results)
-        }) |> bind_rows()
-      }) |> bind_rows()
+        }) |>
+          bind_rows()
+      }) |>
+      bind_rows()
 
     return(result_table)
   }
@@ -538,14 +541,14 @@ cov_balance_data <-
   smd_covariants_data(
     data = sim_data,
     vars = vars
-  ) %>%
+  ) |>
   mutate(method = case_when(
     strata == "minimize_equal_weights_arms" ~ "minimize equal",
     strata == "minimize_unequal_weights_arms" ~ "minimize unequal 2:1",
     strata == "minimize_unequal_weights_triple_arms" ~ "minimize unequal 3:1",
     strata == "simple_data_arms" ~ "simple randomization",
     strata == "block_data_arms" ~ "block randomization"
-  )) %>%
+  )) |>
   select(-strata)
 ```
 
@@ -580,7 +583,7 @@ cov_balance_data |>
   ) +
   facet_wrap(~covariants, ncol = 3) +
   theme_bw() +
-  theme(axis.text = element_text(angle=45, vjust = 0.5, hjust=1))
+  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust = 1))
 ```
 
 - **Summary table of success**
@@ -599,15 +602,16 @@ success_power <-
       lapply(unique(cov_data$simnr), function(i) {
         current_data <- cov_data[cov_data$simnr == i, ]
 
-        current_data %>%
-          group_by(method) %>%
-          summarise(success = ifelse(any(results > 0.2), 0, 1)) %>%
+        current_data |>
+          group_by(method) |>
+          summarise(success = ifelse(any(results > 0.2), 0, 1)) |>
           tibble::add_column(simnr = i, .before = 1)
-      }) %>% bind_rows()
+      }) |>
+      bind_rows()
 
     success <-
-      result_table %>%
-      group_by(method) %>%
+      result_table |>
+      group_by(method) |>
       summarise(results_power = sum(success) / n() * 100)
 
 
