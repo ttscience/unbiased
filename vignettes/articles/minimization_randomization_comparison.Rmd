@@ -4,12 +4,8 @@ author:
   - Aleksandra Duda, Jagoda Głowacka-Walas^[Tranistion Technologies Science]
 date: "`r Sys.Date()`"
 output:
-  html_vignette:
+  html_document:
     toc: yes
-vignette: >
-  %\VignetteIndexEntry{Comparison of Minimization Randomization with Other Randomization Methods. Assessing the balance of covariates.}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 bibliography: references.bib
 link-citations: true
 ---
@@ -36,7 +32,6 @@ The document structure is as follows: first, based on the defined parameters, da
 # load packages
 library(unbiased)
 library(dplyr)
-library(devtools)
 library(simstudy)
 library(tableone)
 library(ggplot2)
@@ -479,7 +474,7 @@ These data were assigned to the variable `sim_data` based on the data stored in 
 # source("~/unbiased/vignettes/helpers/run_parallel.R")
 
 # read data from file
-sim_data <- readRDS("~/unbiased/vignettes/1000_sim_data.Rds")
+sim_data <- readRDS("1000_sim_data.Rds")
 ```
 
 ## Check balance using smd test
