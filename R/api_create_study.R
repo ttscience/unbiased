@@ -1,6 +1,6 @@
-api__minimization_pocock <- function( # nolint: cyclocomp_linter.
+api__minimization_pocock <- function(
+    # nolint: cyclocomp_linter.
     identifier, name, method, arms, covariates, p, req, res) {
-
   collection <- checkmate::makeAssertCollection()
 
   checkmate::assert(
@@ -18,7 +18,8 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
   checkmate::assert(
     checkmate::check_choice(method, choices = c("range", "var", "sd")),
     .var.name = "method",
-    add = collection)
+    add = collection
+  )
 
   checkmate::assert(
     checkmate::check_list(
@@ -55,7 +56,8 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
         len = 2,
       ),
       .var.name = "covariates1",
-      add = collection)
+      add = collection
+    )
 
     checkmate::assert(
       checkmate::check_names(
@@ -63,35 +65,41 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
         permutation.of = c("weight", "levels"),
       ),
       .var.name = "covariates2",
-      add = collection)
+      add = collection
+    )
 
     # check covariate weight
     checkmate::assert(
       checkmate::check_numeric(c_content$weight,
-                               lower = 0,
-                               finite = TRUE,
-                               len = 1,
-                               null.ok = FALSE
+        lower = 0,
+        finite = TRUE,
+        len = 1,
+        null.ok = FALSE
       ),
       .var.name = "weight",
-      add = collection)
+      add = collection
+    )
 
     checkmate::assert(
       checkmate::check_character(c_content$levels,
-                                 min.chars = 1,
-                                 min.len = 2,
-                                 unique = TRUE
+        min.chars = 1,
+        min.len = 2,
+        unique = TRUE
       ),
       .var.name = "levels",
-      add = collection)
+      add = collection
+    )
   }
 
   # check probability
   checkmate::assert(
-    checkmate::check_numeric(p, lower = 0, upper = 1, len = 1,
-                             any.missing = FALSE, null.ok = FALSE),
+    checkmate::check_numeric(p,
+      lower = 0, upper = 1, len = 1,
+      any.missing = FALSE, null.ok = FALSE
+    ),
     .var.name = "p",
-    add = collection)
+    add = collection
+  )
 
 
   if (length(collection$getMessages()) > 0) {

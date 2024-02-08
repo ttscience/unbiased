@@ -89,19 +89,17 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
 
   # Dispatch based on randomization method to parse parameters
   params <-
-    switch(
-      method_randomization,
+    switch(method_randomization,
       minimisation_pocock = do.call(
         parse_pocock_parameters, list(db_connection_pool, study_id, current_state)
-        )
+      )
     )
 
   arm_name <-
-    switch(
-      method_randomization,
+    switch(method_randomization,
       minimisation_pocock = do.call(
         unbiased:::randomize_minimisation_pocock, params
-        )
+      )
     )
 
   arm <- dplyr::tbl(db_connection_pool, "arm") |>
@@ -109,7 +107,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     dplyr::select("arm_id" = "id", "name", "ratio") |>
     dplyr::collect()
 
-  randomized_patient <-  unbiased:::save_patient(study_id, arm$arm_id)
+  randomized_patient <- unbiased:::save_patient(study_id, arm$arm_id)
 
   if (!is.null(randomized_patient$error)) {
     res$status <- 503
