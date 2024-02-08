@@ -40,32 +40,42 @@ Available both as a standard R package and through an API, **unbiased** provides
 
 ## Purpose and Scope for Clinical Trial Randomization
 
-Randomization is a fundamental aspect of clinical trials, ensuring that participants are allocated to treatment groups in an unbiased manner. This is essential for maintaining the integrity of the trial and ensuring that the results are reliable. The primary goal of randomization is to minimize the potential for bias and confounding factors that could affect the outcome of the trial.
+Randomization is the gold standard for conducting clinical trials and a fundamental aspect of clinical trials, in studies comparing two or more arms. Although there are sometimes ethical constraints preventing the use of randomization, in most cases randomization is a desirable technique that will ensure that patients are randomly allocated to defined groups.
 
-The **unbiased** package provides a comprehensive suite of randomization algorithms to support a wide range of clinical trial designs. It is designed to be flexible and adaptable, allowing researchers to select the most appropriate randomization method for their specific study.
+Randomization then ensures that the predictability of the allocation of consecutive patients to groups is blinded, allowing the study participants overseeing the clinical trial to be appropriately blinded. This is essential for maintaining the integrity of the trial and ensuring that the results are reliable. 
+
+However, there are situations where it is desirable for studies to balance patients in terms of numbers in each group or, in addition, to achieve balance with respect to other relevant factors, such as sex or diabetes type.
+
+Adequate selection of randomization methods allows the intended randomization goals to be realized; however, in the case of balance between groups in terms of patient characteristics, more adaptive methods of patient allocation are required, e.g. by verifying the overall imbalance on the basis of current allocations to the study groups. This is ensured, for example, by using the minimization method.
+
+**Unbiased** specifically caters to the needs of clinical trial randomization. It streamlines the randomization process, ensuring a balanced and impartial allocation of participants across different trial groups, which is vital for minimizing bias and ensuring the reliability of trial outcomes. Unbiased allows the use of simple, block and advanced randomization methods relevant to the conduct of clinical trials. Consequently, it addresses the needs arising from the need to balance against key variables, ensuring that the population in each treatment group is as comparable as possible.
 
 ## Comparative Analysis of Randomization Methods
 
-(Ola - skrócona wersja z winietki, może obrazki?)
+**Unbiased** compared to standard and most commonly used randomization methods, e.g. the simple method or the block method, additionally offers enhanced features of more flexible adaptive methods, which are based on current information about the allocation of patients in the trial. Compared to, for example, block randomization, adaptive randomization not only ensures relatively equal allocation to patient groups, but also allows the groups to be balanced on the basis of certain important covariates, which is its key advantage. This randomization requires predefined criteria, such as the probability with which a given patient will be assigned to a group based on minimizing the total imbalance, or weights that can be assigned personally for each individual covariate. Its advanced algorithmic approach sets it apart from others by minimizing selection bias and improving the overall efficiency of the randomization process in clinical trials.
 
-The **unbiased** package offers a range of randomization methods, each with its own strengths and limitations. The choice of randomization method will depend on the specific requirements of the trial, including the number of treatment groups, the size of the trial, and the need for stratification or minimization.
+The **unbiased** package offers the use of different randomization methods, each with its own strengths and limitations. The choice of randomization method will depend on the specific requirements of the trial, including the number of treatment groups, the size of the trial, and the need for stratification or covariate balance.
 
 The **unbiased** package includes the following randomization methods:
 
-- **Simple Randomization**: This is the most basic form of randomization, in which participants are assigned to treatment groups with equal probability. This method is simple and easy to implement, but it does not account for any potential imbalances in baseline characteristics between treatment groups.
-
-- **Block Randomization**: This method involves dividing participants into blocks and then randomly assigning them to treatment groups within each block. This ensures that the number of participants in each treatment group is balanced over time, but it does not account for any potential imbalances in baseline characteristics between treatment groups.
+- **Simple Randomization**: This is the most basic form of randomization, in which participants are assigned to treatment groups with equal probability. This method is simple and easy to implement. Since this is simple randomization, it does not take into account the initial covariates, and treatment assignment occurs randomly (flip coin method).
 
 - **Minimization Method**: This method is designed to minimize imbalances in baseline characteristics between treatment groups. It uses an adaptive algorithm to assign participants to treatment groups based on their baseline characteristics, with the goal of achieving balance across treatment groups.
 
+- **Block Randomization**: This method involves dividing participants into blocks and then randomly assigning them to treatment groups within each block. This ensures that the number of participants in each treatment group is balanced over time, but it does not account for any potential imbalances in baseline characteristics between treatment groups.
+
+Depending on the aims and objectives of the randomised trial, the **unbiased** approach allows a choice of alternative methods to effectively implement appropriate algorithms for the randomized patient allocation process in a clinical trial. A comparison of these methods is shown in a boxplot, where a lower threshold value of the SMD index indicates a greater balance in covariates retained by the method.
+
+![Comparison of covariate balances.](vignettes/boxplot.png)
 ...
 
 To find out more, read our vignette on [Comparative Analysis of Randomization Methods](vignettes/minimization_randomization_comparison.Rmd).
 
 ## Comparison with other solutions
 
-(Ola - randpack, others...?)
+There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization, and permuted blocks -e.g. blockrand, randomizeR. More recently, there have also been options for using minimization randomization - randpack, or minirand.
 
+Unlike the other packages, unbiased incorporates several different types of minimization algorithms - from simple simple randomization methods to advanced ones based on the Pocok minimization method. In addition, the advantage of using unbiased is that it can be used in the form of an API, which is not possible in the existing software, making **unbiased** appear complete from the point of view of usability, as well as the possibility of testing multiple methods for an individual study within a single package.
 
 # Getting Started
 
