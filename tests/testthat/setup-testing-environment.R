@@ -219,6 +219,16 @@ withr::local_envvar(
   )
 )
 
+stdout_file <- withr::local_tempfile(
+  fileext = ".log",
+  .local_envir = teardown_env()
+)
+
+stderr_file <- withr::local_tempfile(
+  fileext = ".log",
+  .local_envir = teardown_env()
+)
+
 plumber_process <- callr::r_bg(
   \() {
     if (!requireNamespace("unbiased", quietly = TRUE)) {
@@ -232,19 +242,19 @@ plumber_process <- callr::r_bg(
 
     unbiased:::run_unbiased()
   },
-  supervise = TRUE
+  supervise = TRUE,
+  stdout = stdout_file,
+  stderr = stderr_file,
 )
 
 withr::defer(
   {
     print("Server STDOUT:")
-    while (length(lines <- plumber_process$read_output_lines())) {
-      writeLines(lines)
-    }
+    lines <- readLines(stdout_file)
+    writeLines(lines)
     print("Server STDERR:")
-    while (length(lines <- plumber_process$read_error_lines())) {
-      writeLines(lines)
-    }
+    lines <- readLines(stderr_file)
+    writeLines(lines)
     print("Sending SIGINT to plumber process")
     plumber_process$interrupt()
 
