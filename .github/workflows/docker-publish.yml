@@ -1,4 +1,4 @@
-name: Docker
+name: Build and Publish Docker Images
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -6,14 +6,10 @@ name: Docker
 # documentation.
 
 on:
-  schedule:
-    - cron: '15 0 * * *'
   push:
-    branches: [ "main" ]
+    branches: [ "main", "devel" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
 
 env:
@@ -21,6 +17,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
+  BRANCH_TAG: ${{ github.ref == 'refs/heads/devel' && 'unbiased-dev' || 'latest' }}
 
 
 jobs:

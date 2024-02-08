@@ -1,6 +1,33 @@
 #' Defines methods for interacting with the study in the database
 
+#' Create a database connection pool
+#'
+#' This function creates a connection pool to a PostgreSQL database. It uses
+#' environment variables to get the necessary connection parameters. If the
+#' connection fails, it will retry up to 5 times with a delay of 2 seconds
+#' between each attempt.
+#'
+#' @return A pool object representing the connection pool to the database.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' pool <- create_db_connection_pool()
+#' }
+create_db_connection_pool <- purrr::insistently(function() {
+  pool::dbPool(
+    RPostgres::Postgres(),
+    dbname = Sys.getenv("POSTGRES_DB"),
+    host = Sys.getenv("POSTGRES_HOST"),
+    port = Sys.getenv("POSTGRES_PORT", 5432),
+    user = Sys.getenv("POSTGRES_USER"),
+    password = Sys.getenv("POSTGRES_PASSWORD")
+  )
+}, rate = purrr::rate_delay(2, max_times = 5))
+
+
 get_similar_studies <- function(name, identifier) {
+  db_connection_pool <- get("db_connection_pool")
   similar <-
     dplyr::tbl(db_connection_pool, "study") |>
     dplyr::select(id, name, identifier) |>
@@ -11,7 +38,8 @@ get_similar_studies <- function(name, identifier) {
 
 create_study <- function(
     name, identifier, method, parameters, arms, strata) {
-  connection <- pool::poolCheckout(db_connection_pool)
+  db_connection_pool <- get("db_connection_pool", envir = .GlobalEnv)
+  connection <- pool::localCheckout(db_connection_pool)
 
   r <- tryCatch(
     {
@@ -36,7 +64,7 @@ create_study <- function(
       study$parameters <- jsonlite::fromJSON(study$parameters)
 
       arm_records <- arms |>
-        purrr::imap(\(x, name) list(name=name, ratio=x)) |>
+        purrr::imap(\(x, name) list(name = name, ratio = x)) |>
         purrr::map(tibble::as_tibble) |>
         purrr::list_c()
       arm_records$study_id <- study$id
@@ -102,7 +130,7 @@ create_study <- function(
       list(study = study)
     },
     error = function(cond) {
-      logger::log_error("Error creating study: {cond}", cond=cond)
+      logger::log_error("Error creating study: {cond}", cond = cond)
       DBI::dbRollback(connection)
       list(error = conditionMessage(cond))
     }
@@ -111,7 +139,8 @@ create_study <- function(
   r
 }
 
-save_patient <- function(study_id, arm_id){
+save_patient <- function(study_id, arm_id) {
+  db_connection_pool <- get("db_connection_pool")
   randomized_patient <- DBI::dbGetQuery(
     db_connection_pool,
     "INSERT INTO patient (arm_id, study_id)
@@ -122,4 +151,3 @@ save_patient <- function(study_id, arm_id){
 
   return(randomized_patient)
 }
-

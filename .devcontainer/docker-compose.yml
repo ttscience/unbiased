@@ -41,9 +41,7 @@ services:
       - "5454:80"
 
   db:
-    build:
-      context: ..
-      dockerfile: Dockerfile.postgres
+    image: ghcr.io/ttscience/postgres-temporal-tables/postgres-temporal-tables:latest
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data

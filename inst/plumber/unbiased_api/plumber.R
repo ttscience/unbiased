@@ -1,20 +1,30 @@
 #* @apiTitle Unbiased
-#* @apiDescription This API provides a diverse range of randomization algorithms specifically designed for use in clinical trials. It supports dynamic strategies such as the minimization method, as well as simpler approaches including standard and block randomization. The main goal of this API is to ensure seamless integration with electronic Case Report Form (eCRF) systems, facilitating efficient patient allocation management in clinical trials.
-#* @apiContact list(name = "GitHub", url = "https://ttscience.github.io/unbiased/")
-#* @apiLicense list(name = "MIT", url = "https://github.com/ttscience/unbiased/LICENSE.md")
+#* @apiDescription This API provides a diverse range of randomization
+#*   algorithms specifically designed for use in clinical trials. It supports
+#*   dynamic strategies such as the minimization method, as well as simpler
+#*   approaches including standard and block randomization. The main goal of
+#*   this API is to ensure seamless integration with electronic Case Report
+#*   Form (eCRF) systems, facilitating efficient patient allocation management
+#*   in clinical trials.
+#* @apiContact list(name = "GitHub",
+#*   url = "https://ttscience.github.io/unbiased/")
+#* @apiLicense list(name = "MIT",
+#*   url = "https://github.com/ttscience/unbiased/LICENSE.md")
 #* @apiVersion 0.0.0.9003
-#* @apiTag initialize Endpoints that initialize study with chosen randomization method and parameters.
-#* @apiTag randomize Endpoints that randomize individual patients after the study was created.
+#* @apiTag initialize Endpoints that initialize study with chosen
+#*   randomization method and parameters.
+#* @apiTag randomize Endpoints that randomize individual patients after the
+#*   study was created.
 #* @apiTag other Other endpoints (helpers etc.).
 #*
 #* @plumber
 function(api) {
   meta <- plumber::pr("meta.R")
-  minimisation_pocock <- plumber::pr("minimisation_pocock.R")
+  study <- plumber::pr("study.R")
 
   api |>
     plumber::pr_mount("/meta", meta) |>
-    plumber::pr_mount("/study", minimisation_pocock) |>
+    plumber::pr_mount("/study", study) |>
     plumber::pr_set_api_spec(function(spec) {
       spec$
         paths$
@@ -22,6 +32,30 @@ function(api) {
         post$requestBody$
         content$`application/json`$schema$properties$
         arms$example <- list("placebo" = 1, "active" = 1)
+      spec$
+        paths$
+        `/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$schema$properties$
+        identifier$example <- "CSN"
+      spec$
+        paths$
+        `/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$schema$properties$
+        p$example <- 0.85
+      spec$
+        paths$`/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$
+        schema$properties$
+        name$example <- "Clinical Study Name"
+      spec$
+        paths$`/study/minimisation_pocock`$
+        post$requestBody$
+        content$`application/json`$
+        schema$properties$
+        method$example <- "range"
       # example of how to define covariates in minimisation pocock
       spec$
         paths$`/study/minimisation_pocock`$
@@ -43,9 +77,11 @@ function(api) {
         paths$`/study/{study_id}/patient`$
         post$requestBody$content$`application/json`$
         schema$properties$current_state$example <-
-        tibble::tibble("sex" = c("female", "male"),
-                       "weight" = c("61-80 kg", "81 kg or more"),
-                       "arm" = c("placebo", ""))
+        tibble::tibble(
+          "sex" = c("female", "male"),
+          "weight" = c("61-80 kg", "81 kg or more"),
+          "arm" = c("placebo", "")
+        )
       spec
     })
 }
@@ -69,4 +105,3 @@ function(req) {
 
   plumber::forward()
 }
-

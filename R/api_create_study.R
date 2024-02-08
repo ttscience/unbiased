@@ -1,35 +1,17 @@
-#* Initialize a study with Pocock's minimisation randomization
-#*
-#* Set up a new study for randomization defining it's parameters
-#*
-#*
-#* @param identifier:str Study code, at most 12 characters.
-#* @param name:str Full study name.
-#* @param method:str Function used to compute within-arm variability, must be one of: sd, var, range
-#* @param p:dbl Proportion of randomness (0, 1) in the randomization vs determinism (e.g. 0.85 equals 85% deterministic)
-#* @param arms:object Arm names (character) with their ratios (integer).
-#* @param covariates:object Covariate names (character), allowed levels (character) and covariate weights (double).
-#*
-#* @tag initialize
-#*
-#* @post /minimisation_pocock
-#* @serializer unboxedJSON
-#*
-function(identifier, name, method, arms, covariates, p, req, res) {
-  source("study-repository.R")
-  source("validation-utils.R")
+api__minimization_pocock <- function( # nolint: cyclocomp_linter.
+    identifier, name, method, arms, covariates, p, req, res) {
   validation_errors <- vector()
 
   err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors, "name", err
     )
   }
 
   err <- checkmate::check_character(identifier, min.chars = 1, max.chars = 12)
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors,
       "identifier",
       err
@@ -38,7 +20,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 
   err <- checkmate::check_choice(method, choices = c("range", "var", "sd"))
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors,
       "method",
       err
@@ -54,7 +36,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
       names = "unique"
     )
   if (err != TRUE) {
-    validation_errors <- append_error(
+    validation_errors <- unbiased:::append_error(
       validation_errors,
       "arms",
       err
@@ -71,7 +53,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     )
   if (err != TRUE) {
     validation_errors <-
-      append_error(validation_errors, "covariates", err)
+      unbiased:::append_error(validation_errors, "covariates", err)
   }
 
   response <- list()
@@ -85,7 +67,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}]"),
           err
@@ -97,7 +79,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}]"),
           err
@@ -113,7 +95,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}][weight]"),
           err
@@ -127,7 +109,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     )
     if (err != TRUE) {
       validation_errors <-
-        append_error(
+        unbiased:::append_error(
           validation_errors,
           glue::glue("covariates[{c_name}][levels]"),
           err
@@ -140,7 +122,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   err <- checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
   if (err != TRUE) {
     validation_errors <-
-      append_error(
+      unbiased:::append_error(
         validation_errors,
         "p",
         err
@@ -155,7 +137,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
     ))
   }
 
-  similar_studies <- get_similar_studies(name, identifier)
+  similar_studies <- unbiased:::get_similar_studies(name, identifier)
 
   strata <- purrr::imap(covariates, function(covariate, name) {
     list(
@@ -167,7 +149,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   weights <- lapply(covariates, function(covariate) covariate$weight)
 
   # Write study to DB -------------------------------------------------------
-  r <- create_study(
+  r <- unbiased:::create_study(
     name = name,
     identifier = identifier,
     method = "minimisation_pocock",
@@ -183,7 +165,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
   # Response ----------------------------------------------------------------
 
   if (!is.null(r$error)) {
-    res$status <- 409
+    res$status <- 503
     return(list(
       error = "There was a problem creating the study",
       details = r$error
@@ -199,78 +181,3 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 
   return(response)
 }
-
-#* Randomize one patient
-#*
-#*
-#* @param study_id:int Study identifier
-#* @param current_state:object
-#*
-#* @tag randomize
-#* @post /<study_id:int>/patient
-#* @serializer unboxedJSON
-#*
-
-function(study_id, current_state, req, res) {
-  # Assertion connection with DB
-  checkmate::assert(DBI::dbIsValid(db_connection_pool), .var.name = "DB connection")
-
-
-  # Check whether study with study_id exists
-  checkmate::expect_subset(x = req$args$study_id,
-                           choices =
-                             dplyr::tbl(db_connection_pool, "study") |>
-                             dplyr::select(id) |>
-                             dplyr::pull())
-
-  #DF validation - error handling
-
-  # Retrieve study details, especially the ones about randomization
-  method_randomization <-
-    dplyr::tbl(db_connection_pool, "study") |>
-    dplyr::filter(id == study_id) |>
-    dplyr::select(method) |>
-    dplyr::pull()
-
-  # asercja jeden element
-
-  # Dispatch based on randomization method to parse parameters
-  source("parse_pocock.R")
-  params <-
-    switch(
-      method_randomization,
-      minimisation_pocock = tryCatch({
-        do.call(parse_pocock_parameters, list(db_connection_pool, study_id, current_state))
-      }, error = function(e) {
-        res$status <- 400
-        res$body = glue::glue("Error message: {conditionMessage(e)}")
-        logger::log_error("Error: {err}", err=e)
-      })
-    )
-
-  arm_name <-
-    switch(
-      method_randomization,
-      # simple = do.call(unbiased:::randomize_simple, params),
-      minimisation_pocock = tryCatch({
-        do.call(unbiased:::randomize_minimisation_pocock, params)
-      }, error = function(e) {
-        # browser()
-        res$status <- 400
-        res$body = glue::glue("Error message: {conditionMessage(e)}")
-        logger::log_error("Error: {err}", err=e)
-      }
-      )
-    )
-
-  arm <- dplyr::tbl(db_connection_pool, "arm") |>
-    dplyr::filter(study_id == !!study_id & name == arm_name) |>
-    dplyr::select(arm_id = id, name, ratio) |>
-    dplyr::collect()
-
-  save_patient(study_id, arm$arm_id) |>
-    dplyr::mutate(arm_name = arm$name) |>
-    dplyr::rename(patient_id = id) |>
-    as.list()
-}
-
