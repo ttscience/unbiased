@@ -189,7 +189,7 @@ data <-
 
 ```{r, data-show}
 # first 5 rows of the data
-data[1:5, 2:ncol(data)] |>
+head(data, 5) |>
   gt()
 ```
 
@@ -234,7 +234,7 @@ minimize_equal_weights <-
     arms = c("armA", "armB", "armC")
   )
 
-minimize_equal_weights[1:5, 2:ncol(minimize_equal_weights)] |>
+head(minimize_equal_weights, 5) |>
   gt()
 ```
 
@@ -255,7 +255,7 @@ minimize_unequal_weights <-
     )
   )
 
-minimize_unequal_weights[1:5, 2:ncol(minimize_unequal_weights)] |>
+head(minimize_unequal_weights, 5) |>
   gt()
 ```
 
@@ -276,7 +276,7 @@ minimize_unequal_weights_triple <-
     )
   )
 
-minimize_unequal_weights_triple[1:5, 2:ncol(minimize_unequal_weights_triple)] |>
+head(minimize_unequal_weights_triple, 5) |>
   gt()
 ```
 
@@ -358,7 +358,7 @@ simple_data <-
     ratio = c("armB" = 1L, "armA" = 1L, "armC" = 1L)
   )
 
-simple_data[1:5, 2:ncol(simple_data)] |>
+head(simple_data, 5) |>
   gt()
 ```
 
@@ -456,7 +456,7 @@ set.seed(123)
 block_data <-
   block_results(data)
 
-block_data[1:5, 2:ncol(block_data)] |>
+head(block_data, 5) |>
   gt()
 ```
 
