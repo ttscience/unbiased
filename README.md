@@ -23,18 +23,30 @@ The **unbiased** package integrates dynamic and traditional randomization method
 Available both as a standard R package and through an API, **unbiased** provides flexibility for researchers. It ensures seamless integration with electronic Case Report Form (eCRF) systems, facilitating efficient patient management.
 
 ## Table of Contents
+
 1. [Background](#background)
    - [Purpose and Scope for Clinical Trial Randomization](#purpose-and-scope-for-clinical-trial-randomization)
    - [Comparative Analysis of Randomization Methods](#comparative-analysis-of-randomization-methods)
-   - [Comparison with other solutions](#comparison-with-other-solutions)
-2. [Installation](#installation)
-   - [Installation Instructions](#installation-instructions)
-   - [Deploying the API](#deploying-the-api)
-4. [Getting Started](#getting-started)
-   - [Quickstart Guide](#quickstart-guide)
-   - [Basic Usage Examples](#basic-usage-examples)
-3. [Technical Implementation](#technical-implementation)
+   - [Comparison with Other Solutions](#comparison-with-other-solutions)
+2. [Quickstart Guide](#quickstart-guide)
+     - [Installation Instructions](#installation-instructions)
+     - [Deploying the API](#deploying-the-api)
+     - [API Configuration](#api-configuration)
+3. [Getting started with **unbiased**](#getting-started-with-unbiased)
+     - [Using Randomization Functions within R](#using-randomization-functions-within-r)
+         - [Simple Randomization](#simple-randomization)
+         - [Minimization Method](#minimization-method)
+     - [API Endpoints](#api-endpoints)
+        - [Study Creation](#study-creation)
+        - [Patient Randomization](#patient-randomization)
+4. [Technical Implementation](#technical-implementation)
    - [Quality Assurance Measures](#quality-assurance-measures)
+   - [Running Tests](#running-tests)
+     - [Executing Tests from an R Interactive Session](#executing-tests-from-an-r-interactive-session)
+     - [Executing Tests from the Command Line](#executing-tests-from-the-command-line)
+     - [Running Tests with Docker Compose](#running-tests-with-docker-compose)
+   - [Code Coverage](#code-coverage)
+
 
 # Background
 
@@ -77,11 +89,11 @@ There are many packages that perform specific randomization methods in R. Most o
 
 Unlike the other packages, unbiased incorporates several different types of minimization algorithms - from simple simple randomization methods to advanced ones based on the Pocok minimization method. In addition, the advantage of using unbiased is that it can be used in the form of an API, which is not possible in the existing software, making **unbiased** appear complete from the point of view of usability, as well as the possibility of testing multiple methods for an individual study within a single package.
 
-# Getting Started
+# Quickstart Guide
 
-Initiating your work with **unbiased** involves simple setup steps. Whether you're integrating it into your R environment or deploying its API, we provide detailed instructions and examples to facilitate a smooth start. We aim to equip you with a reliable tool that enhances the integrity and efficiency of your clinical trials.
+Initiating your work with **unbiased** involves simple setup steps. Whether you're integrating it into your R environment or deploying its API, we aim to equip you with a reliable tool that enhances the integrity and efficiency of your clinical trials.
 
-## Installation
+## Installation instructions
 
 The **unbiased** package can be installed from GitHub using the `devtools` package. To install **unbiased**, run the following command in your R environment:
 
@@ -109,50 +121,104 @@ The **unbiased** API server can be configured using environment variables. The f
 - `UNBIASED_HOST`: The host on which the API will run. Defaults to `0.0.0.0` if not provided.
 - `UNBIASED_PORT`: The port on which the API will listen. Defaults to `3838` if not provided.
 
-# Use Cases
+# Getting started with **unbiased**
 
-## Using randomization functions within R
+The **unbiased** package offers functions for randomizing participants in clinical trials, ensuring a fair and transparent process.
 
-The **unbiased** package provides a set of functions that can be used to perform randomization within R. These functions can be used to assign participants to treatment groups in a clinical trial, ensuring that the randomization process is unbiased and transparent.
+### Simple Randomization
 
-
-### Simple randomization
+Use `simple_randomization` for uncomplicated, unbiased assignment, giving each participant an equal chance of being allocated to any group. This method requires specifying the `arms` and `ratio` parameters, where `arms` is a vector of treatment group names, and `ratio` is a vector of integers indicating the allocation proportions.
 
 ```R
-# Load the unbiased package
-library(unbiased)
+# Treatment group assignments with a 1:1 ratio
+treatment_group <-
+  randomize_simple(
+    arms = c("treatment", "placebo"),
+    ratio = c("treatment" = 1, "placebo" = 1)
+  )
+```
 
-# Create a data frame with participant IDs and treatment group assignments
-participants <- data.frame(
-  id = 1:100,
-  treatment_group = simple_randomization(100, 2)
+*Note: Ensure that the `ratio` parameter accurately reflects an allocation proportion vector, using numeric values to denote the proportions.*
+
+### Minimization Method
+
+The minimization method considers existing participant assignments to minimize bias. New participants are allocated based on an imbalance score, calculated using specified weights for each covariate. This method dynamically adjusts to maintain balance across treatment groups.
+
+```R
+# Treatment group assignment considering previous participants' data
+treatment_group <- randomize_minimisation_pocock(
+  arms = c("treatment", "placebo"),
+  current_state = previous_data,
+  weights = c(
+    "sex" = 1,
+    "age" = 1
+  ),
+  ratio = c(1, 1), # Ensure ratio is defined correctly
+  method = "var",
+  p = 0.85
 )
-
 ```
 
-### Minimization method
+## API Endpoints
 
-The minimization method function provided by **unbiased** assume that there is a study initialized and the previous patients assigments is stored in the dataframe/database. The functions will then use this data to assign new participant to treatment groups in a way that minimizes the potential for bias and confounding factors. If the data is not available (e.g. when first patient is randomized), he will be randomly assigned to a treatment group.
+The **unbiased** API facilitates randomization and clinical trial management via HTTP clients.
+
+### Study Creation
+
+To initialize a study using Pocock's minimization method, use the POST /minimisation_pocock endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.
 
 ```R
-# Load the unbiased package
-library(unbiased)
-
-# Create a data frame with participant IDs and treatment group assignments
-participants <- data.frame(
-  id = 1:100,
-  treatment_group = minimization_method(
-    100,
-    2,
-    covariates = c("age
-  ))
+# Initialize a study with Pocock's minimisation method
+response <- request(api_url) |>
+    req_url_path("study", "minimisation_pocock") |>
+    req_method("POST") |>
+    req_body_json(
+      data = list(
+        identifier = "My_study_1",
+        name = "Study 1",
+        method = "var",
+        p = 0.85,
+        arms = list(
+          "placebo" = 1,
+          "treatment" = 1
+        ),
+        covariates = list(
+          sex = list(
+            weight = 1,
+            levels = c("female", "male")
+          ),
+          age = list(
+            weight = 1,
+            levels = c("up to 50", "51 or more")
+          )
+        )
+      )
+    )
 ```
 
-## API endpoints
+This call sets up the study and returns an ID for accessing further study-related endpoints.
 
-### Study creation
+### Patient Randomization
 
-### Patient randomization
+The POST /{study_id}/patient endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.
+
+```R
+# Randomize a new patient
+req_url_path("study", my_study_id, "patient") |>
+          req_method("POST") |>
+          req_body_json(
+            data = list(
+              current_state =
+                tibble::tibble(
+                  "sex" = c("female"),
+                  "age" = c("up to 50"),
+                  "arm" = c("") 
+                )
+            )
+          )
+```
+
+This endpoint determines the patient's treatment group.
 
 # Technical details
 
