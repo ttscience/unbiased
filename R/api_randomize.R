@@ -24,7 +24,7 @@ parse_pocock_parameters <-
     ratio_arms <-
       dplyr::tbl(db_connetion_pool, "arm") |>
       dplyr::filter(study_id == !!study_id) |>
-      dplyr::select("name", "ratio") |>
+      dplyr::select(name, ratio) |>
       dplyr::collect()
 
     params <- list(
