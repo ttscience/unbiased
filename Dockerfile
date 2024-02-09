@@ -22,12 +22,14 @@ ENV RENV_CONFIG_SANDBOX_ENABLED=FALSE
 
 COPY ./renv ./renv
 COPY .Rprofile .
+
+# Both renv.lock and DESCRIPTION are needed to restore the R environment
 COPY renv.lock .
+COPY DESCRIPTION .
 
 RUN R -e 'renv::restore()'
 
 COPY .Rbuildignore .
-COPY DESCRIPTION .
 COPY NAMESPACE .
 COPY inst/ ./inst
 COPY R/ ./R
