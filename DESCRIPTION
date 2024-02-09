@@ -36,6 +36,7 @@ Suggests:
     callr,
     httr2,
     RPostgres,
+    pool,
     testthat (>= 3.0.0),
     usethis,
     withr,

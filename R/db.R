@@ -15,15 +15,23 @@
 #' pool <- create_db_connection_pool()
 #' }
 create_db_connection_pool <- purrr::insistently(function() {
+  dbname <- Sys.getenv("POSTGRES_DB")
+  host <- Sys.getenv("POSTGRES_HOST")
+  port <- Sys.getenv("POSTGRES_PORT", 5432)
+  user <- Sys.getenv("POSTGRES_USER")
+  password <- Sys.getenv("POSTGRES_PASSWORD")
+  print(
+    glue::glue("Creating database connection pool to {dbname} at {host}:{port} as {user}")
+  )
   pool::dbPool(
     RPostgres::Postgres(),
-    dbname = Sys.getenv("POSTGRES_DB"),
-    host = Sys.getenv("POSTGRES_HOST"),
-    port = Sys.getenv("POSTGRES_PORT", 5432),
-    user = Sys.getenv("POSTGRES_USER"),
-    password = Sys.getenv("POSTGRES_PASSWORD")
+    dbname = dbname,
+    host = host,
+    port = port,
+    user = user,
+    password = password
   )
-}, rate = purrr::rate_delay(2, max_times = 15))
+}, rate = purrr::rate_delay(1, max_times = 15), quiet = FALSE)
 
 
 get_similar_studies <- function(name, identifier) {
