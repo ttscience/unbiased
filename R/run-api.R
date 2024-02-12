@@ -77,8 +77,6 @@ run_unbiased <- function() {
 #'    If not set, it defaults to "unspecified".
 #'
 #' @seealso \url{https://docs.sentry.io/}
-#'
-#' @export
 setup_sentry <- function() {
   sentry_dsn <- Sys.getenv("SENTRY_DSN")
   if (sentry_dsn == "") {
