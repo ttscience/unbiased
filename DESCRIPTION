@@ -45,7 +45,7 @@ Suggests:
     jsonlite,
     purrr,
     knitr,
-    rmarkdown
+    rmarkdown,
     sentryR
 RdMacros: mathjaxr
 Config/testthat/edition: 3
