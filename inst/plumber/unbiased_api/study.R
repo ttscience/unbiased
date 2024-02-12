@@ -42,3 +42,18 @@ function(study_id, current_state, req, res) {
     unbiased:::api__randomize_patient(study_id, current_state, req, res)
   )
 }
+
+#' Get all available studies
+#'
+#' @return tibble with study_id, identifier, name and method
+#'
+#' @tag other
+#' @get /
+#'
+#' @serializer unboxedJSON
+#'
+function(req, res){
+  return(
+    unbiased:::api_get_study(req, res)
+  )
+}
