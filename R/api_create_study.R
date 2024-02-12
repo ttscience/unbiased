@@ -1,139 +1,112 @@
-api__minimization_pocock <- function( # nolint: cyclocomp_linter.
+api__minimization_pocock <- function(
+    # nolint: cyclocomp_linter.
     identifier, name, method, arms, covariates, p, req, res) {
-  validation_errors <- vector()
+  collection <- checkmate::makeAssertCollection()
 
-  err <- checkmate::check_character(name, min.chars = 1, max.chars = 255)
-  if (err != TRUE) {
-    validation_errors <- unbiased:::append_error(
-      validation_errors, "name", err
-    )
-  }
+  checkmate::assert(
+    checkmate::check_character(name, min.chars = 1, max.chars = 255),
+    .var.name = "name",
+    add = collection
+  )
 
-  err <- checkmate::check_character(identifier, min.chars = 1, max.chars = 12)
-  if (err != TRUE) {
-    validation_errors <- unbiased:::append_error(
-      validation_errors,
-      "identifier",
-      err
-    )
-  }
+  checkmate::assert(
+    checkmate::check_character(identifier, min.chars = 1, max.chars = 12),
+    .var.name = "identifier",
+    add = collection
+  )
 
-  err <- checkmate::check_choice(method, choices = c("range", "var", "sd"))
-  if (err != TRUE) {
-    validation_errors <- unbiased:::append_error(
-      validation_errors,
-      "method",
-      err
-    )
-  }
+  checkmate::assert(
+    checkmate::check_choice(method, choices = c("range", "var", "sd")),
+    .var.name = "method",
+    add = collection
+  )
 
-  err <-
+  checkmate::assert(
     checkmate::check_list(
       arms,
       types = "integerish",
       any.missing = FALSE,
       min.len = 2,
       names = "unique"
-    )
-  if (err != TRUE) {
-    validation_errors <- unbiased:::append_error(
-      validation_errors,
-      "arms",
-      err
-    )
-  }
+    ),
+    .var.name = "arms",
+    add = collection
+  )
 
-  err <-
+  checkmate::assert(
     checkmate::check_list(
       covariates,
       types = c("numeric", "list", "character"),
       any.missing = FALSE,
-      min.len = 2,
+      min.len = 1,
       names = "unique"
-    )
-  if (err != TRUE) {
-    validation_errors <-
-      unbiased:::append_error(validation_errors, "covariates", err)
-  }
+    ),
+    .var.name = "covariates3",
+    add = collection
+  )
 
   response <- list()
   for (c_name in names(covariates)) {
     c_content <- covariates[[c_name]]
 
-    err <- checkmate::check_list(
-      c_content,
-      any.missing = FALSE,
-      len = 2,
+    checkmate::assert(
+      checkmate::check_list(
+        c_content,
+        any.missing = FALSE,
+        len = 2,
+      ),
+      .var.name = "covariates1",
+      add = collection
     )
-    if (err != TRUE) {
-      validation_errors <-
-        unbiased:::append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}]"),
-          err
-        )
-    }
-    err <- checkmate::check_names(
-      names(c_content),
-      permutation.of = c("weight", "levels"),
+
+    checkmate::assert(
+      checkmate::check_names(
+        names(c_content),
+        permutation.of = c("weight", "levels"),
+      ),
+      .var.name = "covariates2",
+      add = collection
     )
-    if (err != TRUE) {
-      validation_errors <-
-        unbiased:::append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}]"),
-          err
-        )
-    }
 
     # check covariate weight
-    err <- checkmate::check_numeric(c_content$weight,
-      lower = 0,
-      finite = TRUE,
-      len = 1,
-      null.ok = FALSE
+    checkmate::assert(
+      checkmate::check_numeric(c_content$weight,
+        lower = 0,
+        finite = TRUE,
+        len = 1,
+        null.ok = FALSE
+      ),
+      .var.name = "weight",
+      add = collection
     )
-    if (err != TRUE) {
-      validation_errors <-
-        unbiased:::append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}][weight]"),
-          err
-        )
-    }
 
-    err <- checkmate::check_character(c_content$levels,
-      min.chars = 1,
-      min.len = 2,
-      unique = TRUE
+    checkmate::assert(
+      checkmate::check_character(c_content$levels,
+        min.chars = 1,
+        min.len = 2,
+        unique = TRUE
+      ),
+      .var.name = "levels",
+      add = collection
     )
-    if (err != TRUE) {
-      validation_errors <-
-        unbiased:::append_error(
-          validation_errors,
-          glue::glue("covariates[{c_name}][levels]"),
-          err
-        )
-    }
   }
 
   # check probability
-  p <- as.numeric(p)
-  err <- checkmate::check_numeric(p, lower = 0, upper = 1, len = 1)
-  if (err != TRUE) {
-    validation_errors <-
-      unbiased:::append_error(
-        validation_errors,
-        "p",
-        err
-      )
-  }
+  checkmate::assert(
+    checkmate::check_numeric(p,
+      lower = 0, upper = 1, len = 1,
+      any.missing = FALSE, null.ok = FALSE
+    ),
+    .var.name = "p",
+    add = collection
+  )
 
-  if (length(validation_errors) > 0) {
+
+  if (length(collection$getMessages()) > 0) {
     res$status <- 400
     return(list(
-      error = "Input validation failed",
-      validation_errors = validation_errors
+      error = "There was a problem with the input data to create the study",
+      validation_errors = collection$getMessages()
     ))
   }
 
@@ -167,7 +140,7 @@ api__minimization_pocock <- function( # nolint: cyclocomp_linter.
   if (!is.null(r$error)) {
     res$status <- 503
     return(list(
-      error = "There was a problem creating the study",
+      error = "There was a problem saving created study to the database",
       details = r$error
     ))
   }

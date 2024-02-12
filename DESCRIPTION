@@ -36,13 +36,16 @@ Suggests:
     callr,
     httr2,
     RPostgres,
+    pool,
     testthat (>= 3.0.0),
     usethis,
     withr,
     DBI,
     glue,
     jsonlite,
-    purrr
+    purrr,
+    knitr,
+    rmarkdown
     sentryR
 RdMacros: mathjaxr
 Config/testthat/edition: 3
@@ -50,3 +53,4 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 URL: https://ttscience.github.io/unbiased/
+VignetteBuilder: knitr
