@@ -156,7 +156,8 @@ def <- simstudy::defData(def, varname = "hba1c", formula = "0.888", dist = "bina
 def <- simstudy::defData(def, varname = "tpo2", formula = "0.354", dist = "binary")
 # correlation with diabetes type
 def <- simstudy::defData(
-  def, varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary"
+  def,
+  varname = "age", formula = "(diabetes_type == 0) * (-0.95)", link = "logit", dist = "binary"
 )
 # <= 2 - 0.302
 def <- simstudy::defData(def, varname = "wound_size", formula = "0.302", dist = "binary")
