@@ -131,6 +131,10 @@ setup_test_db_connection_pool <- function(envir = parent.frame()) {
   )
 }
 
+# Make sure to disable Sentry during testing
+withr::local_envvar(
+  SENTRY_DSN = NULL
+)
 
 # We will always run the API on the localhost
 # and on a random port

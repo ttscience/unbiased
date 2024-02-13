@@ -2156,6 +2156,21 @@
       ],
       "Hash": "c19df082ba346b0ffa6f833e92de34d1"
     },
+    "sentryR": {
+      "Package": "sentryR",
+      "Version": "1.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "httr",
+        "jsonlite",
+        "stats",
+        "stringr",
+        "tibble",
+        "uuid"
+      ],
+      "Hash": "f37e91d605fbf665d7b5467ded4e539e"
+    },
     "sessioninfo": {
       "Package": "sessioninfo",
       "Version": "1.2.2",

@@ -55,3 +55,10 @@ To calculate code coverage, you will need to install the `covr` package. Once in
 - `covr::package_coverage()`: This method provides a simpler, text-based code coverage report.
 
 Alternatively, you can use the provided `run_tests_with_coverage.sh` script to run Unbiased tests with code coverage.
+
+# Configuring Sentry
+The Unbiased server offers robust error reporting capabilities through the integration of the Sentry service. To activate Sentry, simply set the `SENTRY_DSN` environment variable. Additionally, you have the flexibility to customize the setup further by configuring the following environment variables:
+
+* `SENTRY_ENVIRONMENT` This is used to set the environment (e.g., "production", "staging", "development"). If not set, the environment defaults to "development".
+
+* `SENTRY_RELEASE` This is used to set the release in Sentry. If not set, the release defaults to "unspecified".
