@@ -72,3 +72,20 @@ testthat::test_that("skips sentry setup if SENTRY_DSN is not set", {
   testthat::expect_message(unbiased:::setup_sentry(), "SENTRY_DSN not set, skipping Sentry setup")
   testthat::expect_false(was_called)
 })
+
+testthat::test_that("global_calling_handler captures exception and signals condition", {
+  error <- simpleError("test error")
+
+  capture_exception_called <- FALSE
+
+  testthat::local_mocked_bindings(
+    capture_exception = function(error) {
+      capture_exception_called <<- TRUE
+      testthat::expect_equal(error, error)
+    },
+    .package = "sentryR",
+  )
+
+  testthat::expect_error(unbiased:::global_calling_handler(error))
+  testthat::expect_true(capture_exception_called)
+})
