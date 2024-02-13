@@ -1,26 +1,18 @@
-# **unbiased**: An R package for Clinical Trial Randomization
+# **unbiased**: An API-based solution for Clinical Trial Randomization
 
-The challenge of allocating participants fairly and efficiently is a cornerstone for the success of clinical trials. Recognizing this critical need, we developed the **unbiased** package. This tool is designed to offer a comprehensive suite of randomization algorithms, suitable for a wide range of clinical trial designs.
+In clinical trials, the fair and efficient allocation of participants is essential for achieving reliable results. While there are many excellent R randomization packages available, none, to our knowledge, provide a dedicated API for this purpose. The **unbiased** package fills this gap by featuring a production-ready REST API designed for seamless integration. This unique combination allows for easy connection with electronic Case Report Forms (eCRF), enhancing data management and streamlining participant allocation.
 
 ## Why choose **unbiased**?
 
 Our goal in creating **unbiased** was to provide a user-friendly yet powerful tool that addresses the nuanced demands of clinical trial randomization. It offers:
 
-- **Ease of Integration**: Designed to fit effortlessly into your research workflow.
+- **Production-Ready REST API**: Built for seamless integration with eCRF/EDC systems, facilitating real-time randomization and automation.
+- **Extensive Database Integration**: Supports robust data management practices, ensuring that participant information and randomization outcomes are securely managed and easily accessible.
+- **Commitment to Quality**: Emphasizes development best practices, including comprehensive code coverage, to deliver a reliable and trustworthy solution.
 - **Adaptability**: Whether for small-scale studies or large, multi-center trials, **unbiased** scales to meet your needs.
 - **Comprehensive Documentation**: To support you in applying the package effectively.
 
-By choosing **unbiased**, you're adopting a sophisticated approach to trial randomization, ensuring fair and efficient participant allocation across your studies.
-
-## Core features
-
-The **unbiased** package integrates dynamic and traditional randomization methods, including:
-
-- **Minimization Method**: For balanced allocation considering covariates.
-- **Simple Randomization**: For straightforward, unbiased participant assignment.
-- **Block Randomization**: To ensure equal group sizes throughout the trial.
-
-Available both as a standard R package and through an API, **unbiased** provides flexibility for researchers. It ensures seamless integration with electronic Case Report Form (eCRF) systems, facilitating efficient patient management.
+By choosing **unbiased**, you're adopting a sophisticated approach to trial randomization, ensuring fair and efficient participant allocation across your studies and support of the broader objectives of clinical research through technology.
 
 ## Table of Contents
 
@@ -29,13 +21,10 @@ Available both as a standard R package and through an API, **unbiased** provides
    - [Comparative Analysis of Randomization Methods](#comparative-analysis-of-randomization-methods)
    - [Comparison with Other Solutions](#comparison-with-other-solutions)
 2. [Quickstart Guide](#quickstart-guide)
-     - [Installation Instructions](#installation-instructions)
-     - [Deploying the API](#deploying-the-api)
-     - [API Configuration](#api-configuration)
+   - [Quick Setup with Docker](#quick-setup-with-docker)
+   - [API Configuration](#api-configuration)
+   - [Alternative Installation Method](#alternative-installation-method)
 3. [Getting started with **unbiased**](#getting-started-with-unbiased)
-     - [Using Randomization Functions within R](#using-randomization-functions-within-r)
-         - [Simple Randomization](#simple-randomization)
-         - [Minimization Method](#minimization-method)
      - [API Endpoints](#api-endpoints)
         - [Study Creation](#study-creation)
         - [Patient Randomization](#patient-randomization)
@@ -46,6 +35,7 @@ Available both as a standard R package and through an API, **unbiased** provides
      - [Executing Tests from the Command Line](#executing-tests-from-the-command-line)
      - [Running Tests with Docker Compose](#running-tests-with-docker-compose)
    - [Code Coverage](#code-coverage)
+   - [Configuring Sentry](#configuring-sentry)
 
 
 # Background
@@ -81,33 +71,33 @@ Depending on the aims and objectives of the randomised trial, the **unbiased** a
 ![Comparison of covariate balances.](vignettes/boxplot.png)
 ...
 
-To find out more, read our vignette on [Comparative Analysis of Randomization Methods](vignettes/minimization_randomization_comparison.Rmd).
+To find out more, read our vignette on [Comparative Analysis of Randomization Methods](vignettes/articles/minimization_randomization_comparison.Rmd).
 
 ## Comparison with other solutions
 
-There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization, and permuted blocks -e.g. blockrand, randomizeR. More recently, there have also been options for using minimization randomization - randpack, or minirand.
+There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization and permuted blocks, such as [blockrand](https://CRAN.R-project.org/package=blockrand) and [randomizeR](https://CRAN.R-project.org/package=randomizeR). Some of them also utilize the options for using minimization randomization - e.g. [randpack](	https://bioconductor.org/packages/randPack/) or [Minirand]( https://CRAN.R-project.org/package=Minirand).
 
-Unlike the other packages, unbiased incorporates several different types of minimization algorithms - from simple simple randomization methods to advanced ones based on the Pocok minimization method. In addition, the advantage of using unbiased is that it can be used in the form of an API, which is not possible in the existing software, making **unbiased** appear complete from the point of view of usability, as well as the possibility of testing multiple methods for an individual study within a single package.
+Our unique contribution to the landscape is the integration of a comprehensive API and a commitment to rigorous testing. This dual focus ensures that **unbiased** not only supports the practical needs of clinical trials, but also aligns with the technical requirements of modern clinical research environments. By prioritizing these aspects, **unbiased** addresses a critical gap in the market: the need for an eCRF-compatible randomization solution that is both dependable and easily integrated into existing workflows. This, together with the implementation of minimization techniques, sets **unbiased** apart as a novel, comprehensive tool. 
 
 # Quickstart Guide
 
 Initiating your work with **unbiased** involves simple setup steps. Whether you're integrating it into your R environment or deploying its API, we aim to equip you with a reliable tool that enhances the integrity and efficiency of your clinical trials.
 
-## Installation instructions
+## Quick Setup with Docker
 
-The **unbiased** package can be installed from GitHub using the `devtools` package. To install **unbiased**, run the following command in your R environment:
+The most straightforward way to deploy **unbiased** is through our Docker images. This ensures that you can get **unbiased** up and running with minimal setup, regardless of your local environment. To use **unbiased**, pull the latest Docker image:
 
-```R
-devtools::install_github("ttscience/unbiased")
+```sh
+docker pull ghcr.io/ttscience/unbiased
 ```
 
-## Deploying the API
+To run **unbiased** with Docker, ensuring you have set the necessary environment variables:
 
-Execute the API by calling the`run_unbiased()` function:
-```R
-unbiased::run_unbiased()
+```sh
+docker run -e POSTGRES_DB=mydb -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e UNBIASED_PORT=3838 ghcr.io/ttscience/unbiased
 ```
-After running this command, the API should be up and running, as default listening on a port on your localhost (http://localhost:3838). You can interact with the API using any HTTP client, such as curl in the command line, Postman, or directly from R using packages like httr.
+
+This command starts the **unbiased** API, making it accessible on the specified port. It's crucial to have your PostgreSQL database ready, as **unbiased** will automatically configure the necessary database structures upon startup.
 
 ## API configuration
 
@@ -121,47 +111,36 @@ The **unbiased** API server can be configured using environment variables. The f
 - `UNBIASED_HOST`: The host on which the API will run. Defaults to `0.0.0.0` if not provided.
 - `UNBIASED_PORT`: The port on which the API will listen. Defaults to `3838` if not provided.
 
+## Alternative Installation Method
+
+For those preferring to work directly within the R environment, the **unbiased** package offers an alternative installation method via GitHub. This approach allows users to easily integrate **unbiased** into their R projects. To proceed with this method, utilize the `devtools` package for installation by executing the following command:
+
+```R
+devtools::install_github("ttscience/unbiased")
+```
+
+Following the package installation, the **unbiased** API can be launched within R. Simply invoke the `run_unbiased()` function to start the API:
+
+```R
+unbiased::run_unbiased()
+```
+
+This initiates the API server, by default, on your local machine (http://localhost:3838), making it accessible for interaction through various HTTP clients, including curl, Postman, or R's `httr` package.
+
+
 # Getting started with **unbiased**
 
 The **unbiased** package offers functions for randomizing participants in clinical trials, ensuring a fair and transparent process.
 
-### Simple Randomization
-
-Use `simple_randomization` for uncomplicated, unbiased assignment, giving each participant an equal chance of being allocated to any group. This method requires specifying the `arms` and `ratio` parameters, where `arms` is a vector of treatment group names, and `ratio` is a vector of integers indicating the allocation proportions.
-
-```R
-# Treatment group assignments with a 1:1 ratio
-treatment_group <-
-  randomize_simple(
-    arms = c("treatment", "placebo"),
-    ratio = c("treatment" = 1, "placebo" = 1)
-  )
-```
-
-*Note: Ensure that the `ratio` parameter accurately reflects an allocation proportion vector, using numeric values to denote the proportions.*
-
-### Minimization Method
-
-The minimization method considers existing participant assignments to minimize bias. New participants are allocated based on an imbalance score, calculated using specified weights for each covariate. This method dynamically adjusts to maintain balance across treatment groups.
-
-```R
-# Treatment group assignment considering previous participants' data
-treatment_group <- randomize_minimisation_pocock(
-  arms = c("treatment", "placebo"),
-  current_state = previous_data,
-  weights = c(
-    "sex" = 1,
-    "age" = 1
-  ),
-  ratio = c(1, 1), # Ensure ratio is defined correctly
-  method = "var",
-  p = 0.85
-)
-```
+Complete documentation for the implemented methodology and examples of how to use them are available on our GitHub Pages, providing all the information you need to integrate **unbiased** into your trial management workflow. Below, we present the basic steps for using **unbiased** through the API.
 
 ## API Endpoints
 
-The **unbiased** API facilitates randomization and clinical trial management via HTTP clients.
+The **unbiased** API is designed to facilitate clinical trial management through a set of endpoints:
+
+- **Study Management**: Create and configure new studies, including specifying randomization parameters and treatment arms.
+- **Participant Randomization**: Dynamically randomize participants to treatment groups based on the study's configuration and existing participant data.
+
 
 ### Study Creation
 
