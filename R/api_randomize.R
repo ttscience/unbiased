@@ -50,6 +50,7 @@ parse_pocock_parameters <-
   }
 
 api__randomize_patient <- function(study_id, current_state, req, res) {
+  audit_log_event_type("randomize_patient", req)
   collection <- checkmate::makeAssertCollection()
 
   db_connection_pool <- get("db_connection_pool")
@@ -65,6 +66,11 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     .var.name = "study_id",
     add = collection
   )
+
+  # TODO: previous check should fail entire request with 404 if failed!
+  if (study_id |> is.numeric()) {
+    audit_log_study_id(study_id, req)
+  }
 
   # Retrieve study details, especially the ones about randomization
   method_randomization <-

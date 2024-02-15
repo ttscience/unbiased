@@ -19,14 +19,24 @@
 #*
 #* @plumber
 function(api) {
-  meta <- plumber::pr("meta.R") |>
-    plumber::pr_set_error(sentryR::sentry_error_handler)
-  study <- plumber::pr("study.R") |>
-    plumber::pr_set_error(sentryR::sentry_error_handler)
+  meta <- plumber::pr("meta.R")
+  study <- plumber::pr("study.R")
+
+  if (sentryR::is_sentry_configured()) {
+    meta |>
+      plumber::pr_set_error(sentryR::sentry_error_handler)
+
+    study |>
+      plumber::pr_set_error(sentryR::sentry_error_handler)
+
+    api |>
+      plumber::pr_set_error(sentryR::sentry_error_handler)
+  }
 
   api |>
     plumber::pr_mount("/meta", meta) |>
     plumber::pr_mount("/study", study) |>
+    setup_audit_trail() |>
     plumber::pr_set_api_spec(function(spec) {
       spec$
         paths$
