@@ -10,6 +10,8 @@ Authors@R: c(
            role = c("aut")),
     person("Łukasz", "Wałejko", , "lukasz.walejko@ttsi.com.pl",
            role = c("aut")),
+    person("Jagoda", "Głowacka-Walas", "jagoda.glowacka-walas@ttsi.com.pl",
+           role = c("aut"), comment = c(ORCID = "0000-0002-7628-8691")),
     person("Michał", "Seweryn", , "michal.seweryn@biol.uni.lodz.pl",
            role = c("ctr"), comment = c(ORCID = "0000-0002-9090-3435")),
     person("Transition Technologies Science Sp. z o.o.", role = c("fnd", "cph"))
