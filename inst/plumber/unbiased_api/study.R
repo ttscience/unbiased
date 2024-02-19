@@ -19,8 +19,7 @@
 #* @serializer unboxedJSON
 #*
 sentryR::with_captured_calls(function(
-  identifier, name, method, arms, covariates, p, req, res
-) {
+    identifier, name, method, arms, covariates, p, req, res) {
   return(
     unbiased:::api__minimization_pocock(
       identifier, name, method, arms, covariates, p, req, res
@@ -42,5 +41,36 @@ sentryR::with_captured_calls(function(
 sentryR::with_captured_calls(function(study_id, current_state, req, res) {
   return(
     unbiased:::api__randomize_patient(study_id, current_state, req, res)
+  )
+})
+
+#* Get all available studies
+#*
+#* @return tibble with study_id, identifier, name and method
+#*
+#* @tag read
+#* @get /
+#* @serializer unboxedJSON
+#*
+
+sentryR::with_captured_calls(function(req, res) {
+  return(
+    unbiased:::api_get_study(req, res)
+  )
+})
+
+#* Get all records for chosen study
+#*
+#* @param study_id:int Study identifier
+#*
+#* @tag read
+#* @get /<study_id:int>
+#*
+#* @serializer unboxedJSON
+#*
+
+sentryR::with_captured_calls(function(study_id, req, res) {
+  return(
+    unbiased:::api_get_study_records(study_id, req, res)
   )
 })

@@ -1,5 +1,3 @@
-pool <- get("db_connection_pool", envir = globalenv())
-
 test_that("correct request with the structure of the returned result", {
   response <- request(api_url) |>
     req_url_path("study", "minimisation_pocock") |>
