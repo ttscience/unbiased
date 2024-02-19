@@ -18,13 +18,15 @@
 #* @post /minimisation_pocock
 #* @serializer unboxedJSON
 #*
-function(identifier, name, method, arms, covariates, p, req, res) {
+sentryR::with_captured_calls(function(
+  identifier, name, method, arms, covariates, p, req, res
+) {
   return(
     unbiased:::api__minimization_pocock(
       identifier, name, method, arms, covariates, p, req, res
     )
   )
-}
+})
 
 #* Randomize one patient
 #*
@@ -37,7 +39,7 @@ function(identifier, name, method, arms, covariates, p, req, res) {
 #* @serializer unboxedJSON
 #*
 
-function(study_id, current_state, req, res) {
+sentryR::with_captured_calls(function(study_id, current_state, req, res) {
   return(
     unbiased:::api__randomize_patient(study_id, current_state, req, res)
   )
@@ -72,3 +74,4 @@ function(study_id, req, res){
     unbiased:::api_get_study_records(study_id, req, res)
   )
 }
+

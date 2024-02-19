@@ -20,8 +20,10 @@
 #*
 #* @plumber
 function(api) {
-  meta <- plumber::pr("meta.R")
-  study <- plumber::pr("study.R")
+  meta <- plumber::pr("meta.R") |>
+    plumber::pr_set_error(sentryR::sentry_error_handler)
+  study <- plumber::pr("study.R") |>
+    plumber::pr_set_error(sentryR::sentry_error_handler)
 
   api |>
     plumber::pr_mount("/meta", meta) |>
