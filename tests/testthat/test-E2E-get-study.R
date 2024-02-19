@@ -97,8 +97,6 @@ test_that("correct request to reads records for chosen study_id with the structu
     type = c("numeric", "character", "character", "character", "numeric", "character", "list", "character")
   )
 
-  # Request with non-existent study_id
-  # trycatch i 404
   response_study_id <-
     tryCatch(
       {
