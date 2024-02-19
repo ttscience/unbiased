@@ -1,7 +1,6 @@
 api_get_study <- function(res, req) {
   db_connection_pool <- get("db_connection_pool")
 
-
   study_list <-
     dplyr::tbl(db_connection_pool, "study") |>
     dplyr::select(study_id = id, identifier, name, method, last_edited = timestamp) |>
@@ -25,8 +24,7 @@ api_get_study_records <- function(study_id, req, res) {
   if (!is_study) {
     res$status <- 404
     return(list(
-      error = "Study not found",
-      details = r$error
+      error = "Study not found"
     ))
   }
 
@@ -82,7 +80,7 @@ api_get_study_records <- function(study_id, req, res) {
     tidyr::pivot_wider(names_from = arm_name, values_from = ratio) |>
     as.list()
 
-  study_list <-
+  study_elements <-
     list(
       strata = strata,
       arms = arms
@@ -95,7 +93,7 @@ api_get_study_records <- function(study_id, req, res) {
       jsonlite::fromJSON() |>
       purrr::flatten_dfr() |>
       dplyr::select(p, method),
-    study_list
+    study_elements
   )
 
   return(study_list)
