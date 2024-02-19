@@ -47,7 +47,7 @@ function(study_id, current_state, req, res) {
 #'
 #' @return tibble with study_id, identifier, name and method
 #'
-#' @tag other
+#' @tag read
 #' @get /
 #'
 #' @serializer unboxedJSON
@@ -55,5 +55,20 @@ function(study_id, current_state, req, res) {
 function(req, res){
   return(
     unbiased:::api_get_study(req, res)
+  )
+}
+
+#' Get all records for chosen study
+#'
+#' @param study_id:int Study identifier
+#'
+#' @tag read
+#' @get /<study_id:int>
+#'
+#' @serializer unboxedJSON
+#'
+function(study_id, req, res){
+  return(
+    unbiased:::api_get_study_records(study_id, req, res)
   )
 }

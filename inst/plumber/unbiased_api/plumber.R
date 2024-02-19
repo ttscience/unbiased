@@ -15,6 +15,7 @@
 #*   randomization method and parameters.
 #* @apiTag randomize Endpoints that randomize individual patients after the
 #*   study was created.
+#* @apiTag read Endpoints that read created records
 #* @apiTag other Other endpoints (helpers etc.).
 #*
 #* @plumber
