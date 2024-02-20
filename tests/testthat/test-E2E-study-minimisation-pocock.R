@@ -1,5 +1,3 @@
-pool <- get("db_connection_pool", envir = globalenv())
-
 test_that("correct request with the structure of the returned result", {
   response <- request(api_url) |>
     req_url_path("study", "minimisation_pocock") |>
@@ -157,7 +155,7 @@ test_that("request with incorrect study id", {
       error = function(e) e
     )
 
-  testthat::expect_equal(response_study$status, 400, label = "HTTP status code")
+  testthat::expect_equal(response_study$status, 404, label = "HTTP status code")
 })
 
 test_that("request with patient that is assigned an arm at entry", {

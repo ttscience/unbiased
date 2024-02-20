@@ -8,19 +8,6 @@ parse_pocock_parameters <-
 
     parameters <- jsonlite::fromJSON(parameters)
 
-    if (!checkmate::test_list(parameters, null.ok = FALSE)) {
-      message <- checkmate::test_list(parameters, null.ok = FALSE)
-      res$status <- 400
-      res$body <-
-        list(
-          error = glue::glue(
-            "Parse validation failed. 'Parameters' must be a list: {message}"
-          )
-        )
-
-      return(res)
-    }
-
     ratio_arms <-
       dplyr::tbl(db_connetion_pool, "arm") |>
       dplyr::filter(study_id == !!study_id) |>
@@ -36,16 +23,6 @@ parse_pocock_parameters <-
       weights = parameters$weights |> unlist()
     )
 
-    if (!checkmate::test_list(params, null.ok = FALSE)) {
-      message <- checkmate::test_list(params, null.ok = FALSE)
-      res$status <- 400
-      res$body <-
-        list(error = glue::glue(
-          "Parse validation failed. Input parameters must be a list: {message}"
-        ))
-      return(res)
-    }
-
     return(params)
   }
 
@@ -55,17 +32,22 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
 
   db_connection_pool <- get("db_connection_pool")
 
-  # Check whether study with study_id exists
-  checkmate::assert(
-    checkmate::check_subset(
-      x = req$args$study_id,
-      choices = dplyr::tbl(db_connection_pool, "study") |>
-        dplyr::select(id) |>
-        dplyr::pull()
-    ),
-    .var.name = "study_id",
-    add = collection
-  )
+  study_id <- req$args$study_id
+
+  is_study <-
+    checkmate::test_true(
+      dplyr::tbl(db_connection_pool, "study") |>
+        dplyr::filter(id == study_id) |>
+        dplyr::collect() |>
+        nrow() > 0
+    )
+
+  if (!is_study) {
+    res$status <- 404
+    return(list(
+      error = "Study not found"
+    ))
+  }
 
   # TODO: previous check should fail entire request with 404 if failed!
   if (study_id |> is.numeric()) {
