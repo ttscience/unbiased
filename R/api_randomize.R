@@ -8,16 +8,6 @@ parse_pocock_parameters <-
 
     parameters <- jsonlite::fromJSON(parameters)
 
-    if (!checkmate::test_list(parameters, null.ok = FALSE)) {
-      message <- checkmate::test_list(parameters, null.ok = FALSE)
-      res$status <- 400
-      return(list(
-        error = glue::glue(
-          "Parse validation failed. 'Parameters' must be a list: {message}"
-        )
-      ))
-    }
-
     ratio_arms <-
       dplyr::tbl(db_connetion_pool, "arm") |>
       dplyr::filter(study_id == !!study_id) |>
@@ -32,16 +22,6 @@ parse_pocock_parameters <-
       p = parameters$p,
       weights = parameters$weights |> unlist()
     )
-
-    if (!checkmate::test_list(params, null.ok = FALSE)) {
-      message <- checkmate::test_list(params, null.ok = FALSE)
-      res$status <- 400
-      return(list(
-        error = glue::glue(
-          "Parse validation failed. Input parameters must be a list: {message}"
-        )
-      ))
-    }
 
     return(params)
   }
