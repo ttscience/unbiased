@@ -137,16 +137,6 @@ api__minimization_pocock <- function(
     strata = strata
   )
 
-  # Response ----------------------------------------------------------------
-
-  if (!is.null(r$error)) {
-    res$status <- 503
-    return(list(
-      error = "There was a problem saving created study to the database",
-      details = r$error
-    ))
-  }
-
   audit_log_study_id(r$study$id, req)
 
   response <- list(

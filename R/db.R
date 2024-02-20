@@ -58,9 +58,9 @@ create_study <- function(
   db_connection_pool <- get("db_connection_pool", envir = .GlobalEnv)
   connection <- pool::localCheckout(db_connection_pool)
 
-  r <- tryCatch(
+  DBI::dbWithTransaction(
+    connection,
     {
-      DBI::dbBegin(connection)
       study_record <- list(
         name = name,
         identifier = identifier,
@@ -143,17 +143,9 @@ create_study <- function(
         row.names = FALSE
       )
 
-      DBI::dbCommit(connection)
       list(study = study)
-    },
-    error = function(cond) {
-      logger::log_error("Error creating study: {cond}", cond = cond)
-      DBI::dbRollback(connection)
-      list(error = conditionMessage(cond))
     }
   )
-
-  r
 }
 
 save_patient <- function(study_id, arm_id) {
