@@ -13,12 +13,14 @@ api_get_study <- function(res, req) {
 api_get_study_records <- function(study_id, req, res) {
   db_connection_pool <- get("db_connection_pool")
 
+  study_id <- req$args$study_id
+
   is_study <-
-    checkmate::test_subset(
-      x = req$args$study_id,
-      choices = dplyr::tbl(db_connection_pool, "study") |>
-        dplyr::select(id) |>
-        dplyr::pull()
+    checkmate::test_true(
+      dplyr::tbl(db_connection_pool, "study") |>
+        dplyr::filter(id == study_id) |>
+        dplyr::collect() |>
+        nrow() > 0
     )
 
   if (!is_study) {
