@@ -34,15 +34,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
 
   study_id <- req$args$study_id
 
-  is_study <-
-    checkmate::test_true(
-      dplyr::tbl(db_connection_pool, "study") |>
-        dplyr::filter(id == study_id) |>
-        dplyr::collect() |>
-        nrow() > 0
-    )
-
-  if (!is_study) {
+  if (!check_study_exist(study_id)) {
     res$status <- 404
     return(list(
       error = "Study not found"
