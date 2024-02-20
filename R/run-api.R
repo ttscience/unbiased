@@ -35,8 +35,12 @@ run_unbiased <- function() {
   } else {
     # otherwise we assume that we are in the root directory of the repository
     # and we can use plumb method to run the API from the plumber.R file
-    plumber::plumb("./inst/plumber/unbiased_api/plumber.R") |>
-      plumber::pr_run(host = host, port = port)
+
+    # Following line is excluded from code coverage because it is not possible to
+    # run the API from the plumber.R file in the test environment
+    # This branch is only used for local development
+    plumber::plumb("./inst/plumber/unbiased_api/plumber.R") |> # nocov start
+      plumber::pr_run(host = host, port = port) # nocov end
   }
 }
 
