@@ -49,10 +49,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     ))
   }
 
-  # TODO: previous check should fail entire request with 404 if failed!
-  if (study_id |> is.numeric()) {
-    audit_log_study_id(study_id, req)
-  }
+  audit_log_study_id(study_id, req)
 
   # Retrieve study details, especially the ones about randomization
   method_randomization <-

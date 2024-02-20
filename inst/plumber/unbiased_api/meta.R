@@ -7,7 +7,6 @@
 #* @get /sha
 #* @serializer unboxedJSON
 wrap_endpoint(function(req, res) {
-  audit_log_disable_for_request(req)
   sha <- Sys.getenv("GITHUB_SHA", unset = "NULL")
   if (sha == "NULL") {
     res$status <- 404

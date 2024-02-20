@@ -61,3 +61,35 @@ wrap_endpoint(function(study_id, req, res) {
     unbiased:::api_get_audit_log(study_id, req, res)
   )
 })
+
+
+#* Get all available studies
+#*
+#* @return tibble with study_id, identifier, name and method
+#*
+#* @tag read
+#* @get /
+#* @serializer unboxedJSON
+#*
+
+wrap_endpoint(function(req, res) {
+  return(
+    unbiased:::api_get_study(req, res)
+  )
+})
+
+#* Get all records for chosen study
+#*
+#* @param study_id:int Study identifier
+#*
+#* @tag read
+#* @get /<study_id:int>
+#*
+#* @serializer unboxedJSON
+#*
+
+wrap_endpoint(function(study_id, req, res) {
+  return(
+    unbiased:::api_get_study_records(study_id, req, res)
+  )
+})

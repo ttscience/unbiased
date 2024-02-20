@@ -109,12 +109,6 @@ function(req) {
     req$REQUEST_METHOD, req$PATH_INFO,
     "@", req$REMOTE_ADDR, "\n"
   )
-  purrr::imap(req$args, function(arg, arg_name) {
-    cat("[ARG]", arg_name, "=", as.character(arg), "\n")
-  })
-  if (req$postBody != "") {
-    cat("[BODY]", req$postBody, "\n")
-  }
 
   plumber::forward()
 }
