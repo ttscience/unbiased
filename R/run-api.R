@@ -128,15 +128,3 @@ with_err_handler <- function(expr) {
     error = rlang::entrace, bottom = rlang::caller_env()
   )
 }
-
-test_f <- function() {
-  stop("test")
-}
-
-test_entrace <- function() {
-  with_err_handler(test_f())
-}
-
-test_sentryr_calling_handler <- function() {
-  sentryR::with_captured_calls(test_f)()
-}
