@@ -12,14 +12,6 @@
 #'
 #' @export
 run_unbiased <- function() {
-  tryCatch(
-    {
-      rlang::global_entrace()
-    },
-    error = function(e) {
-      message("Error setting up global_entrace, it is expected in testing environment: ", e$message)
-    }
-  )
   setup_sentry()
   host <- Sys.getenv("UNBIASED_HOST", "0.0.0.0")
   port <- as.integer(Sys.getenv("UNBIASED_PORT", "3838"))
@@ -105,4 +97,46 @@ global_calling_handler <- function(error) {
   error$function_calls <- sys.calls()
   sentryR::capture_exception(error)
   signalCondition(error)
+}
+
+wrap_endpoint <- function(z) {
+  f <- function(...) {
+    return(withCallingHandlers(z(...), error = rlang::entrace))
+  }
+  return(f)
+}
+
+default_error_handler <- function(req, res, error) {
+  print(error, simplify = "branch")
+
+  if (sentryR::is_sentry_configured()) {
+    error$function_calls <- error$trace$call
+    sentryR::capture_exception(error)
+  }
+
+
+  res$status <- 500
+
+  jsonlite::toJSON(list(
+    error = "500 - Internal server error"
+  ), auto_unbox = TRUE)
+}
+
+with_err_handler <- function(expr) {
+  withCallingHandlers(
+    expr = expr,
+    error = rlang::entrace, bottom = rlang::caller_env()
+  )
+}
+
+test_f <- function() {
+  stop("test")
+}
+
+test_entrace <- function() {
+  with_err_handler(test_f())
+}
+
+test_sentryr_calling_handler <- function() {
+  sentryR::with_captured_calls(test_f)()
 }

@@ -18,9 +18,8 @@
 #* @post /minimisation_pocock
 #* @serializer unboxedJSON
 #*
-sentryR::with_captured_calls(function(
-  identifier, name, method, arms, covariates, p, req, res
-) {
+wrap_endpoint(function(
+    identifier, name, method, arms, covariates, p, req, res) {
   return(
     unbiased:::api__minimization_pocock(
       identifier, name, method, arms, covariates, p, req, res
@@ -39,8 +38,26 @@ sentryR::with_captured_calls(function(
 #* @serializer unboxedJSON
 #*
 
-sentryR::with_captured_calls(function(study_id, current_state, req, res) {
+wrap_endpoint(function(study_id, current_state, req, res) {
   return(
     unbiased:::api__randomize_patient(study_id, current_state, req, res)
+  )
+})
+
+
+#* Get study audit log
+#*
+#* Get the audit log for a study
+#*
+#*
+#* @param study_id:int Study identifier
+#*
+#* @tag audit
+#* @get /<study_id:int>/audit
+#* @serializer unboxedJSON
+#*
+wrap_endpoint(function(study_id, req, res) {
+  return(
+    unbiased:::api_get_audit_log(study_id, req, res)
   )
 })

@@ -6,7 +6,7 @@
 #* @tag other
 #* @get /sha
 #* @serializer unboxedJSON
-sentryR::with_captured_calls(function(req, res) {
+wrap_endpoint(function(req, res) {
   audit_log_disable_for_request(req)
   sha <- Sys.getenv("GITHUB_SHA", unset = "NULL")
   if (sha == "NULL") {

@@ -20,9 +20,15 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
       !private$disabled
     },
     set_request_body = function(request_body) {
+      if (typeof(request_body) == "list") {
+        request_body <- jsonlite::toJSON(request_body, auto_unbox = TRUE) |> as.character()
+      }
       private$request_body <- request_body
     },
     set_response_body = function(response_body) {
+      if (typeof(response_body) == "list") {
+        response_body <- jsonlite::toJSON(response_body, auto_unbox = TRUE) |> as.character()
+      }
       private$response_body <- response_body
     },
     set_event_type = function(event_type) {
@@ -30,6 +36,9 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
     },
     set_study_id = function(study_id) {
       private$study_id <- study_id
+    },
+    set_response_code = function(response_code) {
+      private$response_code <- response_code
     },
     validate_log = function() {
       if (private$disabled) {
@@ -43,15 +52,35 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
       if (private$disabled) {
         return()
       }
-      print("[Audit log begins here]")
-      print(glue::glue("Request ID: {private$request_id}"))
-      print(glue::glue("Event type: {private$event_type}"))
-      print(glue::glue("Study ID: {private$study_id}"))
-      print(glue::glue("Endpoint URL: {private$endpoint_url}"))
-      print(glue::glue("Request Method: {private$request_method}"))
-      print(glue::glue("Request Body: {private$request_body}"))
-      print(glue::glue("Response Body: {private$response_body}"))
-      print("[Audit log ends here]")
+      db_conn <- pool::localCheckout(db_connection_pool)
+      values <- list(
+        private$request_id,
+        private$event_type,
+        private$study_id,
+        private$endpoint_url,
+        private$request_method,
+        private$request_body,
+        private$response_code,
+        private$response_body
+      )
+
+      values <- purrr::map(values, \(x) ifelse(is.null(x), NA, x))
+
+      DBI::dbGetQuery(
+        db_conn,
+        "INSERT INTO audit_log (
+          request_id,
+          event_type,
+          study_id,
+          endpoint_url,
+          request_method,
+          request_body,
+          response_code,
+          response_body
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+        values
+      )
     }
   ),
   private = list(
@@ -61,6 +90,7 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
     study_id = NULL,
     endpoint_url = NULL,
     request_method = NULL,
+    response_code = NULL,
     request_body = NULL,
     response_body = NULL
   )
@@ -77,38 +107,55 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
 #' The audit trail is only enabled if the AUDIT_LOG_ENABLED environment variable is set to "true".
 #'
 #' @param pr A plumber router for which the audit trail is to be set up.
+#' @param endpoints A list of regex patterns for which the audit trail should be enabled.
 #' @return Returns the updated plumber router with the audit trail hooks.
 #' @examples
 #' pr <- plumber::plumb("your-api-definition.R") |>
-#'    setup_audit_trail()
-setup_audit_trail <- function(pr) {
+#'   setup_audit_trail()
+setup_audit_trail <- function(pr, endpoints) {
   audit_log_enabled <- Sys.getenv("AUDIT_LOG_ENABLED", "true") |> as.logical()
   if (!audit_log_enabled) {
     print("Audit log is disabled")
     return(pr)
   }
   print("Audit log is enabled")
-  pr |>
-    plumber::pr_hooks(list(
-      preroute = function(req, res) {
+  is_enabled_for_request <- function(req) {
+    if (is.null(endpoints)) {
+      return(TRUE)
+    }
+    any(sapply(endpoints, \(endpoint) grepl(endpoint, req$PATH_INFO)))
+  }
+
+  hooks <- list(
+    preroute = function(req, res) {
+      with_err_handler({
+        if (!is_enabled_for_request(req)) {
+          return()
+        }
         audit_log <- AuditLog$new(
           request_method = req$REQUEST_METHOD,
           endpoint_url = req$PATH_INFO,
           request_body = req$body
         )
         req$.internal.audit_log <- audit_log
-      },
-      postserialize = function(req, res) {
+      })
+    },
+    postserialize = function(req, res) {
+      with_err_handler({
         audit_log <- req$.internal.audit_log
-        if (!audit_log$is_enabled()) {
+        if (is.null(audit_log) || !audit_log$is_enabled()) {
           return()
         }
         audit_log$validate_log()
+        audit_log$set_response_code(res$status)
         audit_log$set_request_body(req$body)
         audit_log$set_response_body(res$body)
         audit_log$persist()
-      }
-    ))
+      })
+    }
+  )
+  pr |>
+    plumber::pr_hooks(hooks)
 }
 
 #' Set Audit Log Event Type

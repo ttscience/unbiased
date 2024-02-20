@@ -44,6 +44,15 @@ get_similar_studies <- function(name, identifier) {
   similar
 }
 
+check_study_exist <- function(study_id) {
+  db_connection_pool <- get("db_connection_pool")
+  study_exists <- dplyr::tbl(db_connection_pool, "study") |>
+    dplyr::filter(id == !!study_id) |>
+    dplyr::collect() |>
+    nrow() > 0
+  study_exists
+}
+
 create_study <- function(
     name, identifier, method, parameters, arms, strata) {
   db_connection_pool <- get("db_connection_pool", envir = .GlobalEnv)
