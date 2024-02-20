@@ -4,10 +4,12 @@
 \alias{setup_audit_trail}
 \title{Set up audit trail}
 \usage{
-setup_audit_trail(pr)
+setup_audit_trail(pr, endpoints)
 }
 \arguments{
 \item{pr}{A plumber router for which the audit trail is to be set up.}
+
+\item{endpoints}{A list of regex patterns for which the audit trail should be enabled.}
 }
 \value{
 Returns the updated plumber router with the audit trail hooks.
@@ -23,5 +25,5 @@ The audit trail is only enabled if the AUDIT_LOG_ENABLED environment variable is
 }
 \examples{
 pr <- plumber::plumb("your-api-definition.R") |>
-   setup_audit_trail()
+  setup_audit_trail()
 }

@@ -17,6 +17,7 @@ This class is used internally to store audit logs for each request.
 \item \href{#method-AuditLog-set_response_body}{\code{AuditLog$set_response_body()}}
 \item \href{#method-AuditLog-set_event_type}{\code{AuditLog$set_event_type()}}
 \item \href{#method-AuditLog-set_study_id}{\code{AuditLog$set_study_id()}}
+\item \href{#method-AuditLog-set_response_code}{\code{AuditLog$set_response_code()}}
 \item \href{#method-AuditLog-validate_log}{\code{AuditLog$validate_log()}}
 \item \href{#method-AuditLog-persist}{\code{AuditLog$persist()}}
 \item \href{#method-AuditLog-clone}{\code{AuditLog$clone()}}
@@ -91,6 +92,15 @@ This class is used internally to store audit logs for each request.
 \subsection{Method \code{set_study_id()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AuditLog$set_study_id(study_id)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AuditLog-set_response_code"></a>}}
+\if{latex}{\out{\hypertarget{method-AuditLog-set_response_code}{}}}
+\subsection{Method \code{set_response_code()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AuditLog$set_response_code(response_code)}\if{html}{\out{</div>}}
 }
 
 }
