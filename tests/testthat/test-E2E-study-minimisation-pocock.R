@@ -157,7 +157,7 @@ test_that("request with incorrect study id", {
       error = function(e) e
     )
 
-  testthat::expect_equal(response_study$status, 400, label = "HTTP status code")
+  testthat::expect_equal(response_study$status, 404, label = "HTTP status code")
 })
 
 test_that("request with patient that is assigned an arm at entry", {
