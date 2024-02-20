@@ -18,7 +18,7 @@
 #* @post /minimisation_pocock
 #* @serializer unboxedJSON
 #*
-wrap_endpoint(function(
+unbiased:::wrap_endpoint(function(
     identifier, name, method, arms, covariates, p, req, res) {
   return(
     unbiased:::api__minimization_pocock(
@@ -38,7 +38,7 @@ wrap_endpoint(function(
 #* @serializer unboxedJSON
 #*
 
-wrap_endpoint(function(study_id, current_state, req, res) {
+unbiased:::wrap_endpoint(function(study_id, current_state, req, res) {
   return(
     unbiased:::api__randomize_patient(study_id, current_state, req, res)
   )
@@ -56,7 +56,7 @@ wrap_endpoint(function(study_id, current_state, req, res) {
 #* @get /<study_id:int>/audit
 #* @serializer unboxedJSON
 #*
-wrap_endpoint(function(study_id, req, res) {
+unbiased:::wrap_endpoint(function(study_id, req, res) {
   return(
     unbiased:::api_get_audit_log(study_id, req, res)
   )
@@ -72,7 +72,7 @@ wrap_endpoint(function(study_id, req, res) {
 #* @serializer unboxedJSON
 #*
 
-wrap_endpoint(function(req, res) {
+unbiased:::wrap_endpoint(function(req, res) {
   return(
     unbiased:::api_get_study(req, res)
   )
@@ -88,7 +88,7 @@ wrap_endpoint(function(req, res) {
 #* @serializer unboxedJSON
 #*
 
-wrap_endpoint(function(study_id, req, res) {
+unbiased:::wrap_endpoint(function(study_id, req, res) {
   return(
     unbiased:::api_get_study_records(study_id, req, res)
   )

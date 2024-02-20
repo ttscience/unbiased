@@ -24,18 +24,18 @@ function(api) {
   study <- plumber::pr("study.R")
 
   meta |>
-    plumber::pr_set_error(default_error_handler)
+    plumber::pr_set_error(unbiased:::default_error_handler)
 
   study |>
-    plumber::pr_set_error(default_error_handler)
+    plumber::pr_set_error(unbiased:::default_error_handler)
 
   api |>
-    plumber::pr_set_error(default_error_handler)
+    plumber::pr_set_error(unbiased:::default_error_handler)
 
   api |>
     plumber::pr_mount("/meta", meta) |>
     plumber::pr_mount("/study", study) |>
-    setup_audit_trail(endpoints = list(
+    unbiased:::setup_audit_trail(endpoints = list(
       "^/study/.*"
     )) |>
     plumber::pr_set_api_spec(function(spec) {
