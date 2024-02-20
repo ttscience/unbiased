@@ -86,19 +86,11 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
 
   randomized_patient <- unbiased:::save_patient(study_id, arm$arm_id)
 
-  if (!is.null(randomized_patient$error)) {
-    res$status <- 503
-    return(list(
-      error = "There was a problem saving randomized patient to the database",
-      details = randomized_patient$error
-    ))
-  } else {
-    randomized_patient <-
-      randomized_patient |>
-      dplyr::mutate(arm_name = arm$name) |>
-      dplyr::rename(patient_id = id) |>
-      as.list()
+  randomized_patient <-
+    randomized_patient |>
+    dplyr::mutate(arm_name = arm$name) |>
+    dplyr::rename(patient_id = id) |>
+    as.list()
 
-    return(randomized_patient)
-  }
+  return(randomized_patient)
 }
