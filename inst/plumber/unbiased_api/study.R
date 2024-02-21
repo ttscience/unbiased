@@ -74,3 +74,18 @@ sentryR::with_captured_calls(function(study_id, req, res) {
     unbiased:::api_get_study_records(study_id, req, res)
   )
 })
+
+#* Get randomization list
+#*
+#* @param study_id:int Study identifier
+#*
+#* @tag read
+#* @get /<study_id:int>/randomization_list
+#* @serializer unboxedJSON
+#*
+
+sentryR::with_captured_calls(function(study_id, req, res) {
+  return(
+    unbiased:::api_get_rand_list(study_id, req, res)
+  )
+})
