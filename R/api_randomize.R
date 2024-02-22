@@ -89,7 +89,9 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     dplyr::select("arm_id" = "id", "name", "ratio") |>
     dplyr::collect()
 
-  randomized_patient <- unbiased:::save_patient(study_id, arm$arm_id)
+  randomized_patient <-
+    unbiased:::save_patient(study_id, arm$arm_id, used = TRUE) |>
+    select(-used)
 
   if (!is.null(randomized_patient$error)) {
     res$status <- 503
