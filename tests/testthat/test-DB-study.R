@@ -4,7 +4,7 @@ pool <- get("db_connection_pool", envir = globalenv())
 
 test_that("it is enough to provide a name, an identifier, and a method id", {
   conn <- pool::localCheckout(pool)
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   testthat::expect_no_error({
     dplyr::tbl(conn, "study") |>
       dplyr::rows_append(
@@ -23,7 +23,7 @@ new_study_id <- as.integer(1)
 
 test_that("deleting archivizes a study", {
   conn <- pool::localCheckout(pool)
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   testthat::expect_no_error({
     dplyr::tbl(conn, "study") |>
       dplyr::rows_delete(
@@ -48,7 +48,7 @@ test_that("deleting archivizes a study", {
 
 test_that("can't push arm with negative ratio", {
   conn <- pool::localCheckout(pool)
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   testthat::expect_error(
     {
       dplyr::tbl(conn, "arm") |>
@@ -67,7 +67,7 @@ test_that("can't push arm with negative ratio", {
 
 test_that("can't push stratum other than factor or numeric", {
   conn <- pool::localCheckout(pool)
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   testthat::expect_error(
     {
       tbl(conn, "stratum") |>
@@ -86,7 +86,7 @@ test_that("can't push stratum other than factor or numeric", {
 
 test_that("can't push stratum level outside of defined levels", {
   conn <- pool::localCheckout(pool)
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   # create a new patient
   return <-
     testthat::expect_no_error({
@@ -135,7 +135,7 @@ test_that("can't push stratum level outside of defined levels", {
 
 test_that("numerical constraints are enforced", {
   conn <- pool::localCheckout(pool)
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   added_patient_id <- as.integer(1)
   return <-
     testthat::expect_no_error({

@@ -4,7 +4,7 @@ test_that("correct request to reads studies with the structure of the returned r
   conn <- pool::localCheckout(
     get("db_connection_pool", envir = globalenv())
   )
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
 
   response <- request(api_url) |>
     req_url_path("study", "") |>
@@ -117,7 +117,8 @@ test_that("correct request to reads randomization list with the structure of the
   conn <- pool::localCheckout(
     get("db_connection_pool", envir = globalenv())
   )
-  with_db_fixtures("fixtures/example_study.yml")
+
+  with_db_fixtures("fixtures/example_db.yml")
 
   response <-
     request(api_url) |>
@@ -135,6 +136,13 @@ test_that("correct request to reads randomization list with the structure of the
     names(response_body[[1]]),
     identical.to = c("patient_id", "arm", "used", "sys_period")
   )
+
+  checkmate::expect_set_equal(
+    x = response_body |>
+      dplyr::bind_rows() |>
+      dplyr::pull(patient_id),
+    y = c(1, 2, 3, 4)
+  )
 })
 
 test_that("incorrect input study_id to reads randomization list", {
@@ -143,7 +151,7 @@ test_that("incorrect input study_id to reads randomization list", {
   conn <- pool::localCheckout(
     get("db_connection_pool", envir = globalenv())
   )
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
 
   response <-
     tryCatch(
