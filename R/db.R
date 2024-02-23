@@ -147,15 +147,15 @@ create_study <- function(
   r
 }
 
-save_patient <- function(study_id, arm_id) {
+save_patient <- function(study_id, arm_id, used) {
   r <- tryCatch(
     {
       randomized_patient <- DBI::dbGetQuery(
         db_connection_pool,
-        "INSERT INTO patient (arm_id, study_id)
-                    VALUES ($1, $2)
-                    RETURNING id, arm_id",
-        list(arm_id, study_id)
+        "INSERT INTO patient (arm_id, study_id, used)
+                    VALUES ($1, $2, $3)
+                    RETURNING id, arm_id, used",
+        list(arm_id, study_id, used)
       )
     },
     error = function(cond) {
