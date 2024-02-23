@@ -43,4 +43,3 @@ run_unbiased <- function() {
       plumber::pr_run(host = host, port = port) # nocov end
   }
 }
-

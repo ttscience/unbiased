@@ -1,4 +1,3 @@
-
 # hack to make sure we can mock the globalCallingHandlers
 # this method needs to be present in the package environment for mocking to work
 # linter disabled intentionally since this is internal method  and cannot be renamed

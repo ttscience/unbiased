@@ -13,9 +13,6 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
     disable = function() {
       private$disabled <- TRUE
     },
-    enable = function() {
-      private$disabled <- FALSE
-    },
     is_enabled = function() {
       !private$disabled
     },
@@ -41,17 +38,25 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
       private$response_code <- response_code
     },
     validate_log = function() {
-      if (private$disabled) {
-        stop("Audit log is disabled")
-      }
+      checkmate::assert(
+        !private$disabled
+      )
       if (is.null(private$event_type)) {
-        stop("Event type not set for audit log. Please set the event type using `audit_log_event_type`")
+        if (private$response_code == 404) {
+          # "soft" validation failure for 404 errors
+          # it might be just invalid endpoint
+          # so we don't want to fail the request
+          return(FALSE)
+        } else {
+          stop("Event type not set for audit log. Please set the event type using `audit_log_event_type`")
+        }
       }
+      return(TRUE)
     },
     persist = function() {
-      if (private$disabled) {
-        return()
-      }
+      checkmate::assert(
+        !private$disabled
+      )
       db_conn <- pool::localCheckout(db_connection_pool)
       values <- list(
         private$request_id,
@@ -104,25 +109,19 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
 #'
 #' This function modifies the plumber router in place and returns the updated router.
 #'
-#' The audit trail is only enabled if the AUDIT_LOG_ENABLED environment variable is set to "true".
-#'
 #' @param pr A plumber router for which the audit trail is to be set up.
 #' @param endpoints A list of regex patterns for which the audit trail should be enabled.
 #' @return Returns the updated plumber router with the audit trail hooks.
 #' @examples
 #' pr <- plumber::plumb("your-api-definition.R") |>
 #'   setup_audit_trail()
-setup_audit_trail <- function(pr, endpoints) {
-  audit_log_enabled <- Sys.getenv("AUDIT_LOG_ENABLED", "true") |> as.logical()
-  if (!audit_log_enabled) {
-    print("Audit log is disabled")
-    return(pr)
-  }
-  print("Audit log is enabled")
+setup_audit_trail <- function(pr, endpoints = list()) {
+  checkmate::assert(
+    is.list(endpoints),
+    all(sapply(endpoints, is.character)),
+    "endpoints must be a list of strings"
+  )
   is_enabled_for_request <- function(req) {
-    if (is.null(endpoints)) {
-      return(TRUE)
-    }
     any(sapply(endpoints, \(endpoint) grepl(endpoint, req$PATH_INFO)))
   }
 
@@ -146,11 +145,13 @@ setup_audit_trail <- function(pr, endpoints) {
         if (is.null(audit_log) || !audit_log$is_enabled()) {
           return()
         }
-        audit_log$validate_log()
         audit_log$set_response_code(res$status)
         audit_log$set_request_body(req$body)
         audit_log$set_response_body(res$body)
-        audit_log$persist()
+
+        if (audit_log$validate_log()) {
+          audit_log$persist()
+        }
       })
     }
   )
