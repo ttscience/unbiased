@@ -75,6 +75,14 @@ test_that("correct request with the structure of the returned result", {
     len = 3,
     type = c("numeric", "numeric", "character")
   )
+
+  checkmate::test_true(
+    dplyr::tbl(db_connection_pool, "patient") |>
+      dplyr::slice_max(id) |>
+      dplyr::collect() |>
+      dplyr::pull(used),
+    TRUE
+  )
 })
 
 test_that("request with one covariate at two levels", {
