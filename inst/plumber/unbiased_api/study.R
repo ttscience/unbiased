@@ -103,7 +103,7 @@ unbiased:::wrap_endpoint(function(study_id, req, res) {
 #* @serializer unboxedJSON
 #*
 
-sentryR::with_captured_calls(function(study_id, req, res) {
+unbiased:::wrap_endpoint(function(study_id, req, res) {
   return(
     unbiased:::api_get_rand_list(study_id, req, res)
   )

@@ -1,7 +1,7 @@
 test_that("correct request with the structure of the returned result", {
   source("./test-helpers.R")
   source("./audit-log-test-helpers.R")
-  with_db_fixtures("fixtures/example_study.yml")
+  with_db_fixtures("fixtures/example_db.yml")
   assert_audit_trail_for_test(c(
     "study_create",
     "randomize_patient"

@@ -23,9 +23,9 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
       private$request_body <- request_body
     },
     set_response_body = function(response_body) {
-      if (typeof(response_body) == "list") {
-        response_body <- jsonlite::toJSON(response_body, auto_unbox = TRUE) |> as.character()
-      }
+      checkmate::assert_false(
+        typeof(response_body) == "list"
+      )
       private$response_body <- response_body
     },
     set_event_type = function(event_type) {
@@ -149,7 +149,9 @@ setup_audit_trail <- function(pr, endpoints = list()) {
         audit_log$set_request_body(req$body)
         audit_log$set_response_body(res$body)
 
-        if (audit_log$validate_log()) {
+        log_valid <- audit_log$validate_log()
+
+        if (log_valid) {
           audit_log$persist()
         }
       })
