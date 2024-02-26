@@ -4,7 +4,7 @@
 \alias{setup_audit_trail}
 \title{Set up audit trail}
 \usage{
-setup_audit_trail(pr, endpoints)
+setup_audit_trail(pr, endpoints = list())
 }
 \arguments{
 \item{pr}{A plumber router for which the audit trail is to be set up.}
@@ -20,8 +20,6 @@ information before routing (preroute) and after serializing the response (postse
 }
 \details{
 This function modifies the plumber router in place and returns the updated router.
-
-The audit trail is only enabled if the AUDIT_LOG_ENABLED environment variable is set to "true".
 }
 \examples{
 pr <- plumber::plumb("your-api-definition.R") |>

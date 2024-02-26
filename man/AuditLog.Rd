@@ -11,7 +11,6 @@ This class is used internally to store audit logs for each request.
 \itemize{
 \item \href{#method-AuditLog-new}{\code{AuditLog$new()}}
 \item \href{#method-AuditLog-disable}{\code{AuditLog$disable()}}
-\item \href{#method-AuditLog-enable}{\code{AuditLog$enable()}}
 \item \href{#method-AuditLog-is_enabled}{\code{AuditLog$is_enabled()}}
 \item \href{#method-AuditLog-set_request_body}{\code{AuditLog$set_request_body()}}
 \item \href{#method-AuditLog-set_response_body}{\code{AuditLog$set_response_body()}}
@@ -38,15 +37,6 @@ This class is used internally to store audit logs for each request.
 \subsection{Method \code{disable()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AuditLog$disable()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-AuditLog-enable"></a>}}
-\if{latex}{\out{\hypertarget{method-AuditLog-enable}{}}}
-\subsection{Method \code{enable()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuditLog$enable()}\if{html}{\out{</div>}}
 }
 
 }
