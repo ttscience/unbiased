@@ -168,3 +168,21 @@ test_that("Setting proportion of randomness works", {
 
   expect_gt(test$p.value, 0.05)
 })
+
+test_that("Method 'range' works properly", {
+  arms <- c("A", "B", "C")
+  situation <- tibble::tibble(
+    sex = c("F", "M", "F"),
+    diabetes_type = c("type2", "type2", "type2"),
+    arm = c("A", "B", "")
+  )
+  randomized <-
+    randomize_minimisation_pocock(
+      arms = arms,
+      current_state = situation,
+      p = 1,
+      method = "range"
+    )
+
+  testthat::expect_equal(randomized, "C")
+})
