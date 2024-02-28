@@ -61,6 +61,44 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     add = collection
   )
 
+  browser()
+
+  checkmate::assert(
+    checkmate::check_data_frame(current_state,
+      any.missing = TRUE,
+      all.missing = FALSE, nrows = 2, ncols = 3
+    ),
+    .var.name = "current_state",
+    add = collection
+  )
+
+  checkmate::assert(
+    checkmate::check_names(
+      colnames(current_state),
+      must.include = "arm"
+    ),
+    .var.name = "current_state",
+    add = collection
+  )
+
+
+  check_arm <- function(x) {
+    res <- checkmate::check_character(
+      current_state$arm[nrow(current_state)],
+      max.chars = 0
+    )
+    if (!isTRUE(res)) {
+      res <- ("Last value should be empty")
+    }
+    return(res)
+  }
+
+  checkmate::assert(
+    check_arm(),
+    .var.name = "current_state[arm]",
+    add = collection
+  )
+
   if (length(collection$getMessages()) > 0) {
     res$status <- 400
     return(list(
