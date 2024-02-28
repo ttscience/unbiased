@@ -61,8 +61,6 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     add = collection
   )
 
-  browser()
-
   checkmate::assert(
     checkmate::check_data_frame(current_state,
       any.missing = TRUE,
