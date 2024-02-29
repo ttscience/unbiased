@@ -198,7 +198,7 @@ test_that("request with patient that is assigned an arm at entry", {
     response |>
     resp_body_json()
 
-  response_current_state <-
+  response_cs_arm <-
     tryCatch(
       {
         request(api_url) |>
@@ -220,7 +220,58 @@ test_that("request with patient that is assigned an arm at entry", {
     )
 
   testthat::expect_equal(
-    response_current_state$status, 500,
+    response_cs_arm$status, 400,
+    label = "HTTP status code"
+  )
+
+  response_cs_records <-
+    tryCatch(
+      {
+        request(api_url) |>
+          req_url_path("study", response_body$study$id, "patient") |>
+          req_method("POST") |>
+          req_body_json(
+            data = list(
+              current_state =
+                tibble::tibble(
+                  "sex" = c("female"),
+                  "weight" = c("61-80 kg"),
+                  "arm" = c("placebo")
+                )
+            )
+          ) |>
+          req_perform()
+      },
+      error = function(e) e
+    )
+
+  testthat::expect_equal(
+    response_cs_records$status, 400,
+    label = "HTTP status code"
+  )
+
+  response_current_state <-
+    tryCatch(
+      {
+        request(api_url) |>
+          req_url_path("study", response_body$study$id, "patient") |>
+          req_method("POST") |>
+          req_body_json(
+            data = list(
+              current_state =
+                tibble::tibble(
+                  "sex" = c("female", "male"),
+                  "weight" = c("61-80 kg", "81 kg or more")
+                )
+            )
+          ) |>
+          req_perform()
+      },
+      error = function(e) e
+    )
+
+  testthat::expect_equal(
+    response_current_state$status, 400,
     label = "HTTP status code"
   )
 })
