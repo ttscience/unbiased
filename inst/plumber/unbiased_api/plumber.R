@@ -30,7 +30,8 @@ function(api) {
     plumber::pr_set_error(unbiased:::default_error_handler)
 
   api |>
-    plumber::pr_set_error(unbiased:::default_error_handler)
+    plumber::pr_set_error(unbiased:::default_error_handler) |>
+    unbiased:::setup_invalid_json_handler()
 
   api |>
     plumber::pr_mount("/meta", meta) |>

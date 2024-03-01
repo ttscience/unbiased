@@ -64,20 +64,50 @@ wrap_endpoint <- function(z) {
   return(f)
 }
 
+setup_invalid_json_handler <- function(api) {
+  api |>
+    plumber::pr_filter("validate_input_json", \(req, res) {
+      if (length(req$bodyRaw) > 0) {
+        request_body <- req$bodyRaw |> rawToChar()
+        e <- tryCatch(
+          {
+            jsonlite::fromJSON(request_body)
+            NULL
+          },
+          error = \(e) e
+        )
+        if (!is.null(e)) {
+          audit_log_set_event_type("malformed_request", req)
+          res$status <- 400
+          return(list(
+            error = jsonlite::unbox("Invalid JSON"),
+            details = e$message |> strsplit("\n") |> unlist()
+          ))
+        }
+      }
+
+      plumber::forward()
+    })
+}
+
 default_error_handler <- function(req, res, error) {
   print(error, simplify = "branch")
 
   if (sentryR::is_sentry_configured()) {
-    error$function_calls <- error$trace$call
+    if ("trace" %in% names(error)) {
+      error$function_calls <- error$trace$call
+    } else if (!("function_calls" %in% names(error))) {
+      error$function_calls <- sys.calls()
+    }
+
     sentryR::capture_exception(error)
   }
 
-
   res$status <- 500
 
-  jsonlite::toJSON(list(
+  list(
     error = "500 - Internal server error"
-  ), auto_unbox = TRUE)
+  )
 }
 
 with_err_handler <- function(expr) {
