@@ -20,8 +20,6 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
         request_body <- jsonlite::toJSON(request_body, auto_unbox = TRUE) |> as.character()
       } else if (!is.character(request_body)) {
         request_body <- NA
-      } else if (!jsonlite::validate(request_body)) {
-        request_body <- NA
       }
       private$request_body <- request_body
     },
