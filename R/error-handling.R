@@ -77,6 +77,7 @@ setup_invalid_json_handler <- function(api) {
           error = \(e) e
         )
         if (!is.null(e)) {
+          print(glue::glue("Invalid JSON; requested endpoint: {req$PATH_INFO}"))
           audit_log_set_event_type("malformed_request", req)
           res$status <- 400
           return(list(

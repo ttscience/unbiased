@@ -31,10 +31,10 @@ assert_audit_trail_for_test <- function(events = list(), env = parent.frame()) {
       n <- length(events)
 
       # assert that the count has increased by number of events
-      testthat::expect_equal(
+      testthat::expect_identical(
         new_event_count,
         event_count + n,
-        info = "Expected events to be logged"
+        info = glue::glue("Expected {n} events to be logged")
       )
 
       if (n > 0) {

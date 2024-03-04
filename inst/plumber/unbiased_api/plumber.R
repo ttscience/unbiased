@@ -37,7 +37,7 @@ function(api) {
     plumber::pr_mount("/meta", meta) |>
     plumber::pr_mount("/study", study) |>
     unbiased:::setup_audit_trail(endpoints = list(
-      "^/study/.*"
+      "^/study.*"
     )) |>
     plumber::pr_set_api_spec(function(spec) {
       spec$

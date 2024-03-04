@@ -46,6 +46,7 @@ testthat::test_that("audit logs for study are returned correctly from the databa
 })
 
 testthat::test_that("should return 404 when study does not exist", {
+  with_db_fixtures("fixtures/example_audit_logs.yml")
   response <- request(api_url) |>
     req_url_path("study", 1111, "audit") |>
     req_method("GET") |>
@@ -61,6 +62,7 @@ testthat::test_that("should return 404 when study does not exist", {
 })
 
 testthat::test_that("should not log audit trail for non-existent endpoint", {
+  with_db_fixtures("fixtures/example_audit_logs.yml")
   assert_audit_trail_for_test(events = c())
   response <- request(api_url) |>
     req_url_path("study", 1, "non-existent-endpoint") |>
