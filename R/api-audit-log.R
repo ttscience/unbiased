@@ -15,11 +15,11 @@ api_get_audit_log <- function(study_id, req, res) {
 
   audit_trail$request_body <- purrr::map(
     audit_trail$request_body,
-    \(x) jsonlite::fromJSON(x)
+    jsonlite::fromJSON
   )
   audit_trail$response_body <- purrr::map(
     audit_trail$response_body,
-    \(x) jsonlite::fromJSON(x)
+    jsonlite::fromJSON
   )
 
   return(audit_trail)
