@@ -7,7 +7,8 @@ testthat::test_that("audit logs for study are returned correctly from the databa
   counts <- c(1, 4, 1)
   for (i in 1:3) {
     study_id <- studies[i]
-    count <- counts[i]
+    count <- counts[i] |>
+      as.integer()
     response <- request(api_url) |>
       req_url_path("study", study_id, "audit") |>
       req_method("GET") |>
@@ -17,12 +18,18 @@ testthat::test_that("audit logs for study are returned correctly from the databa
       response |>
       resp_body_json()
 
-    testthat::expect_equal(response$status_code, 200)
-    testthat::expect_equal(length(response_body), count)
+    testthat::expect_identical(response$status_code, 200L)
+    testthat::expect_identical(length(response_body), count)
+
+    created_at <- response_body |> dplyr::bind_rows() |> dplyr::pull("created_at")
+    testthat::expect_equal(
+      created_at,
+      created_at |> sort()
+    )
 
     if (count > 0) {
       body <- response_body[[1]]
-      testthat::expect_equal(names(body), c(
+      testthat::expect_setequal(names(body), c(
         "id",
         "created_at",
         "event_type",
@@ -32,8 +39,11 @@ testthat::test_that("audit logs for study are returned correctly from the databa
         "request_method",
         "request_body",
         "response_code",
-        "response_body"
+        "response_body",
+        "user_agent",
+        "ip_address"
       ))
+
       testthat::expect_equal(body$study_id, study_id)
       testthat::expect_equal(body$event_type, "example_event")
       testthat::expect_equal(body$request_method, "GET")

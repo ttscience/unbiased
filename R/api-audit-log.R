@@ -11,6 +11,7 @@ api_get_audit_log <- function(study_id, req, res) {
   # Get audit trial
   audit_trail <- dplyr::tbl(db_connection_pool, "audit_log") |>
     dplyr::filter(study_id == !!study_id) |>
+    dplyr::arrange(created_at) |>
     dplyr::collect()
 
   audit_trail$request_body <- purrr::map(
