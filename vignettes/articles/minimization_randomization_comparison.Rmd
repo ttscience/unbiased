@@ -291,7 +291,7 @@ statistics_table <-
         diabetes_type = ifelse(diabetes_type == "1", "type1", "type2"),
         hba1c = ifelse(hba1c == "1", "<=9", "(9,11>"),
         tpo2 = ifelse(tpo2 == "1", "<=50", ">50"),
-        age = ifelse(age == "1", "<=55", ">50"),
+        age = ifelse(age == "1", "<=55", ">55"),
         wound_size = ifelse(wound_size == "1", "<=2", ">2")
       ) |>
       tbl_summary(
@@ -393,12 +393,13 @@ block_rand <-
       )
       getRandList(genSeq(rand))[1, ]
     })
+
     df_list <- tibble::tibble()
     for (i in seq_len(strata_n)) {
       local_df <- strata_grid |>
         dplyr::slice(i) |>
-        dplyr::mutate(count = N) |>
-        tidyr::uncount(count) |>
+        dplyr::mutate(count_n = n) |>
+        tidyr::uncount(count_n) |>
         tibble::add_column(rand_arm = gen_seq_list[[i]])
       df_list <- rbind(local_df, df_list)
     }
