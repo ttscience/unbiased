@@ -27,7 +27,7 @@ This class is used internally to store audit logs for each request.
 \if{latex}{\out{\hypertarget{method-AuditLog-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{AuditLog$new(request_method, endpoint_url, request_body)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{AuditLog$new(request_method, endpoint_url)}\if{html}{\out{</div>}}
 }
 
 }
