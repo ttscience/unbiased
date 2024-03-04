@@ -12,7 +12,7 @@ api_get_study <- function(req, res) {
 }
 
 api_get_study_records <- function(study_id, req, res) {
-  audit_log_event_type("get_study_record", req)
+  audit_log_set_event_type("get_study_record", req)
   db_connection_pool <- get("db_connection_pool")
 
   study_id <- req$args$study_id
@@ -23,7 +23,7 @@ api_get_study_records <- function(study_id, req, res) {
       error = "Study not found"
     ))
   }
-  audit_log_study_id(study_id, req)
+  audit_log_set_study_id(study_id, req)
 
   study <-
     dplyr::tbl(db_connection_pool, "study") |>

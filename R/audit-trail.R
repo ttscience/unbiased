@@ -4,11 +4,10 @@
 AuditLog <- R6::R6Class( # nolint: object_name_linter.
   "AuditLog",
   public = list(
-    initialize = function(request_method, endpoint_url, request_body) {
+    initialize = function(request_method, endpoint_url) {
       private$request_id <- uuid::UUIDgenerate()
       private$request_method <- request_method
       private$endpoint_url <- endpoint_url
-      private$request_body <- request_body
     },
     disable = function() {
       private$disabled <- TRUE
@@ -19,6 +18,10 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
     set_request_body = function(request_body) {
       if (typeof(request_body) == "list") {
         request_body <- jsonlite::toJSON(request_body, auto_unbox = TRUE) |> as.character()
+      } else if (!is.character(request_body)) {
+        request_body <- NA
+      } else if (!jsonlite::validate(request_body)) {
+        request_body <- NA
       }
       private$request_body <- request_body
     },
@@ -116,11 +119,7 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
 #' pr <- plumber::plumb("your-api-definition.R") |>
 #'   setup_audit_trail()
 setup_audit_trail <- function(pr, endpoints = list()) {
-  checkmate::assert(
-    is.list(endpoints),
-    all(sapply(endpoints, is.character)),
-    "endpoints must be a list of strings"
-  )
+  checkmate::assert_list(endpoints, types = "character")
   is_enabled_for_request <- function(req) {
     any(sapply(endpoints, \(endpoint) grepl(endpoint, req$PATH_INFO)))
   }
@@ -133,8 +132,7 @@ setup_audit_trail <- function(pr, endpoints = list()) {
         }
         audit_log <- AuditLog$new(
           request_method = req$REQUEST_METHOD,
-          endpoint_url = req$PATH_INFO,
-          request_body = req$body
+          endpoint_url = req$PATH_INFO
         )
         req$.internal.audit_log <- audit_log
       })
@@ -169,7 +167,7 @@ setup_audit_trail <- function(pr, endpoints = list()) {
 #' @param event_type The event type to be set for the audit log.
 #' @param req The request object, which should contain an audit log in its internal data.
 #' @return Returns nothing as it modifies the audit log in-place.
-audit_log_event_type <- function(event_type, req) {
+audit_log_set_event_type <- function(event_type, req) {
   audit_log <- req$.internal.audit_log
   if (!is.null(audit_log)) {
     audit_log$set_event_type(event_type)
@@ -184,8 +182,8 @@ audit_log_event_type <- function(event_type, req) {
 #' @param study_id The study ID to be set for the audit log.
 #' @param req The request object, which should contain an audit log in its internal data.
 #' @return Returns nothing as it modifies the audit log in-place.
-audit_log_study_id <- function(study_id, req) {
-  assert(!is.null(study_id) || is.numeric(study_id), "Study ID must be a number")
+audit_log_set_study_id <- function(study_id, req) {
+  checkmate::assert(!is.null(study_id) && is.numeric(study_id), "Study ID must be a number")
   audit_log <- req$.internal.audit_log
   if (!is.null(audit_log)) {
     audit_log$set_study_id(study_id)

@@ -27,7 +27,7 @@ parse_pocock_parameters <-
   }
 
 api__randomize_patient <- function(study_id, current_state, req, res) {
-  audit_log_event_type("randomize_patient", req)
+  audit_log_set_event_type("randomize_patient", req)
   collection <- checkmate::makeAssertCollection()
 
   db_connection_pool <- get("db_connection_pool")
@@ -41,7 +41,7 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     ))
   }
 
-  audit_log_study_id(study_id, req)
+  audit_log_set_study_id(study_id, req)
 
   # Retrieve study details, especially the ones about randomization
   method_randomization <-

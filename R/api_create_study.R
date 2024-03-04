@@ -1,7 +1,7 @@
 api__minimization_pocock <- function(
     # nolint: cyclocomp_linter.
     identifier, name, method, arms, covariates, p, req, res) {
-  audit_log_event_type("study_create", req)
+  audit_log_set_event_type("study_create", req)
 
   collection <- checkmate::makeAssertCollection()
 
@@ -137,7 +137,7 @@ api__minimization_pocock <- function(
     strata = strata
   )
 
-  audit_log_study_id(r$study$id, req)
+  audit_log_set_study_id(r$study$id, req)
 
   response <- list(
     study = r$study
