@@ -31,6 +31,12 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
       )
       private$response_body <- response_body
     },
+    set_ip_address = function(ip_address) {
+      private$ip_address <- ip_address
+    },
+    set_user_agent = function(user_agent) {
+      private$user_agent <- user_agent
+    },
     set_event_type = function(event_type) {
       private$event_type <- event_type
     },
@@ -69,7 +75,9 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
         private$request_method,
         private$request_body,
         private$response_code,
-        private$response_body
+        private$response_body,
+        private$ip_address,
+        private$user_agent
       )
 
       values <- purrr::map(values, \(x) ifelse(is.null(x), NA, x))
@@ -84,9 +92,11 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
           request_method,
           request_body,
           response_code,
-          response_body
+          response_body,
+          ip_address,
+          user_agent
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
         values
       )
     }
@@ -100,7 +110,9 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
     request_method = NULL,
     response_code = NULL,
     request_body = NULL,
-    response_body = NULL
+    response_body = NULL,
+    ip_address = NULL,
+    user_agent = NULL
   )
 )
 
@@ -146,6 +158,8 @@ setup_audit_trail <- function(pr, endpoints = list()) {
         audit_log$set_response_code(res$status)
         audit_log$set_request_body(req$body)
         audit_log$set_response_body(res$body)
+        audit_log$set_ip_address(req$REMOTE_ADDR)
+        audit_log$set_user_agent(req$HTTP_USER_AGENT)
 
         log_valid <- audit_log$validate_log()
 
