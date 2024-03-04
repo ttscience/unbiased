@@ -14,6 +14,8 @@ This class is used internally to store audit logs for each request.
 \item \href{#method-AuditLog-is_enabled}{\code{AuditLog$is_enabled()}}
 \item \href{#method-AuditLog-set_request_body}{\code{AuditLog$set_request_body()}}
 \item \href{#method-AuditLog-set_response_body}{\code{AuditLog$set_response_body()}}
+\item \href{#method-AuditLog-set_ip_address}{\code{AuditLog$set_ip_address()}}
+\item \href{#method-AuditLog-set_user_agent}{\code{AuditLog$set_user_agent()}}
 \item \href{#method-AuditLog-set_event_type}{\code{AuditLog$set_event_type()}}
 \item \href{#method-AuditLog-set_study_id}{\code{AuditLog$set_study_id()}}
 \item \href{#method-AuditLog-set_response_code}{\code{AuditLog$set_response_code()}}
@@ -64,6 +66,24 @@ This class is used internally to store audit logs for each request.
 \subsection{Method \code{set_response_body()}}{
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{AuditLog$set_response_body(response_body)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AuditLog-set_ip_address"></a>}}
+\if{latex}{\out{\hypertarget{method-AuditLog-set_ip_address}{}}}
+\subsection{Method \code{set_ip_address()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AuditLog$set_ip_address(ip_address)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-AuditLog-set_user_agent"></a>}}
+\if{latex}{\out{\hypertarget{method-AuditLog-set_user_agent}{}}}
+\subsection{Method \code{set_user_agent()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{AuditLog$set_user_agent(user_agent)}\if{html}{\out{</div>}}
 }
 
 }
