@@ -35,7 +35,7 @@ COPY inst/ ./inst
 COPY R/ ./R
 COPY tests/ ./inst/tests
 
-RUN R CMD INSTALL --no-multiarch .
+RUN R -e "devtools::install('.')"
 
 EXPOSE 3838
 
