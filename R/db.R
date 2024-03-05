@@ -44,14 +44,23 @@ get_similar_studies <- function(name, identifier) {
   similar
 }
 
+check_study_exist <- function(study_id) {
+  db_connection_pool <- get("db_connection_pool")
+  study_exists <- dplyr::tbl(db_connection_pool, "study") |>
+    dplyr::filter(id == !!study_id) |>
+    dplyr::collect() |>
+    nrow() > 0
+  study_exists
+}
+
 create_study <- function(
     name, identifier, method, parameters, arms, strata) {
   db_connection_pool <- get("db_connection_pool", envir = .GlobalEnv)
   connection <- pool::localCheckout(db_connection_pool)
 
-  r <- tryCatch(
+  DBI::dbWithTransaction(
+    connection,
     {
-      DBI::dbBegin(connection)
       study_record <- list(
         name = name,
         identifier = identifier,
@@ -134,35 +143,17 @@ create_study <- function(
         row.names = FALSE
       )
 
-      DBI::dbCommit(connection)
       list(study = study)
-    },
-    error = function(cond) {
-      logger::log_error("Error creating study: {cond}", cond = cond)
-      DBI::dbRollback(connection)
-      list(error = conditionMessage(cond))
     }
   )
-
-  r
 }
 
 save_patient <- function(study_id, arm_id, used) {
-  r <- tryCatch(
-    {
-      randomized_patient <- DBI::dbGetQuery(
-        db_connection_pool,
-        "INSERT INTO patient (arm_id, study_id, used)
-                    VALUES ($1, $2, $3)
-                    RETURNING id, arm_id, used",
-        list(arm_id, study_id, used)
-      )
-    },
-    error = function(cond) {
-      logger::log_error("Error randomizing patient: {cond}", cond = cond)
-      list(error = conditionMessage(cond))
-    }
+  DBI::dbGetQuery(
+    db_connection_pool,
+    "INSERT INTO patient (arm_id, study_id, used)
+                VALUES ($1, $2, $3)
+                RETURNING id, arm_id, used",
+    list(arm_id, study_id, used)
   )
-
-  return(r)
 }

@@ -1,10 +1,14 @@
 test_that("correct request to reads studies with the structure of the returned result", {
   source("./test-helpers.R")
+  source("./audit-log-test-helpers.R")
 
   conn <- pool::localCheckout(
     get("db_connection_pool", envir = globalenv())
   )
   with_db_fixtures("fixtures/example_db.yml")
+
+  # this endpoint should not be logged
+  assert_audit_trail_for_test(c())
 
   response <- request(api_url) |>
     req_url_path("study", "") |>

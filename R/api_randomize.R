@@ -27,26 +27,21 @@ parse_pocock_parameters <-
   }
 
 api__randomize_patient <- function(study_id, current_state, req, res) {
+  audit_log_set_event_type("randomize_patient", req)
   collection <- checkmate::makeAssertCollection()
 
   db_connection_pool <- get("db_connection_pool")
 
   study_id <- req$args$study_id
 
-  is_study <-
-    checkmate::test_true(
-      dplyr::tbl(db_connection_pool, "study") |>
-        dplyr::filter(id == study_id) |>
-        dplyr::collect() |>
-        nrow() > 0
-    )
-
-  if (!is_study) {
+  if (!check_study_exist(study_id)) {
     res$status <- 404
     return(list(
       error = "Study not found"
     ))
   }
+
+  audit_log_set_study_id(study_id, req)
 
   # Retrieve study details, especially the ones about randomization
   method_randomization <-
@@ -129,19 +124,11 @@ api__randomize_patient <- function(study_id, current_state, req, res) {
     unbiased:::save_patient(study_id, arm$arm_id, used = TRUE) |>
     select(-used)
 
-  if (!is.null(randomized_patient$error)) {
-    res$status <- 503
-    return(list(
-      error = "There was a problem saving randomized patient to the database",
-      details = randomized_patient$error
-    ))
-  } else {
-    randomized_patient <-
-      randomized_patient |>
-      dplyr::mutate(arm_name = arm$name) |>
-      dplyr::rename(patient_id = id) |>
-      as.list()
+  randomized_patient <-
+    randomized_patient |>
+    dplyr::mutate(arm_name = arm$name) |>
+    dplyr::rename(patient_id = id) |>
+    as.list()
 
-    return(randomized_patient)
-  }
+  return(randomized_patient)
 }

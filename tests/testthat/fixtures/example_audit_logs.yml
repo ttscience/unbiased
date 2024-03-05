@@ -1,0 +1,87 @@
+study:
+  - identifier: 'TEST'
+    name: 'Test Study'
+    method: 'minimisation_pocock'
+    parameters: '{}'
+  - identifier: 'TEST2'
+    name: 'Test Study 2'
+    method: 'minimisation_pocock'
+    parameters: '{}'
+  - identifier: 'TEST3'
+    name: 'Test Study 3'
+    method: 'minimisation_pocock'
+    parameters: '{}'
+
+audit_log:
+  - id: "c12d29e7-1b44-4cb6-a9c1-1f427fe70001"
+    created_at: "2022-02-16T10:27:53Z"
+    event_type: "example_event"
+    request_id: "427ac2db-166d-4236-b040-94213f1b0001"
+    study_id: 1
+    endpoint_url: "/api/example"
+    request_method: "GET"
+    request_body: '{"key1": "value1", "key2": "value2"}'
+    response_code: 200
+    response_body: '{"key1": "value1", "key2": "value2"}'
+    ip_address: "8.8.8.8"
+    user_agent: "Mozilla"
+  - id: "c12d29e7-1b44-4cb6-a9c1-1f427fe70002"
+    created_at: "2022-02-16T10:27:53Z"
+    event_type: "example_event"
+    request_id: "427ac2db-166d-4236-b040-94213f1b0002"
+    study_id: 2
+    endpoint_url: "/api/example"
+    request_method: "GET"
+    request_body: '{"key1": "value1", "key2": "value2"}'
+    response_code: 200
+    response_body: '{"key1": "value1", "key2": "value2"}'
+    ip_address: "8.8.8.8"
+    user_agent: "Mozilla"
+  - id: "c12d29e7-1b44-4cb6-a9c1-1f427fe70003"
+    created_at: "2022-02-16T10:27:53Z"
+    event_type: "example_event"
+    request_id: "427ac2db-166d-4236-b040-94213f1b0003"
+    study_id: 2
+    endpoint_url: "/api/example"
+    request_method: "GET"
+    request_body: '{"key1": "value1", "key2": "value2"}'
+    response_code: 200
+    response_body: '{"key1": "value1", "key2": "value2"}'
+    ip_address: "8.8.8.8"
+    user_agent: "Mozilla"
+  - id: "c12d29e7-1b44-4cb6-a9c1-1f427fe70004"
+    created_at: "2023-02-16T10:27:53Z"
+    event_type: "example_event"
+    request_id: "427ac2db-166d-4236-b040-94213f1b0004"
+    study_id: 2
+    endpoint_url: "/api/example"
+    request_method: "GET"
+    request_body: '{"key1": "value1", "key2": "value2"}'
+    response_code: 200
+    response_body: '{"key1": "value1", "key2": "value2"}'
+    ip_address: "8.8.8.8"
+    user_agent: "Mozilla"
+  - id: "c12d29e7-1b44-4cb6-a9c1-1f427fe70005"
+    created_at: "2022-02-16T10:27:54Z"
+    event_type: "example_event"
+    request_id: "427ac2db-166d-4236-b040-94213f1b0004"
+    study_id: 2
+    endpoint_url: "/api/example"
+    request_method: "GET"
+    request_body: '{"key1": "value1", "key2": "value2"}'
+    response_code: 200
+    response_body: '{"key1": "value1", "key2": "value2"}'
+    ip_address: "8.8.8.8"
+    user_agent: "Mozilla"
+  - id: "c12d29e7-1b44-4cb6-a9c1-1f427fe70006"
+    created_at: "2022-02-16T10:27:53Z"
+    event_type: "example_event"
+    request_id: "427ac2db-166d-4236-b040-94213f1b0006"
+    study_id: 3
+    endpoint_url: "/api/example"
+    request_method: "GET"
+    request_body: '{"key1": "value1", "key2": "value2"}'
+    response_code: 200
+    response_body: '{"key1": "value1", "key2": "value2"}'
+    ip_address: "8.8.8.8"
+    user_agent: "Mozilla"

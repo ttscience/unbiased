@@ -6,7 +6,7 @@
 #* @tag other
 #* @get /sha
 #* @serializer unboxedJSON
-sentryR::with_captured_calls(function(req, res) {
+unbiased:::wrap_endpoint(function(req, res) {
   sha <- Sys.getenv("GITHUB_SHA", unset = "NULL")
   if (sha == "NULL") {
     res$status <- 404

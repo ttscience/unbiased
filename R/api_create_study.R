@@ -1,6 +1,8 @@
 api__minimization_pocock <- function(
     # nolint: cyclocomp_linter.
     identifier, name, method, arms, covariates, p, req, res) {
+  audit_log_set_event_type("study_create", req)
+
   collection <- checkmate::makeAssertCollection()
 
   checkmate::assert(
@@ -135,15 +137,7 @@ api__minimization_pocock <- function(
     strata = strata
   )
 
-  # Response ----------------------------------------------------------------
-
-  if (!is.null(r$error)) {
-    res$status <- 503
-    return(list(
-      error = "There was a problem saving created study to the database",
-      details = r$error
-    ))
-  }
+  audit_log_set_study_id(r$study$id, req)
 
   response <- list(
     study = r$study

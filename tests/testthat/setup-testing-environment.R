@@ -281,8 +281,8 @@ request(api_url) |>
   req_url_path("meta", "sha") |>
   req_method("GET") |>
   req_retry(
-    max_tries = 25,
-    backoff = \(x) 0.3
+    max_seconds = 30,
+    backoff = \(x) 1
   ) |>
   req_perform()
 print("API started, running tests...")

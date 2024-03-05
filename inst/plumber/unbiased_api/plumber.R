@@ -20,14 +20,25 @@
 #*
 #* @plumber
 function(api) {
-  meta <- plumber::pr("meta.R") |>
-    plumber::pr_set_error(sentryR::sentry_error_handler)
-  study <- plumber::pr("study.R") |>
-    plumber::pr_set_error(sentryR::sentry_error_handler)
+  meta <- plumber::pr("meta.R")
+  study <- plumber::pr("study.R")
+
+  meta |>
+    plumber::pr_set_error(unbiased:::default_error_handler)
+
+  study |>
+    plumber::pr_set_error(unbiased:::default_error_handler)
+
+  api |>
+    plumber::pr_set_error(unbiased:::default_error_handler) |>
+    unbiased:::setup_invalid_json_handler()
 
   api |>
     plumber::pr_mount("/meta", meta) |>
     plumber::pr_mount("/study", study) |>
+    unbiased:::setup_audit_trail(endpoints = list(
+      "^/study.*"
+    )) |>
     plumber::pr_set_api_spec(function(spec) {
       spec$
         paths$
@@ -99,12 +110,6 @@ function(req) {
     req$REQUEST_METHOD, req$PATH_INFO,
     "@", req$REMOTE_ADDR, "\n"
   )
-  purrr::imap(req$args, function(arg, arg_name) {
-    cat("[ARG]", arg_name, "=", as.character(arg), "\n")
-  })
-  if (req$postBody != "") {
-    cat("[BODY]", req$postBody, "\n")
-  }
 
   plumber::forward()
 }
