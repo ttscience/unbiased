@@ -1,6 +1,6 @@
 Package: unbiased
 Title: Diverse Randomization Algorithms for Clinical Trials
-Version: 0.0.0.9003
+Version: 1.0.0
 Authors@R: c(
     person("Kamil", "Sijko", , "kamil.sijko@ttsi.com.pl",
            role = c("aut", "cre"), comment = c(ORCID = "0000-0002-2203-1065")),

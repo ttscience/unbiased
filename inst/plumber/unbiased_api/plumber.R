@@ -10,7 +10,7 @@
 #*   url = "https://ttscience.github.io/unbiased/")
 #* @apiLicense list(name = "MIT",
 #*   url = "https://github.com/ttscience/unbiased/LICENSE.md")
-#* @apiVersion 0.0.0.9003
+#* @apiVersion 1.0.0
 #* @apiTag initialize Endpoints that initialize study with chosen
 #*   randomization method and parameters.
 #* @apiTag randomize Endpoints that randomize individual patients after the
