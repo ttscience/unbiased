@@ -91,6 +91,7 @@ setup_invalid_json_handler <- function(api) {
     })
 }
 
+# nocov start
 default_error_handler <- function(req, res, error) {
   print(error, simplify = "branch")
 
@@ -110,6 +111,7 @@ default_error_handler <- function(req, res, error) {
     error = "500 - Internal server error"
   )
 }
+# nocov end
 
 with_err_handler <- function(expr) {
   withCallingHandlers(
