@@ -247,6 +247,7 @@ req_url_path("study", study_id, "audit") |>
       req_method("GET") |>
       req_perform()
 ```
+The endpoint facilitates tracking the history of requests sent to the database, along with their corresponding responses. This enables us to trace all actions involving the API.
 
 # Technical details
 
