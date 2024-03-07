@@ -27,6 +27,10 @@ By choosing **unbiased**, you're adopting a sophisticated approach to trial rand
      - [API Endpoints](#api-endpoints)
         - [Study Creation](#study-creation)
         - [Patient Randomization](#patient-randomization)
+        - [Study List](#study-list)
+        - [Study Details](#study-details)
+        - [Randomization List](#randomization-list)
+        - [Audit Log](#audit-log)
 4. [Technical Implementation](#technical-implementation)
    - [Quality Assurance Measures](#quality-assurance-measures)
    - [Running Tests](#running-tests)
@@ -104,7 +108,6 @@ unbiased::run_unbiased()
 
 This initiates the API server, by default, on your local machine (http://localhost:3838), making it accessible for interaction through various HTTP clients, including curl, Postman, or R's `httr` package.
 
-
 # Getting started with **unbiased**
 
 The **unbiased** package offers functions for randomizing participants in clinical trials, ensuring a fair and transparent process.
@@ -117,6 +120,10 @@ The **unbiased** API is designed to facilitate clinical trial management through
 
 - **Study Management**: Create and configure new studies, including specifying randomization parameters and treatment arms.
 - **Participant Randomization**: Dynamically randomize participants to treatment groups based on the study's configuration and existing participant data.
+- **Study List**: List all previously defined studies.
+- **Study Details**: Show details about the selected study.
+- **Randomization List**: Generate a list of randomized patients for the selected study.
+- **Audit Log**: Show a audit log for the selected study.
 
 
 ### Study Creation
@@ -175,6 +182,71 @@ req_url_path("study", my_study_id, "patient") |>
 ```
 
 This endpoint determines the patient's treatment group.
+
+### Study List
+
+The GET /study/ endpoint allow to list all previously defined studies. It returns information such as:
+
+- Study ID
+- Identifier
+- Name of study
+- Randomization method
+- Last edit date
+
+
+```R
+# Print all defined studies
+req_url_path("study", "") |>
+  req_method("GET") |>
+  req_perform()
+```
+
+### Study Details
+The GET /study/{study_id} endpoint allows to retrieve details about a selected study. The response body return:
+
+- Name of study
+- Randomization method
+- Last edit date
+- Input parameters
+- Strata
+
+```R
+# Get details about chosen study
+req_url_path("study", my_study_id) |>
+    req_method("GET") |>
+    req_perform()
+```
+### Randomization List
+The GET /study/{study_id}/randomization_list endpoint allows to generate a list of randomized patients along with their assigned study arms.
+
+```R
+# Print randomization list included study arms
+ req_url_path("/study/my_study_id/randomization_list") |>
+    req_method("GET") |>
+    req_perform()
+```
+
+### Audit Log
+
+The GET /study/{study_id}/audit endpoint allows to print all records in the audit log for a selected study.
+The response body includes the following information:
+
+- Log ID
+- Creation date
+- Type of event
+- Request ID
+- Study ID
+- Endpoint URL
+- Request method
+- Request body with study definition
+- Response code
+- Response body with study details
+
+```R
+req_url_path("study", study_id, "audit") |>
+      req_method("GET") |>
+      req_perform()
+```
 
 # Technical details
 
