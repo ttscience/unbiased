@@ -37,9 +37,10 @@ COPY tests/ ./inst/tests
 
 RUN R -e "devtools::install('.')"
 
+COPY *.sh ./
 EXPOSE 3838
 
 ARG github_sha
 ENV GITHUB_SHA=${github_sha}
 
-CMD ["R", "-e", "unbiased::run_unbiased()"]
+CMD ["./entrypoint.sh"]

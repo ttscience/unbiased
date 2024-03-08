@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  database:
+    image: ghcr.io/ttscience/postgres-temporal-tables/postgres-temporal-tables:${POSTGRES_VERSION:-latest}
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  unbiased:
+    image: ghcr.io/ttscience/unbiased:${UNBIASED_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${UNBIASED_PORT:-3838}:${UNBIASED_PORT:-3838}"
+    depends_on:
+      - postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - UNBIASED_PORT=${UNBIASED_PORT:-3838}
+
+volumes:
+  postgres_data:
