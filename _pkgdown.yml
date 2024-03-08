@@ -1,4 +1,8 @@
 url: https://ttscience.github.io/unbiased/
 template:
   bootstrap: 5
-
+  bslib:
+    primary: "#1099f4"
+    base_font: {google: "Montserrat"}
+    heading_font: {google: "Montserrat"}
+    code_font: {google: "JetBrains Mono"}
