@@ -4,4 +4,4 @@ set -e
 
 echo "Running unbiased"
 
-R --quiet --no-save -e "devtools::load_all(); unbiased:::run_unbiased()"
+exec R --quiet --no-save -e "devtools::load_all(); unbiased:::run_unbiased()"

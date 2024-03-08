@@ -19,18 +19,16 @@ By choosing **unbiased**, you're adopting a sophisticated approach to trial rand
 
 ## Table of Contents
 
-1. [Background](#background)
-   - [Purpose and Scope for Clinical Trial Randomization](#purpose-and-scope-for-clinical-trial-randomization)
-   - [Comparison with Other Solutions](#comparison-with-other-solutions)
-2. [Quickstart Guide](#quickstart-guide)
+1. [Quickstart Guide](#quickstart-guide)
+   - [Quick Setup with Docker Compose](#quick-setup-with-docker-compose)
    - [Quick Setup with Docker](#quick-setup-with-docker)
-   - [API Configuration](#api-configuration)
+   - [API Server Configuration](#api-server-configuration)
    - [Alternative Installation Method](#alternative-installation-method)
-3. [Getting started with **unbiased**](#getting-started-with-unbiased)
+2. [Getting started with **unbiased**](#getting-started-with-unbiased)
      - [API Endpoints](#api-endpoints)
         - [Study Creation](#study-creation)
         - [Patient Randomization](#patient-randomization)
-4. [Technical Implementation](#technical-implementation)
+3. [Technical Implementation](#technical-implementation)
    - [Quality Assurance Measures](#quality-assurance-measures)
    - [Running Tests](#running-tests)
      - [Executing Tests from an R Interactive Session](#executing-tests-from-an-r-interactive-session)
@@ -38,30 +36,50 @@ By choosing **unbiased**, you're adopting a sophisticated approach to trial rand
      - [Running Tests with Docker Compose](#running-tests-with-docker-compose)
    - [Code Coverage](#code-coverage)
    - [Configuring Sentry](#configuring-sentry)
-
-
-# Background
-
-## Purpose and Scope for Clinical Trial Randomization
-
-Randomization is the gold standard for conducting clinical trials and a fundamental aspect of clinical trials, in studies comparing two or more arms. In most cases randomization is a desirable technique that will ensure that patients are randomly allocated to defined groups. This is essential for maintaining the integrity of the trial and ensuring that the results are reliable, and blinding of research personnel. However, there are situations where it is desirable for studies to balance patients in terms of numbers in each group or, in addition, to achieve balance with respect to other relevant factors, such as sex or diabetes type. Adequate selection of randomization methods allows the intended randomization goals to be realized.
-
-**Unbiased** compared to standard and most commonly used randomization methods, e.g. the simple method or the block method, apart from these methods, additionally offers enhanced features of more flexible adaptive methods, which are based on current information about the allocation of patients in the trial. Compared to, for example, block randomization, adaptive randomization not only ensures relatively equal allocation to patient groups, but also allows the groups to be balanced on the basis of certain important covariates, which is its key advantage. This randomization requires predefined criteria, such as the probability with which a given patient will be assigned to a group based on minimizing the total imbalance, or weights that can be assigned personally for each individual covariate. Its advanced algorithmic approach sets it apart from others by minimizing selection bias and improving the overall efficiency of the randomization process in clinical trials.
-
-**Unbiased** allows the use of simple, block and adaptive minimization randomization methods relevant to the conduct of clinical trials, so package caters to the needs of clinical trial randomization. 
-...
-
-To find out more on differences in randomization methods, read our vignette on [Comparative Analysis of Randomization Methods](vignettes/articles/minimization_randomization_comparison.Rmd).
-
-## Comparison with other solutions
-
-There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization and permuted blocks, such as [blockrand](https://CRAN.R-project.org/package=blockrand) and [randomizeR](https://CRAN.R-project.org/package=randomizeR). Some of them also utilize the options for using minimization randomization - e.g. [randpack](	https://bioconductor.org/packages/randPack/) or [Minirand]( https://CRAN.R-project.org/package=Minirand).
-
-Our unique contribution to the landscape is the integration of a comprehensive API and a commitment to rigorous testing. This dual focus ensures that **unbiased** not only supports the practical needs of clinical trials, but also aligns with the technical requirements of modern clinical research environments. By prioritizing these aspects, **unbiased** addresses a critical gap in the market: the need for an eCRF-compatible randomization solution that is both dependable and easily integrated into existing workflows. This, together with the implementation of minimization techniques, sets **unbiased** apart as a novel, comprehensive tool. 
+4. [Background](#background)
+   - [Purpose and Scope for Clinical Trial Randomization](#purpose-and-scope-for-clinical-trial-randomization)
+   - [Comparison with Other Solutions](#comparison-with-other-solutions)
 
 # Quickstart Guide
 
 Initiating your work with **unbiased** involves simple setup steps. Whether you're integrating it into your R environment or deploying its API, we aim to equip you with a reliable tool that enhances the integrity and efficiency of your clinical trials.
+
+## Quick Setup with Docker Compose
+
+We have prepared a simple Docker Compose setup that allows you to run **unbiased** with minimal configuration. This method is ideal for users who want to quickly test **unbiased** locally or in a development environment. To get started, follow these steps:
+
+1. Clone the **unbiased** repository to your local machine or just copy the `docker-compose.yml` file from the repository.
+2. Navigate to the directory containing the `docker-compose.yml` file.
+3. Run the following command to start **unbiased**:
+
+```sh
+docker compose pull
+docker compose up
+```
+
+This command will start the **unbiased** API server, making it accessible on the specified port. PostgreSQL will also be started, ensuring that the API can connect to the database.
+
+You can use this `docker-compose.yml` file as a starting point for your own deployment, modifying it to suit your specific requirements.
+
+### Configuration
+
+The `docker-compose.yml` file contains the necessary configuration for running **unbiased** with Docker Compose. You can override the default environment variables by creating a `.env` file in the same directory as the `docker-compose.yml` file. The following environment variables can be set:
+
+- Server configuration:
+  - `UNBIASED_PORT`: The port on which the API will listen. Defaults to `3838` if not provided.
+  - `POSTGRES_USER`: The username for authentication with the PostgreSQL database. Defaults to `postgres` if not provided.
+  - `POSTGRES_PASSWORD`: The password for authentication with the PostgreSQL database. Warning: It can only be set on the first run, as it will not work if the database already exists. Defaults to `postgres` if not provided.
+- Versions:
+  - `UNBIASED_VERSION`: The version of the **unbiased** Docker image to use. Defaults to `latest` if not provided.
+  - `POSTGRES_VERSION`: The version of the PostgreSQL Docker image to use. Defaults to `latest` if not provided.
+
+### Building the Docker Image Locally
+
+If you cloned the repository, you can also build the Docker image locally using the following command:
+
+```sh
+docker compose build
+```
 
 ## Quick Setup with Docker
 
@@ -77,9 +95,9 @@ To run **unbiased** with Docker, ensuring you have set the necessary environment
 docker run -e POSTGRES_DB=mydb -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e UNBIASED_PORT=3838 ghcr.io/ttscience/unbiased
 ```
 
-This command starts the **unbiased** API, making it accessible on the specified port. It's crucial to have your PostgreSQL database ready, as **unbiased** will automatically configure the necessary database structures upon startup.
+This command starts the **unbiased** API, making it accessible on the specified port. It's crucial to have your PostgreSQL database ready, as **unbiased** will automatically configure the necessary database structures upon startup. PostgreSQL can be run in a separate container or on your local machine. Make sure to use a PostgreSQL instance that have `temporal_tables` extension available. You can use our `ghcr.io/ttscience/postgres-temporal-tables/postgres-temporal-tables:latest` image to run PostgreSQL with `temporal_tables` extension.
 
-## API configuration
+## API Server configuration
 
 The **unbiased** API server can be configured using environment variables. The following environment variables need to be set for the server to start:
 
@@ -230,3 +248,22 @@ The Unbiased server offers robust error reporting capabilities through the integ
 * `SENTRY_ENVIRONMENT` This is used to set the environment (e.g., "production", "staging", "development"). If not set, the environment defaults to "development".
 
 * `SENTRY_RELEASE` This is used to set the release in Sentry. If not set, the release defaults to "unspecified".
+
+# Background
+
+## Purpose and Scope for Clinical Trial Randomization
+
+Randomization is the gold standard for conducting clinical trials and a fundamental aspect of clinical trials, in studies comparing two or more arms. In most cases randomization is a desirable technique that will ensure that patients are randomly allocated to defined groups. This is essential for maintaining the integrity of the trial and ensuring that the results are reliable, and blinding of research personnel. However, there are situations where it is desirable for studies to balance patients in terms of numbers in each group or, in addition, to achieve balance with respect to other relevant factors, such as sex or diabetes type. Adequate selection of randomization methods allows the intended randomization goals to be realized.
+
+**Unbiased** compared to standard and most commonly used randomization methods, e.g. the simple method or the block method, apart from these methods, additionally offers enhanced features of more flexible adaptive methods, which are based on current information about the allocation of patients in the trial. Compared to, for example, block randomization, adaptive randomization not only ensures relatively equal allocation to patient groups, but also allows the groups to be balanced on the basis of certain important covariates, which is its key advantage. This randomization requires predefined criteria, such as the probability with which a given patient will be assigned to a group based on minimizing the total imbalance, or weights that can be assigned personally for each individual covariate. Its advanced algorithmic approach sets it apart from others by minimizing selection bias and improving the overall efficiency of the randomization process in clinical trials.
+
+**Unbiased** allows the use of simple, block and adaptive minimization randomization methods relevant to the conduct of clinical trials, so package caters to the needs of clinical trial randomization. 
+...
+
+To find out more on differences in randomization methods, read our vignette on [Comparative Analysis of Randomization Methods](vignettes/articles/minimization_randomization_comparison.Rmd).
+
+## Comparison with other solutions
+
+There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization and permuted blocks, such as [blockrand](https://CRAN.R-project.org/package=blockrand) and [randomizeR](https://CRAN.R-project.org/package=randomizeR). Some of them also utilize the options for using minimization randomization - e.g. [randpack](	https://bioconductor.org/packages/randPack/) or [Minirand]( https://CRAN.R-project.org/package=Minirand).
+
+Our unique contribution to the landscape is the integration of a comprehensive API and a commitment to rigorous testing. This dual focus ensures that **unbiased** not only supports the practical needs of clinical trials, but also aligns with the technical requirements of modern clinical research environments. By prioritizing these aspects, **unbiased** addresses a critical gap in the market: the need for an eCRF-compatible randomization solution that is both dependable and easily integrated into existing workflows. This, together with the implementation of minimization techniques, sets **unbiased** apart as a novel, comprehensive tool. 

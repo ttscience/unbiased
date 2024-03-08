@@ -50,3 +50,5 @@ rsconnect/
 .Rproj.user
 docs
 inst/doc
+
+.env
