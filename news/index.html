@@ -45,12 +45,44 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="unbiased-development-version">unbiased (development version)<a class="anchor" aria-label="anchor" href="#unbiased-development-version"></a></h2>
-<ul><li>Initialized package structure.</li>
-<li>Implemented study definition endpoint (<code>POST /study</code>).</li>
-<li>Implemented study details endpoints (<code>GET /study</code>, <code>GET /study/&lt;study_id&gt;</code>).</li>
+<h2 class="pkg-version" data-toc-text="1.0.0" id="unbiased-100">unbiased 1.0.0<a class="anchor" aria-label="anchor" href="#unbiased-100"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-0-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-1-0-0"></a></h3>
+<ul><li>
+<strong>Adaptive Randomization Support:</strong>
+<ul><li>Implemented support for adaptive randomization using Pocock’s minimization algorithm, integrating a new R function based on the Minirand package by Man Jin, Adam Polis, and Jonathan Hartzel (<a href="https://CRAN.R-project.org/package=Minirand" class="external-link">Minirand Package</a>).</li>
+<li>Introduced new POST endpoints facilitating the creation of studies and randomization of subjects.</li>
+</ul></li>
+<li>
+<strong>Enhanced Retrieval Capabilities:</strong>
+<ul><li>Added new GET endpoints for comprehensive access to study overviews, in-depth details, and information on randomized patients.</li>
+</ul></li>
+<li>
+<strong>Audit Trial Mechanism:</strong>
+<ul><li>Implemented an audit trial mechanism that systematically logs and stores each request in the database alongside <code>unbiased</code>’s response.</li>
+<li>Introduced a new GET endpoint enabling users to access the complete audit trail for a specific study.</li>
+</ul></li>
 </ul></div>
-  </main></div>
+<div class="section level3">
+<h3 id="vignettes--articles-1-0-0">Vignettes / Articles<a class="anchor" aria-label="anchor" href="#vignettes--articles-1-0-0"></a></h3>
+<ul><li>Added a new article benchmarking Pocock’s minimization algorithm against permuted block randomization and simple randomization, focusing on the balance of covariates.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="devops-integration-1-0-0">DevOps Integration<a class="anchor" aria-label="anchor" href="#devops-integration-1-0-0"></a></h3>
+<ul><li>Integrated project with Sentry to capture errors, empowering users to provide their credentials and receive notifications in the event of unexpected occurrences, including HTTP 500 instances.</li>
+<li>Implemented GitHub Actions CI, ensuring that all tests must pass before merging.
+<ul><li>Integrated project with CodeCov, achieving a code coverage of 95% or higher, with maintenance of the same level or improvement required for merging.</li>
+<li>Integrated project with pkgdown, hosting the project site at <a href="https://ttscience.github.io/unbiased/">ttscience.github.io/unbiased/</a>.</li>
+<li>Enforced the use of a linter, ensuring no errors are present upon merging.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="smaller-improvements-1-0-0">Smaller Improvements<a class="anchor" aria-label="anchor" href="#smaller-improvements-1-0-0"></a></h3>
+<ul><li>Improved handling of malformed JSONs, now returning HTTP 400 instead of the default HTTP 500 (plumber behavior).</li>
+</ul></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
