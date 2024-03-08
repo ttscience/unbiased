@@ -8,8 +8,7 @@
 #' between each attempt.
 #'
 #' @return A pool object representing the connection pool to the database.
-#' @export
-#'
+#' @noRd
 #' @examples
 #' \dontrun{
 #' pool <- create_db_connection_pool()

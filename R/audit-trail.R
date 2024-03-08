@@ -124,6 +124,7 @@ AuditLog <- R6::R6Class( # nolint: object_name_linter.
 #'
 #' @param pr A plumber router for which the audit trail is to be set up.
 #' @param endpoints A list of regex patterns for which the audit trail should be enabled.
+#' @noRd
 #' @return Returns the updated plumber router with the audit trail hooks.
 #' @examples
 #' pr <- plumber::plumb("your-api-definition.R") |>

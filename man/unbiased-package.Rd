@@ -4,9 +4,9 @@
 \name{unbiased-package}
 \alias{unbiased}
 \alias{unbiased-package}
-\title{unbiased: Diverse Randomization Algorithms for Clinical Trials}
+\title{unbiased: Unbiased: Production-Grade Randomization API}
 \description{
-The Unbiased package offers a comprehensive suite of randomization algorithms for clinical trials, encompassing dynamic strategies like the minimization method, simple randomization approaches, and block randomization techniques. Its primary purpose is to provide a harmonized set of functions that will seamlessly integrate with a production-ready plumber API, also contained within the package. This integration is designed to facilitate a smooth and efficient interface with electronic Case Report Form (eCRF) systems, enhancing the capability of clinical trials to manage patient allocation.
+The Unbiased package delivers a minimization-based randomization algorithm for patient allocation in clinical trials, fully integrated with a production-ready API. It's designed to work seamlessly with a persistent PostgreSQL database, ensuring reliable data management and integrity. Packaged into precompiled Docker images, Unbiased simplifies deployment to just running docker-compose up, making it exceptionally straightforward to incorporate into your environment.
 }
 \seealso{
 Useful links:
@@ -23,12 +23,13 @@ Authors:
   \item Kinga Sałata \email{kinga.salata@ttsi.com.pl}
   \item Aleksandra Duda \email{aleksandra.duda@ttsi.com.pl}
   \item Łukasz Wałejko \email{lukasz.walejko@ttsi.com.pl}
-  \item Jagoda jagoda.glowacka-walas@ttsi.com.pl Głowacka-Walas (\href{https://orcid.org/0000-0002-7628-8691}{ORCID})
+  \item Jagoda Głowacka-Walas \email{jagoda.glowacka-walas@ttsi.com.pl} (\href{https://orcid.org/0000-0002-7628-8691}{ORCID})
+  \item Laura Bąkała
 }
 
 Other contributors:
 \itemize{
-  \item Michał Seweryn \email{michal.seweryn@biol.uni.lodz.pl} (\href{https://orcid.org/0000-0002-9090-3435}{ORCID}) [contractor]
+  \item Michał Seweryn \email{michal.seweryn@biol.uni.lodz.pl} (\href{https://orcid.org/0000-0002-9090-3435}{ORCID}) [contributor]
   \item Transition Technologies Science Sp. z o.o. [funder, copyright holder]
 }
 

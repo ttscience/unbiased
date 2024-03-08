@@ -27,6 +27,10 @@ By choosing **unbiased**, you're adopting a sophisticated approach to trial rand
      - [API Endpoints](#api-endpoints)
         - [Study Creation](#study-creation)
         - [Patient Randomization](#patient-randomization)
+        - [Study List](#study-list)
+        - [Study Details](#study-details)
+        - [Randomization List](#randomization-list)
+        - [Audit Log](#audit-log)
 4. [Technical Implementation](#technical-implementation)
    - [Quality Assurance Measures](#quality-assurance-measures)
    - [Running Tests](#running-tests)
@@ -104,7 +108,6 @@ unbiased::run_unbiased()
 
 This initiates the API server, by default, on your local machine (http://localhost:3838), making it accessible for interaction through various HTTP clients, including curl, Postman, or R's `httr` package.
 
-
 # Getting started with **unbiased**
 
 The **unbiased** package offers functions for randomizing participants in clinical trials, ensuring a fair and transparent process.
@@ -117,64 +120,63 @@ The **unbiased** API is designed to facilitate clinical trial management through
 
 - **Study Management**: Create and configure new studies, including specifying randomization parameters and treatment arms.
 - **Participant Randomization**: Dynamically randomize participants to treatment groups based on the study's configuration and existing participant data.
+- **Study List**: List all previously defined studies.
+- **Study Details**: Show details about the selected study.
+- **Randomization List**: Generate a list of randomized patients for the selected study.
+- **Audit Log**: Show a audit log for the selected study.
 
 
 ### Study Creation
 
 To initialize a study using Pocock's minimization method, use the POST /minimisation_pocock endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.
 
-```R
-# Initialize a study with Pocock's minimisation method
-response <- request(api_url) |>
-    req_url_path("study", "minimisation_pocock") |>
-    req_method("POST") |>
-    req_body_json(
-      data = list(
-        identifier = "My_study_1",
-        name = "Study 1",
-        method = "var",
-        p = 0.85,
-        arms = list(
-          "placebo" = 1,
-          "treatment" = 1
-        ),
-        covariates = list(
-          sex = list(
-            weight = 1,
-            levels = c("female", "male")
-          ),
-          age = list(
-            weight = 1,
-            levels = c("up to 50", "51 or more")
-          )
-        )
-      )
-    )
-```
-
-This call sets up the study and returns an ID for accessing further study-related endpoints.
+This endpoint sets up the study and returns an ID for accessing further study-related endpoints.
 
 ### Patient Randomization
 
 The POST /{study_id}/patient endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.
 
-```R
-# Randomize a new patient
-req_url_path("study", my_study_id, "patient") |>
-          req_method("POST") |>
-          req_body_json(
-            data = list(
-              current_state =
-                tibble::tibble(
-                  "sex" = c("female"),
-                  "age" = c("up to 50"),
-                  "arm" = c("") 
-                )
-            )
-          )
-```
-
 This endpoint determines the patient's treatment group.
+
+### Study List
+
+The GET /study/ endpoint allow to list all previously defined studies. It returns information such as:
+
+- Study ID
+- Identifier
+- Name of study
+- Randomization method
+- Last edit date
+
+### Study Details
+The GET /study/{study_id} endpoint allows to retrieve details about a selected study. The response body return:
+
+- Name of study
+- Randomization method
+- Last edit date
+- Input parameters
+- Strata
+
+### Randomization List
+The GET /study/{study_id}/randomization_list endpoint allows to generate a list of randomized patients along with their assigned study arms.
+
+### Audit Log
+
+The GET /study/{study_id}/audit endpoint allows to print all records in the audit log for a selected study.
+The response body includes the following information:
+
+- Log ID
+- Creation date
+- Type of event
+- Request ID
+- Study ID
+- Endpoint URL
+- Request method
+- Request body with study definition
+- Response code
+- Response body with study details
+
+The endpoint facilitates tracking the history of requests sent to the database, along with their corresponding responses. This enables us to trace all actions involving the API.
 
 # Technical details
 
