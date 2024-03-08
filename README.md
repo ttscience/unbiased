@@ -1,8 +1,9 @@
-# **unbiased** <a href='https://ttscience.github.io/unbiased/'><img src='man/figures/hex-unbiased.png' style="height: 140px;" align="right" /></a>
+# unbiased <a href='https://ttscience.github.io/unbiased/'><img src='man/figures/hex-unbiased.png' style="height: 140px;" align="right" /></a>
 ![Test Coverage](https://github.com/ttscience/unbiased/actions/workflows/test-coverage.yaml/badge.svg)
 ![Docs](https://github.com/ttscience/unbiased/actions/workflows/pkgdown.yaml/badge.svg)
 ![Docker Publish](https://github.com/ttscience/unbiased/actions/workflows/docker-publish.yml/badge.svg)
 [![codecov](https://codecov.io/gh/ttscience/unbiased/graph/badge.svg?token=SZ8XCXTTXP)](https://codecov.io/gh/ttscience/unbiased)
+
 > An API-based solution for Clinical Trial Randomization
 
 
@@ -152,19 +153,19 @@ The **unbiased** API is designed to facilitate clinical trial management through
 
 ### Study Creation
 
-To initialize a study using Pocock's minimization method, use the POST /minimisation_pocock endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.
+To initialize a study using Pocock's minimization method, use the `POST /minimisation_pocock` endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.
 
 This endpoint sets up the study and returns an ID for accessing further study-related endpoints.
 
 ### Patient Randomization
 
-The POST /{study_id}/patient endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.
+The `POST /{study_id}/patient` endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.
 
 This endpoint determines the patient's treatment group.
 
 ### Study List
 
-The GET /study/ endpoint allow to list all previously defined studies. It returns information such as:
+The `GET /study/` endpoint allow to list all previously defined studies. It returns information such as:
 
 - Study ID
 - Identifier
@@ -173,7 +174,7 @@ The GET /study/ endpoint allow to list all previously defined studies. It return
 - Last edit date
 
 ### Study Details
-The GET /study/{study_id} endpoint allows to retrieve details about a selected study. The response body return:
+The `GET /study/{study_id}` endpoint allows to retrieve details about a selected study. The response body return:
 
 - Name of study
 - Randomization method
@@ -182,11 +183,11 @@ The GET /study/{study_id} endpoint allows to retrieve details about a selected s
 - Strata
 
 ### Randomization List
-The GET /study/{study_id}/randomization_list endpoint allows to generate a list of randomized patients along with their assigned study arms.
+The `GET /study/{study_id}/randomization_list` endpoint allows to generate a list of randomized patients along with their assigned study arms.
 
 ### Audit Log
 
-The GET /study/{study_id}/audit endpoint allows to print all records in the audit log for a selected study.
+The `GET /study/{study_id}/audit` endpoint allows to print all records in the audit log for a selected study.
 The response body includes the following information:
 
 - Log ID
@@ -214,7 +215,7 @@ To execute tests using an interactive R session, run the following commands:
 
 ```R
 devtools::load_all()
-testthat::test_package(**unbiased**)
+devtools::test()
 ```
 
 Make sure that `devtools` package is installed in your environment.
