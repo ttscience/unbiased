@@ -107,17 +107,11 @@
 </h2>
 <ol style="list-style-type: decimal">
 <li>
-<a href="#background">Background</a>
-<ul>
-<li><a href="#purpose-and-scope-for-clinical-trial-randomization">Purpose and Scope for Clinical Trial Randomization</a></li>
-<li><a href="#comparison-with-other-solutions">Comparison with Other Solutions</a></li>
-</ul>
-</li>
-<li>
 <a href="#quickstart-guide">Quickstart Guide</a>
 <ul>
+<li><a href="#quick-setup-with-docker-compose">Quick Setup with Docker Compose</a></li>
 <li><a href="#quick-setup-with-docker">Quick Setup with Docker</a></li>
-<li><a href="#api-configuration">API Configuration</a></li>
+<li><a href="#api-server-configuration">API Server Configuration</a></li>
 <li><a href="#alternative-installation-method">Alternative Installation Method</a></li>
 </ul>
 </li>
@@ -149,25 +143,14 @@
 <li><a href="#configuring-sentry">Configuring Sentry</a></li>
 </ul>
 </li>
+<li>
+<a href="#background">Background</a>
+<ul>
+<li><a href="#purpose-and-scope-for-clinical-trial-randomization">Purpose and Scope for Clinical Trial Randomization</a></li>
+<li><a href="#comparison-with-other-solutions">Comparison with Other Solutions</a></li>
+</ul>
+</li>
 </ol>
-</div>
-</div>
-<div class="section level1">
-<h1 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
-</h1>
-<div class="section level2">
-<h2 id="purpose-and-scope-for-clinical-trial-randomization">Purpose and Scope for Clinical Trial Randomization<a class="anchor" aria-label="anchor" href="#purpose-and-scope-for-clinical-trial-randomization"></a>
-</h2>
-<p>Randomization is the gold standard for conducting clinical trials and a fundamental aspect of clinical trials, in studies comparing two or more arms. In most cases randomization is a desirable technique that will ensure that patients are randomly allocated to defined groups. This is essential for maintaining the integrity of the trial and ensuring that the results are reliable, and blinding of research personnel. However, there are situations where it is desirable for studies to balance patients in terms of numbers in each group or, in addition, to achieve balance with respect to other relevant factors, such as sex or diabetes type. Adequate selection of randomization methods allows the intended randomization goals to be realized.</p>
-<p><strong>Unbiased</strong> compared to standard and most commonly used randomization methods, e.g. the simple method or the block method, apart from these methods, additionally offers enhanced features of more flexible adaptive methods, which are based on current information about the allocation of patients in the trial. Compared to, for example, block randomization, adaptive randomization not only ensures relatively equal allocation to patient groups, but also allows the groups to be balanced on the basis of certain important covariates, which is its key advantage. This randomization requires predefined criteria, such as the probability with which a given patient will be assigned to a group based on minimizing the total imbalance, or weights that can be assigned personally for each individual covariate. Its advanced algorithmic approach sets it apart from others by minimizing selection bias and improving the overall efficiency of the randomization process in clinical trials.</p>
-<p><strong>Unbiased</strong> allows the use of simple, block and adaptive minimization randomization methods relevant to the conduct of clinical trials, so package caters to the needs of clinical trial randomization. …</p>
-<p>To find out more on differences in randomization methods, read our vignette on <a href="vignettes/articles/minimization_randomization_comparison.Rmd">Comparative Analysis of Randomization Methods</a>.</p>
-</div>
-<div class="section level2">
-<h2 id="comparison-with-other-solutions">Comparison with other solutions<a class="anchor" aria-label="anchor" href="#comparison-with-other-solutions"></a>
-</h2>
-<p>There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization and permuted blocks, such as <a href="https://CRAN.R-project.org/package=blockrand" class="external-link">blockrand</a> and <a href="https://CRAN.R-project.org/package=randomizeR" class="external-link">randomizeR</a>. Some of them also utilize the options for using minimization randomization - e.g. <a href="https://bioconductor.org/packages/randPack/" class="external-link">randpack</a> or <a href="https://CRAN.R-project.org/package=Minirand" class="external-link">Minirand</a>.</p>
-<p>Our unique contribution to the landscape is the integration of a comprehensive API and a commitment to rigorous testing. This dual focus ensures that <strong>unbiased</strong> not only supports the practical needs of clinical trials, but also aligns with the technical requirements of modern clinical research environments. By prioritizing these aspects, <strong>unbiased</strong> addresses a critical gap in the market: the need for an eCRF-compatible randomization solution that is both dependable and easily integrated into existing workflows. This, together with the implementation of minimization techniques, sets <strong>unbiased</strong> apart as a novel, comprehensive tool.</p>
 </div>
 </div>
 <div class="section level1">
@@ -175,16 +158,61 @@
 </h1>
 <p>Initiating your work with <strong>unbiased</strong> involves simple setup steps. Whether you’re integrating it into your R environment or deploying its API, we aim to equip you with a reliable tool that enhances the integrity and efficiency of your clinical trials.</p>
 <div class="section level2">
+<h2 id="quick-setup-with-docker-compose">Quick Setup with Docker Compose<a class="anchor" aria-label="anchor" href="#quick-setup-with-docker-compose"></a>
+</h2>
+<p>We have prepared a simple Docker Compose setup that allows you to run <strong>unbiased</strong> with minimal configuration. This method is ideal for users who want to quickly test <strong>unbiased</strong> locally or in a development environment. To get started, follow these steps:</p>
+<ol style="list-style-type: decimal">
+<li>Clone the <strong>unbiased</strong> repository to your local machine or just copy the <code>docker-compose.yml</code> file from the repository.</li>
+<li>Navigate to the directory containing the <code>docker-compose.yml</code> file.</li>
+<li>Run the following command to start <strong>unbiased</strong>:</li>
+</ol>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">docker</span> compose pull</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="ex">docker</span> compose up</span></code></pre></div>
+<p>This command will start the <strong>unbiased</strong> API server, making it accessible on the specified port. PostgreSQL will also be started, ensuring that the API can connect to the database.</p>
+<p>You can use this <code>docker-compose.yml</code> file as a starting point for your own deployment, modifying it to suit your specific requirements.</p>
+<div class="section level3">
+<h3 id="configuration">Configuration<a class="anchor" aria-label="anchor" href="#configuration"></a>
+</h3>
+<p>The <code>docker-compose.yml</code> file contains the necessary configuration for running <strong>unbiased</strong> with Docker Compose. You can override the default environment variables by creating a <code>.env</code> file in the same directory as the <code>docker-compose.yml</code> file. The following environment variables can be set:</p>
+<ul>
+<li>Server configuration:
+<ul>
+<li>
+<code>UNBIASED_PORT</code>: The port on which the API will listen. Defaults to <code>3838</code> if not provided.</li>
+<li>
+<code>POSTGRES_USER</code>: The username for authentication with the PostgreSQL database. Defaults to <code>postgres</code> if not provided.</li>
+<li>
+<code>POSTGRES_PASSWORD</code>: The password for authentication with the PostgreSQL database. Warning: It can only be set on the first run, as it will not work if the database already exists. Defaults to <code>postgres</code> if not provided.</li>
+</ul>
+</li>
+<li>Versions:
+<ul>
+<li>
+<code>UNBIASED_VERSION</code>: The version of the <strong>unbiased</strong> Docker image to use. Defaults to <code>latest</code> if not provided.</li>
+<li>
+<code>POSTGRES_VERSION</code>: The version of the PostgreSQL Docker image to use. Defaults to <code>latest</code> if not provided.</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="building-the-docker-image-locally">Building the Docker Image Locally<a class="anchor" aria-label="anchor" href="#building-the-docker-image-locally"></a>
+</h3>
+<p>If you cloned the repository, you can also build the Docker image locally using the following command:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">docker</span> compose build</span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
 <h2 id="quick-setup-with-docker">Quick Setup with Docker<a class="anchor" aria-label="anchor" href="#quick-setup-with-docker"></a>
 </h2>
 <p>The most straightforward way to deploy <strong>unbiased</strong> is through our Docker images. This ensures that you can get <strong>unbiased</strong> up and running with minimal setup, regardless of your local environment. To use <strong>unbiased</strong>, pull the latest Docker image:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">docker</span> pull ghcr.io/ttscience/unbiased</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">docker</span> pull ghcr.io/ttscience/unbiased</span></code></pre></div>
 <p>To run <strong>unbiased</strong> with Docker, ensuring you have set the necessary environment variables:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-e</span> POSTGRES_DB=mydb <span class="at">-e</span> POSTGRES_USER=myuser <span class="at">-e</span> POSTGRES_PASSWORD=mypassword <span class="at">-e</span> UNBIASED_PORT=3838 ghcr.io/ttscience/unbiased</span></code></pre></div>
-<p>This command starts the <strong>unbiased</strong> API, making it accessible on the specified port. It’s crucial to have your PostgreSQL database ready, as <strong>unbiased</strong> will automatically configure the necessary database structures upon startup.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-e</span> POSTGRES_DB=mydb <span class="at">-e</span> POSTGRES_USER=myuser <span class="at">-e</span> POSTGRES_PASSWORD=mypassword <span class="at">-e</span> UNBIASED_PORT=3838 ghcr.io/ttscience/unbiased</span></code></pre></div>
+<p>This command starts the <strong>unbiased</strong> API, making it accessible on the specified port. It’s crucial to have your PostgreSQL database ready, as <strong>unbiased</strong> will automatically configure the necessary database structures upon startup. PostgreSQL can be run in a separate container or on your local machine. Make sure to use a PostgreSQL instance that have <code>temporal_tables</code> extension available. You can use our <code>ghcr.io/ttscience/postgres-temporal-tables/postgres-temporal-tables:latest</code> image to run PostgreSQL with <code>temporal_tables</code> extension.</p>
 </div>
 <div class="section level2">
-<h2 id="api-configuration">API configuration<a class="anchor" aria-label="anchor" href="#api-configuration"></a>
+<h2 id="api-server-configuration">API Server configuration<a class="anchor" aria-label="anchor" href="#api-server-configuration"></a>
 </h2>
 <p>The <strong>unbiased</strong> API server can be configured using environment variables. The following environment variables need to be set for the server to start:</p>
 <ul>
@@ -208,10 +236,10 @@
 <h2 id="alternative-installation-method">Alternative Installation Method<a class="anchor" aria-label="anchor" href="#alternative-installation-method"></a>
 </h2>
 <p>For those preferring to work directly within the R environment, the <strong>unbiased</strong> package offers an alternative installation method via GitHub. This approach allows users to easily integrate <strong>unbiased</strong> into their R projects. To proceed with this method, utilize the <code>devtools</code> package for installation by executing the following command:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"ttscience/unbiased"</span><span class="op">)</span></span></code></pre></div>
 <p>Following the package installation, the <strong>unbiased</strong> API can be launched within R. Simply invoke the <code><a href="reference/run_unbiased.html">run_unbiased()</a></code> function to start the API:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">unbiased</span><span class="fu">::</span><span class="fu"><a href="reference/run_unbiased.html">run_unbiased</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This initiates the API server, by default, on your local machine (<a href="http://localhost:3838" class="external-link uri">http://localhost:3838</a>), making it accessible for interaction through various HTTP clients, including curl, Postman, or R’s <code>httr</code> package.</p>
 </div>
@@ -236,7 +264,7 @@
 <h3 id="study-creation">Study Creation<a class="anchor" aria-label="anchor" href="#study-creation"></a>
 </h3>
 <p>To initialize a study using Pocock’s minimization method, use the POST /minimisation_pocock endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Initialize a study with Pocock's minimisation method</span></span>
 <span><span class="va">response</span> <span class="op">&lt;-</span> <span class="fu">request</span><span class="op">(</span><span class="va">api_url</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>    <span class="fu">req_url_path</span><span class="op">(</span><span class="st">"study"</span>, <span class="st">"minimisation_pocock"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -269,7 +297,7 @@
 <h3 id="patient-randomization">Patient Randomization<a class="anchor" aria-label="anchor" href="#patient-randomization"></a>
 </h3>
 <p>The POST /{study_id}/patient endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Randomize a new patient</span></span>
 <span><span class="fu">req_url_path</span><span class="op">(</span><span class="st">"study"</span>, <span class="va">my_study_id</span>, <span class="st">"patient"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>          <span class="fu">req_method</span><span class="op">(</span><span class="st">"POST"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -298,8 +326,8 @@
 <h3 id="executing-tests-from-an-r-interactive-session">Executing Tests from an R Interactive Session<a class="anchor" aria-label="anchor" href="#executing-tests-from-an-r-interactive-session"></a>
 </h3>
 <p>To execute tests using an interactive R session, run the following commands:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_package</span>(<span class="sc">**</span>unbiased<span class="sc">**</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_package</span>(<span class="sc">**</span>unbiased<span class="sc">**</span>)</span></code></pre></div>
 <p>Make sure that <code>devtools</code> package is installed in your environment.</p>
 <p>Ensure that the necessary database connection environment variables are set before running these tests. You can set environment variables using methods such as <code>Sys.setenv</code>.</p>
 <p>Running these tests will start the Unbiased API on a random port.</p>
@@ -313,8 +341,8 @@
 <h3 id="running-tests-with-docker-compose">Running Tests with Docker Compose<a class="anchor" aria-label="anchor" href="#running-tests-with-docker-compose"></a>
 </h3>
 <p>Docker Compose can be used to build the Unbiased Docker image and execute all tests. This can be done using the provided <code>docker-compose.test.yml</code> file. This method ensures a consistent testing environment and simplifies the setup process.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.test.yml build</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.test.yml run tests</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.test.yml build</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="ex">docker</span> compose <span class="at">-f</span> docker-compose.test.yml run tests</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="code-coverage">Code Coverage<a class="anchor" aria-label="anchor" href="#code-coverage"></a>
@@ -338,6 +366,24 @@
 <li><p><code>SENTRY_RELEASE</code> This is used to set the release in Sentry. If not set, the release defaults to “unspecified”.</p></li>
 </ul>
 </div>
+</div>
+</div>
+<div class="section level1">
+<h1 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h1>
+<div class="section level2">
+<h2 id="purpose-and-scope-for-clinical-trial-randomization">Purpose and Scope for Clinical Trial Randomization<a class="anchor" aria-label="anchor" href="#purpose-and-scope-for-clinical-trial-randomization"></a>
+</h2>
+<p>Randomization is the gold standard for conducting clinical trials and a fundamental aspect of clinical trials, in studies comparing two or more arms. In most cases randomization is a desirable technique that will ensure that patients are randomly allocated to defined groups. This is essential for maintaining the integrity of the trial and ensuring that the results are reliable, and blinding of research personnel. However, there are situations where it is desirable for studies to balance patients in terms of numbers in each group or, in addition, to achieve balance with respect to other relevant factors, such as sex or diabetes type. Adequate selection of randomization methods allows the intended randomization goals to be realized.</p>
+<p><strong>Unbiased</strong> compared to standard and most commonly used randomization methods, e.g. the simple method or the block method, apart from these methods, additionally offers enhanced features of more flexible adaptive methods, which are based on current information about the allocation of patients in the trial. Compared to, for example, block randomization, adaptive randomization not only ensures relatively equal allocation to patient groups, but also allows the groups to be balanced on the basis of certain important covariates, which is its key advantage. This randomization requires predefined criteria, such as the probability with which a given patient will be assigned to a group based on minimizing the total imbalance, or weights that can be assigned personally for each individual covariate. Its advanced algorithmic approach sets it apart from others by minimizing selection bias and improving the overall efficiency of the randomization process in clinical trials.</p>
+<p><strong>Unbiased</strong> allows the use of simple, block and adaptive minimization randomization methods relevant to the conduct of clinical trials, so package caters to the needs of clinical trial randomization. …</p>
+<p>To find out more on differences in randomization methods, read our vignette on <a href="vignettes/articles/minimization_randomization_comparison.Rmd">Comparative Analysis of Randomization Methods</a>.</p>
+</div>
+<div class="section level2">
+<h2 id="comparison-with-other-solutions">Comparison with other solutions<a class="anchor" aria-label="anchor" href="#comparison-with-other-solutions"></a>
+</h2>
+<p>There are many packages that perform specific randomization methods in R. Most of them are designed for stratified randomization and permuted blocks, such as <a href="https://CRAN.R-project.org/package=blockrand" class="external-link">blockrand</a> and <a href="https://CRAN.R-project.org/package=randomizeR" class="external-link">randomizeR</a>. Some of them also utilize the options for using minimization randomization - e.g. <a href="https://bioconductor.org/packages/randPack/" class="external-link">randpack</a> or <a href="https://CRAN.R-project.org/package=Minirand" class="external-link">Minirand</a>.</p>
+<p>Our unique contribution to the landscape is the integration of a comprehensive API and a commitment to rigorous testing. This dual focus ensures that <strong>unbiased</strong> not only supports the practical needs of clinical trials, but also aligns with the technical requirements of modern clinical research environments. By prioritizing these aspects, <strong>unbiased</strong> addresses a critical gap in the market: the need for an eCRF-compatible randomization solution that is both dependable and easily integrated into existing workflows. This, together with the implementation of minimization techniques, sets <strong>unbiased</strong> apart as a novel, comprehensive tool.</p>
 </div>
 </div>
 
