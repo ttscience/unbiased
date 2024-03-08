@@ -1,5 +1,8 @@
 # **unbiased** <a href='https://ttscience.github.io/unbiased/'><img src='man/figures/hex-unbiased.png' style="height: 140px;" align="right" /></a>
-
+![Test Coverage](https://github.com/ttscience/unbiased/actions/workflows/test-coverage.yaml/badge.svg)
+![Docs](https://github.com/ttscience/unbiased/actions/workflows/pkgdown.yaml/badge.svg)
+![Docker Publish](https://github.com/ttscience/unbiased/actions/workflows/docker-publish.yml/badge.svg)
+[![codecov](https://codecov.io/gh/ttscience/unbiased/graph/badge.svg?token=SZ8XCXTTXP)](https://codecov.io/gh/ttscience/unbiased)
 > An API-based solution for Clinical Trial Randomization
 
 
