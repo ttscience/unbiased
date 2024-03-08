@@ -68,11 +68,13 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="unbiased-">
-<strong>unbiased</strong> <a href="https://ttscience.github.io/unbiased/"><img src="reference/figures/hex-unbiased.png" style="height: 140px;" align="right"></a>
+<div class="page-header"><h1 id="unbiased-">unbiased <a href="https://ttscience.github.io/unbiased/"><img src="reference/figures/hex-unbiased.png" style="height: 140px;" align="right"></a>
 <a class="anchor" aria-label="anchor" href="#unbiased-"></a>
 </h1></div>
-<p><img src="https://github.com/ttscience/unbiased/actions/workflows/test-coverage.yaml/badge.svg" alt="Test Coverage"><img src="https://github.com/ttscience/unbiased/actions/workflows/pkgdown.yaml/badge.svg" alt="Docs"><img src="https://github.com/ttscience/unbiased/actions/workflows/docker-publish.yml/badge.svg" alt="Docker Publish"><a href="https://codecov.io/gh/ttscience/unbiased" class="external-link"><img src="https://codecov.io/gh/ttscience/unbiased/graph/badge.svg?token=SZ8XCXTTXP" alt="codecov"></a> &gt; An API-based solution for Clinical Trial Randomization</p>
+<p><img src="https://github.com/ttscience/unbiased/actions/workflows/test-coverage.yaml/badge.svg" alt="Test Coverage"><img src="https://github.com/ttscience/unbiased/actions/workflows/pkgdown.yaml/badge.svg" alt="Docs"><img src="https://github.com/ttscience/unbiased/actions/workflows/docker-publish.yml/badge.svg" alt="Docker Publish"><a href="https://codecov.io/gh/ttscience/unbiased" class="external-link"><img src="https://codecov.io/gh/ttscience/unbiased/graph/badge.svg?token=SZ8XCXTTXP" alt="codecov"></a></p>
+<blockquote>
+<p>An API-based solution for Clinical Trial Randomization</p>
+</blockquote>
 <p>In clinical trials, the fair and efficient allocation of participants is essential for achieving reliable results. While there are many excellent R randomization packages available, none, to our knowledge, provide a dedicated API for this purpose. The <strong>unbiased</strong> package fills this gap by featuring a production-ready REST API designed for seamless integration. This unique combination allows for easy connection with electronic Case Report Forms (eCRF), enhancing data management and streamlining participant allocation.</p>
 <div class="section level2">
 <h2 id="why-choose-unbiased">Why choose <strong>unbiased</strong>?<a class="anchor" aria-label="anchor" href="#why-choose-unbiased"></a>
@@ -265,19 +267,19 @@
 <div class="section level3">
 <h3 id="study-creation">Study Creation<a class="anchor" aria-label="anchor" href="#study-creation"></a>
 </h3>
-<p>To initialize a study using Pocock’s minimization method, use the POST /minimisation_pocock endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.</p>
+<p>To initialize a study using Pocock’s minimization method, use the <code>POST /minimisation_pocock</code> endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.</p>
 <p>This endpoint sets up the study and returns an ID for accessing further study-related endpoints.</p>
 </div>
 <div class="section level3">
 <h3 id="patient-randomization">Patient Randomization<a class="anchor" aria-label="anchor" href="#patient-randomization"></a>
 </h3>
-<p>The POST /{study_id}/patient endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.</p>
+<p>The <code>POST /{study_id}/patient</code> endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.</p>
 <p>This endpoint determines the patient’s treatment group.</p>
 </div>
 <div class="section level3">
 <h3 id="study-list">Study List<a class="anchor" aria-label="anchor" href="#study-list"></a>
 </h3>
-<p>The GET /study/ endpoint allow to list all previously defined studies. It returns information such as:</p>
+<p>The <code>GET /study/</code> endpoint allow to list all previously defined studies. It returns information such as:</p>
 <ul>
 <li>Study ID</li>
 <li>Identifier</li>
@@ -289,7 +291,7 @@
 <div class="section level3">
 <h3 id="study-details">Study Details<a class="anchor" aria-label="anchor" href="#study-details"></a>
 </h3>
-<p>The GET /study/{study_id} endpoint allows to retrieve details about a selected study. The response body return:</p>
+<p>The <code>GET /study/{study_id}</code> endpoint allows to retrieve details about a selected study. The response body return:</p>
 <ul>
 <li>Name of study</li>
 <li>Randomization method</li>
@@ -301,12 +303,12 @@
 <div class="section level3">
 <h3 id="randomization-list">Randomization List<a class="anchor" aria-label="anchor" href="#randomization-list"></a>
 </h3>
-<p>The GET /study/{study_id}/randomization_list endpoint allows to generate a list of randomized patients along with their assigned study arms.</p>
+<p>The <code>GET /study/{study_id}/randomization_list</code> endpoint allows to generate a list of randomized patients along with their assigned study arms.</p>
 </div>
 <div class="section level3">
 <h3 id="audit-log">Audit Log<a class="anchor" aria-label="anchor" href="#audit-log"></a>
 </h3>
-<p>The GET /study/{study_id}/audit endpoint allows to print all records in the audit log for a selected study. The response body includes the following information:</p>
+<p>The <code>GET /study/{study_id}/audit</code> endpoint allows to print all records in the audit log for a selected study. The response body includes the following information:</p>
 <ul>
 <li>Log ID</li>
 <li>Creation date</li>
@@ -334,8 +336,9 @@
 <h3 id="executing-tests-from-an-r-interactive-session">Executing Tests from an R Interactive Session<a class="anchor" aria-label="anchor" href="#executing-tests-from-an-r-interactive-session"></a>
 </h3>
 <p>To execute tests using an interactive R session, run the following commands:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">load_all</span>()</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>testthat<span class="sc">::</span><span class="fu">test_package</span>(<span class="sc">**</span>unbiased<span class="sc">**</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/load_all.html" class="external-link">load_all</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">test</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Make sure that <code>devtools</code> package is installed in your environment.</p>
 <p>Ensure that the necessary database connection environment variables are set before running these tests. You can set environment variables using methods such as <code>Sys.setenv</code>.</p>
 <p>Running these tests will start the Unbiased API on a random port.</p>
