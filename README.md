@@ -1,4 +1,7 @@
-# **unbiased**: An API-based solution for Clinical Trial Randomization
+# **unbiased** <a href='https://ttscience.github.io/unbiased/'><img src='man/figures/hex-unbiased.png' style="height: 140px;" align="right" /></a>
+
+> An API-based solution for Clinical Trial Randomization
+
 
 In clinical trials, the fair and efficient allocation of participants is essential for achieving reliable results. While there are many excellent R randomization packages available, none, to our knowledge, provide a dedicated API for this purpose. The **unbiased** package fills this gap by featuring a production-ready REST API designed for seamless integration. This unique combination allows for easy connection with electronic Case Report Forms (eCRF), enhancing data management and streamlining participant allocation.
 
