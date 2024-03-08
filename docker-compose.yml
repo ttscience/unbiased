@@ -14,7 +14,7 @@ services:
     ports:
       - "${UNBIASED_PORT:-3838}:${UNBIASED_PORT:-3838}"
     depends_on:
-      - postgres
+      - database
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_HOST=database
