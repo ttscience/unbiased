@@ -6,6 +6,7 @@
 #'
 #' @param all_patients data.frame with all patients
 #' @param new_patients data.frame with new patient
+#' @noRd
 #'
 #' @return data.frame with columns as in all_patients and new_patients,
 #'  filled with TRUE if there is match in covariate and FALSE if not

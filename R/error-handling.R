@@ -9,6 +9,7 @@ globalCallingHandlers <- NULL # nolint
 #' It uses the sentryR package to set up Sentry based on environment variables.
 #'
 #' @param None
+#' @noRd
 #'
 #' @return None. If the SENTRY_DSN environment variable is not set, the function will
 #' return a message and stop execution.

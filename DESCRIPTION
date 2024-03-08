@@ -1,5 +1,5 @@
 Package: unbiased
-Title: Diverse Randomization Algorithms for Clinical Trials
+Title: Unbiased: Production-Grade Randomization API
 Version: 1.0.0
 Authors@R: c(
     person("Kamil", "Sijko", , "kamil.sijko@ttsi.com.pl",
@@ -10,20 +10,14 @@ Authors@R: c(
            role = c("aut")),
     person("Łukasz", "Wałejko", , "lukasz.walejko@ttsi.com.pl",
            role = c("aut")),
-    person("Jagoda", "Głowacka-Walas", "jagoda.glowacka-walas@ttsi.com.pl",
+    person("Jagoda", "Głowacka-Walas", ,"jagoda.glowacka-walas@ttsi.com.pl",
            role = c("aut"), comment = c(ORCID = "0000-0002-7628-8691")),
+    person("Laura", "Bąkała", , role = c("aut")),
     person("Michał", "Seweryn", , "michal.seweryn@biol.uni.lodz.pl",
-           role = c("ctr"), comment = c(ORCID = "0000-0002-9090-3435")),
+           role = c("ctb"), comment = c(ORCID = "0000-0002-9090-3435")),
     person("Transition Technologies Science Sp. z o.o.", role = c("fnd", "cph"))
     )
-Description: The Unbiased package offers a comprehensive suite of randomization
- algorithms for clinical trials, encompassing dynamic strategies like the 
- minimization method, simple randomization approaches, and block randomization
- techniques. Its primary purpose is to provide a harmonized set of functions that
- will seamlessly integrate with a production-ready plumber API, also contained
- within the package. This integration is designed to facilitate a smooth and
- efficient interface with electronic Case Report Form (eCRF) systems, enhancing
- the capability of clinical trials to manage patient allocation.
+Description: The Unbiased package delivers a minimization-based randomization algorithm for patient allocation in clinical trials, fully integrated with a production-ready API. It's designed to work seamlessly with a persistent PostgreSQL database, ensuring reliable data management and integrity. Packaged into precompiled Docker images, Unbiased simplifies deployment to just running docker-compose up, making it exceptionally straightforward to incorporate into your environment.
 License: MIT + file LICENSE
 Imports: 
     checkmate,
