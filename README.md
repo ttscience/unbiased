@@ -130,56 +130,11 @@ The **unbiased** API is designed to facilitate clinical trial management through
 
 To initialize a study using Pocock's minimization method, use the POST /minimisation_pocock endpoint. The required JSON payload should detail the study, including treatment groups, allocation ratios, and covariates.
 
-```R
-# Initialize a study with Pocock's minimisation method
-response <- request(api_url) |>
-    req_url_path("study", "minimisation_pocock") |>
-    req_method("POST") |>
-    req_body_json(
-      data = list(
-        identifier = "My_study_1",
-        name = "Study 1",
-        method = "var",
-        p = 0.85,
-        arms = list(
-          "placebo" = 1,
-          "treatment" = 1
-        ),
-        covariates = list(
-          sex = list(
-            weight = 1,
-            levels = c("female", "male")
-          ),
-          age = list(
-            weight = 1,
-            levels = c("up to 50", "51 or more")
-          )
-        )
-      )
-    )
-```
-
-This call sets up the study and returns an ID for accessing further study-related endpoints.
+This endpoint sets up the study and returns an ID for accessing further study-related endpoints.
 
 ### Patient Randomization
 
 The POST /{study_id}/patient endpoint assigns a new patient to a treatment group, requiring patient details and covariate information in the JSON payload.
-
-```R
-# Randomize a new patient
-req_url_path("study", my_study_id, "patient") |>
-          req_method("POST") |>
-          req_body_json(
-            data = list(
-              current_state =
-                tibble::tibble(
-                  "sex" = c("female"),
-                  "age" = c("up to 50"),
-                  "arm" = c("") 
-                )
-            )
-          )
-```
 
 This endpoint determines the patient's treatment group.
 
@@ -193,14 +148,6 @@ The GET /study/ endpoint allow to list all previously defined studies. It return
 - Randomization method
 - Last edit date
 
-
-```R
-# Print all defined studies
-req_url_path("study", "") |>
-  req_method("GET") |>
-  req_perform()
-```
-
 ### Study Details
 The GET /study/{study_id} endpoint allows to retrieve details about a selected study. The response body return:
 
@@ -210,21 +157,8 @@ The GET /study/{study_id} endpoint allows to retrieve details about a selected s
 - Input parameters
 - Strata
 
-```R
-# Get details about chosen study
-req_url_path("study", my_study_id) |>
-    req_method("GET") |>
-    req_perform()
-```
 ### Randomization List
 The GET /study/{study_id}/randomization_list endpoint allows to generate a list of randomized patients along with their assigned study arms.
-
-```R
-# Print randomization list included study arms
- req_url_path("/study/my_study_id/randomization_list") |>
-    req_method("GET") |>
-    req_perform()
-```
 
 ### Audit Log
 
@@ -242,11 +176,6 @@ The response body includes the following information:
 - Response code
 - Response body with study details
 
-```R
-req_url_path("study", study_id, "audit") |>
-      req_method("GET") |>
-      req_perform()
-```
 The endpoint facilitates tracking the history of requests sent to the database, along with their corresponding responses. This enables us to trace all actions involving the API.
 
 # Technical details
