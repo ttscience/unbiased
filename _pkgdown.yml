@@ -6,3 +6,14 @@ template:
     base_font: {google: "Montserrat"}
     heading_font: {google: "Montserrat"}
     code_font: {google: "JetBrains Mono"}
+  includes:
+    in_header: |
+      <!-- Google tag (gtag.js) -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-56CWJW1Q0Q"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-56CWJW1Q0Q');
+      </script>
