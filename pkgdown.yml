@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   minimization_randomization_comparison: minimization_randomization_comparison.html
-last_built: 2024-03-08T14:23Z
+last_built: 2024-03-08T14:33Z
 urls:
   reference: https://ttscience.github.io/unbiased/reference
   article: https://ttscience.github.io/unbiased/articles

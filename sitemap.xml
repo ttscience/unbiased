@@ -34,12 +34,6 @@
     <loc>https://ttscience.github.io/unbiased/reference/audit_log_set_study_id.html</loc>
   </url>
   <url>
-    <loc>https://ttscience.github.io/unbiased/reference/compare_rows.html</loc>
-  </url>
-  <url>
-    <loc>https://ttscience.github.io/unbiased/reference/create_db_connection_pool.html</loc>
-  </url>
-  <url>
     <loc>https://ttscience.github.io/unbiased/reference/index.html</loc>
   </url>
   <url>
@@ -50,12 +44,6 @@
   </url>
   <url>
     <loc>https://ttscience.github.io/unbiased/reference/run_unbiased.html</loc>
-  </url>
-  <url>
-    <loc>https://ttscience.github.io/unbiased/reference/setup_audit_trail.html</loc>
-  </url>
-  <url>
-    <loc>https://ttscience.github.io/unbiased/reference/setup_sentry.html</loc>
   </url>
   <url>
     <loc>https://ttscience.github.io/unbiased/reference/unbiased-package.html</loc>
