@@ -172,9 +172,8 @@ The response body includes the following information:
 - Study ID
 - Endpoint URL
 - Request method
-- Request body with study definition
+- Request body
 - Response code
-- Response body with study details
 
 The endpoint facilitates tracking the history of requests sent to the database, along with their corresponding responses. This enables us to trace all actions involving the API.
 
