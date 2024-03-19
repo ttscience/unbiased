@@ -26,7 +26,7 @@ parse_pocock_parameters <-
     return(params)
   }
 
-api__randomize_patient <- function(study_id, current_state, req, res) {
+api_randomize_patient <- function(study_id, current_state, req, res) {
   audit_log_set_event_type("randomize_patient", req)
   collection <- checkmate::makeAssertCollection()
 

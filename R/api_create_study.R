@@ -1,4 +1,4 @@
-api__minimization_pocock <- function(
+api_minimization_pocock <- function(
     # nolint: cyclocomp_linter.
     identifier, name, method, arms, covariates, p, req, res) {
   audit_log_set_event_type("study_create", req)

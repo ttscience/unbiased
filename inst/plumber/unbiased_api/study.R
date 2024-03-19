@@ -21,7 +21,7 @@
 unbiased:::wrap_endpoint(function(
     identifier, name, method, arms, covariates, p, req, res) {
   return(
-    unbiased:::api__minimization_pocock(
+    unbiased:::api_minimization_pocock(
       identifier, name, method, arms, covariates, p, req, res
     )
   )
@@ -40,7 +40,7 @@ unbiased:::wrap_endpoint(function(
 
 unbiased:::wrap_endpoint(function(study_id, current_state, req, res) {
   return(
-    unbiased:::api__randomize_patient(study_id, current_state, req, res)
+    unbiased:::api_randomize_patient(study_id, current_state, req, res)
   )
 })
 
