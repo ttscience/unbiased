@@ -59,7 +59,7 @@ test_that("correct request with the structure of the returned result", {
     response_patient |>
     resp_body_json()
 
-  testthat::expect_equal(response$status_code, 200)
+  testthat::expect_equal(response_patient$status_code, 200)
   checkmate::expect_number(response_patient_body$patient_id, lower = 1)
 
   # Endpoint Response Structure Test
@@ -501,4 +501,77 @@ test_that("request with incorrect ratio", {
     )
 
   testthat::expect_equal(response_ratio$status, 400)
+})
+
+test_that("randomization works for 1 patient", {
+  with_db_fixtures("fixtures/example_db.yml")
+  response_patient <- request(api_url) |>
+    req_url_path("study", "1", "patient") |>
+    req_method("POST") |>
+    req_error(is_error = \(x) FALSE) |>
+    req_body_json(
+      data = list(
+        current_state =
+          tibble::tibble(
+            "gender" = c("F"),
+            "arm" = c("")
+          )
+      )
+    ) |>
+    req_perform()
+
+  response_patient_body <-
+    response_patient |>
+    resp_body_json()
+
+  testthat::expect_equal(response_patient$status_code, 200)
+  checkmate::expect_number(response_patient_body$patient_id, lower = 1)
+})
+test_that("randomization works for 2 patients", {
+  with_db_fixtures("fixtures/example_db.yml")
+  response_patient <- request(api_url) |>
+    req_url_path("study", "1", "patient") |>
+    req_method("POST") |>
+    req_error(is_error = \(x) FALSE) |>
+    req_body_json(
+      data = list(
+        current_state =
+          tibble::tibble(
+            "gender" = c("F", "M"),
+            "arm" = c("placebo", "")
+          )
+      )
+    ) |>
+    req_perform()
+
+  response_patient_body <-
+    response_patient |>
+    resp_body_json()
+
+  testthat::expect_equal(response_patient$status_code, 200)
+  checkmate::expect_number(response_patient_body$patient_id, lower = 1)
+})
+test_that("randomization works for 3 patients", {
+  with_db_fixtures("fixtures/example_db.yml")
+  response_patient <- request(api_url) |>
+    req_url_path("study", "1", "patient") |>
+    req_method("POST") |>
+    req_error(is_error = \(x) FALSE) |>
+    req_body_json(
+      data = list(
+        current_state =
+          tibble::tibble(
+            "gender" = c("F", "M", "F"),
+            "arm" = c("placebo", "active", "")
+          )
+      )
+    ) |>
+    req_perform()
+
+  response_patient_body <-
+    response_patient |>
+    resp_body_json()
+
+  testthat::expect_equal(response_patient$status_code, 200)
+  checkmate::expect_number(response_patient_body$patient_id, lower = 1)
 })

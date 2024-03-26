@@ -21,7 +21,9 @@ testthat::test_that("audit logs for study are returned correctly from the databa
     testthat::expect_identical(response$status_code, 200L)
     testthat::expect_identical(length(response_body), count)
 
-    created_at <- response_body |> dplyr::bind_rows() |> dplyr::pull("created_at")
+    created_at <- response_body |>
+      dplyr::bind_rows() |>
+      dplyr::pull("created_at")
     testthat::expect_equal(
       created_at,
       created_at |> sort()
