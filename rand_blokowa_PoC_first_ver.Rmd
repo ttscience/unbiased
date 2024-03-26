@@ -1,0 +1,183 @@
+---
+title: "Randomizacja blokowa"
+output: html_notebook
+---
+
+```{r}
+library(randomizeR)
+library(tidyverse)
+```
+
+# Logical flow
+
+## Study definition
+
+```{r}
+# Define the study
+# N - total number of patients
+study_def <- list(
+  arms = list(
+    "armA" = 1,
+    "armB" = 2
+  ),
+  block_size = c(3, 6, 9),
+  covariates = list(
+    sex = list(
+      weight = NULL,
+      levels = c("female", "male")
+    ),
+    weight = list(
+      weight = NULL,
+      levels = c("up to 60kg", "61-80 kg", "81 kg or more")
+    )
+  )
+)
+```
+
+```{r}
+# select random number from vector
+sample(study_def$block_size, 1)
+```
+
+```{r}
+# expand grid of covariates
+covariate_levels <- lapply(study_def$covariates, function(x) x$levels)
+strata_grid <- do.call(expand.grid, covariate_levels)
+strata_grid
+```
+
+
+## Initialize the block status table
+
+```{r}
+block_status <- tibble::tibble(
+  block_id = 1:nrow(strata_grid),
+  strata_grid,
+  status = "open",
+  block_size = sample(study_def$block, nrow(strata_grid), replace = TRUE)
+)
+
+block_status
+```
+
+## Generate blocks
+
+```{r}
+# Block definition
+get_random_assignments <- function(block_def, arms) {
+  rand <- rpbrPar(
+    N = block_def$block_size,
+    rb = block_def$block_size,
+    K = length(arms),
+    ratio = as.vector(unlist(lapply(arms, function(x) x))),
+    groups = names(arms),
+    filledBlock = TRUE
+  )
+  arms <- getRandList(genSeq(rand)) %>% as.vector()
+  bind_cols(block_def,
+    arms = arms,
+    used = FALSE
+  )
+}
+```
+
+
+```{r}
+# Generate blocks
+# to each position from block_status table, assign vector of random assignments
+block_status <-
+  # for each row, generate random assignments
+  lapply(1:nrow(block_status), function(x) {
+    block_def <- block_status[x, ]
+    arms <- get_random_assignments(
+      block_def,
+      study_def$arms
+    )
+  }) |> bind_rows()
+
+block_status
+```
+
+## Assign patients to blocks
+
+```{r}
+# Generate random patients state
+patient_state <- function() {
+  tibble(
+    sex = sample(study_def$covariates$sex$levels, 1, replace = TRUE),
+    weight = sample(study_def$covariates$weight$levels, 1, replace = TRUE),
+    arm = "NA"
+  )
+}
+```
+
+```{r}
+# Function to match patient state to a block ID
+match_patient_to_block <- function(current_state, block_status) {
+  unique_block <- unique(block_status[, c("block_id", names(study_def$covariates))])
+  #
+  for (i in 1:nrow(unique_block)) {
+    # Check if all covariates match
+    if (all(current_state[-ncol(current_state)] == unique_block[i, c(names(study_def$covariates))])) {
+      return(unique_block[i, ]$block_id)
+    }
+  }
+
+  # return error if no matching found
+  stop("No matching block found")
+}
+```
+
+```{r}
+# Initialize empty list to store patient states
+rand_list <- list()
+for (i in 1:10) {
+  current_state <- patient_state()
+
+  open_blocks <- block_status[block_status$status == "open", ]
+
+  matched_block_id <- match_patient_to_block(current_state, open_blocks)
+
+  selected_block <- block_status[block_status$block_id == matched_block_id, ]
+
+  # Check if all positions in the selected block are used
+  if (all(selected_block$used)) {
+    # Update block status to 'closed' directly in block_status
+    block_status[block_status$block_id == matched_block_id, "status"] <- "closed"
+
+    # open new block
+    new_block <-
+      tibble(
+        block_id = max(block_status$block_id) + 1,
+        current_state[-ncol(current_state)], # add covariates
+        status = "open",
+        block_size = sample(study_def$block, 1, replace = TRUE)
+      ) |>
+      get_random_assignments(study_def$arms)
+
+    # change selected block id to new block
+    selected_block <- new_block
+    # Append new block to block_status
+    block_status <- bind_rows(block_status, new_block)
+  }
+  # if the block is open, assign patient to the first available position
+
+  first_unused_position_index <- which(block_status$block_id == selected_block$block_id[1] & block_status$used == FALSE)[1]
+
+  current_state$arm <- block_status$arms[first_unused_position_index]
+
+  # Change the status of the row to used
+  block_status$used[first_unused_position_index] <- TRUE
+
+  # Store the updated patient state
+  rand_list[[i]] <- current_state
+}
+
+rand_list_df <- rand_list |> bind_rows()
+
+rand_list_df
+```
+```{r}
+block_status
+```
+
