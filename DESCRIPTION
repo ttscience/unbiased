@@ -1,6 +1,6 @@
 Package: unbiased
 Title: Unbiased: Production-Grade Randomization API
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(
     person("Kamil", "Sijko", , "kamil.sijko@ttsi.com.pl",
            role = c("aut", "cre"), comment = c(ORCID = "0000-0002-2203-1065")),

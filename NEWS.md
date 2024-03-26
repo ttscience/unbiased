@@ -1,3 +1,13 @@
+# unbiased 1.0.1
+
+## Bug Fixes
+
+- Fixed and issue when too aggressive input validation in the `randomize` endpoint was causing the API to reject valid requests with `current_state` of length other than 2.
+
+## DevOps
+
+- Updated docker build GitHub Action to use the latest version of cosign and checkout actions.
+
 # unbiased 1.0.0
 
 ## New Features
