@@ -524,9 +524,6 @@ test_that("randomization works for 1 patient", {
     response_patient |>
     resp_body_json()
 
-  print("######################")
-  print(response_patient_body)
-  print("######################")
   testthat::expect_equal(response_patient$status_code, 200)
   checkmate::expect_number(response_patient_body$patient_id, lower = 1)
 })
