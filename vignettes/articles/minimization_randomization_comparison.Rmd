@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Randomization in clinical trials is the gold standard and is widely considered the best design for evaluating the effectiveness of new treatments compared to alternative treatments (standard of care) or placebo. Indeed, the selection of an appropriate randomisation is as important as the selection of an appropriate statistical analysis for the study and the analysis strategy, whether based on randomisation or on a population model (@berger2021roadmap).
+Randomization in clinical trials is the gold standard and is widely considered the best design for evaluating the effectiveness of new treatments compared to alternative treatments (standard of care) or placebo. Indeed, the selection of an appropriate randomization is as important as the selection of an appropriate statistical analysis for the study and the analysis strategy, whether based on randomization or on a population model (@berger2021roadmap).
 
 One of the primary advantages of randomization, particularly simple randomization (usually using flipping a coin method), is its ability to balance confounding variables across treatment groups. This is especially effective in large sample sizes (n \> 200), where the random allocation of participants helps to ensure that both known and unknown confounders are evenly distributed between the study arms. This balanced distribution contributes significantly to the internal validity of the study, as it minimizes the risk of selection bias and confounding influencing the results (@lim2019randomization).
 
@@ -52,7 +52,7 @@ library(randomizeR)
 
 In the process of comparing the balance of covariates among randomization methods, three randomization methods have been selected for evaluation:
 
--   **simple randomization** - simple coin toss, algorithm that gives participants equal chances of being assigned to a particular arm. The method's advantage lies in its simplicity and the elimination of predictability. However, due to its complete randomness, it may lead to imbalance in sample sizes between arms and imbalances between prognostic factors. For a large sample size (n \> 200), simple randomisation gives a similar number of generated participants in each group. For a small sample size (n \< 100), it results in an imbalance (@kang2008issues).
+-   **simple randomization** - simple coin toss, algorithm that gives participants equal chances of being assigned to a particular arm. The method's advantage lies in its simplicity and the elimination of predictability. However, due to its complete randomness, it may lead to imbalance in sample sizes between arms and imbalances between prognostic factors. For a large sample size (n \> 200), simple randomization gives a similar number of generated participants in each group. For a small sample size (n \< 100), it results in an imbalance (@kang2008issues).
 
 -   **block randomization** - a randomization method that takes into account defined covariates for patients. The method involves assigning patients to therapeutic arms in blocks of a fixed size, with the recommendation that the blocks have different sizes. This, to some extent, reduces the risk of researchers predicting future arm assignments. In contrast to simple randomization, the block method aims to balance the number of patients within the block, hence reducing the overall imbalance between arms (@rosenberger2015randomization).
 
@@ -370,16 +370,16 @@ statistics_table(simple_data)
 
 # Block randomization
 
-Block randomization, as opposed to minimization and simple randomization methods, was developed based on the `rbprPar` function available in the `randomizeR` package (@randomizeR). Using this, the `block_rand` function was created, which, based on the defined number of patients, arms, and a list of stratifying factors, generates a randomization list with a length equal to the number of patients multiplied by the product of categories in each covariate. In the case of the specified data in the document, for one iteration, it amounts to **105 \* 2\^6 = 6720 rows**. This ensures that there is an appropriate number of randomisation codes for each opportunity. In the case of equal characteristics, it is certain that there are the right number of codes for the defined `n` patients.
+Block randomization, as opposed to minimization and simple randomization methods, was developed based on the `rbprPar` function available in the `randomizeR` package (@randomizeR). Using this, the `block_rand` function was created, which, based on the defined number of patients, arms, and a list of stratifying factors, generates a randomization list with a length equal to the number of patients multiplied by the product of categories in each covariate. In the case of the specified data in the document, for one iteration, it amounts to **105 \* 2\^6 = 6720 rows**. This ensures that there is an appropriate number of randomization codes for each opportunity. In the case of equal characteristics, it is certain that there are the right number of codes for the defined `n` patients.
 
-Based on the `block_rand` function, it is possible to generate a randomisation list, based on which patients will be allocated, with characteristics from the output `data` frame. Due to the 3 arms and the need to blind the allocation of consecutive patients, block sizes 3,6 and 9 were used for the calculations.
+Based on the `block_rand` function, it is possible to generate a randomization list, based on which patients will be allocated, with characteristics from the output `data` frame. Due to the 3 arms and the need to blind the allocation of consecutive patients, block sizes 3,6 and 9 were used for the calculations.
 
 In the next step, patients were assigned to research groups using the `block_results` function (based on the list generated by the function `block_rand`). A first available code from the randomization list that meets specific conditions is selected, and then it is removed from the list of available codes. Based on this, research arms are generated to ensure the appropriate number of patients in each group (based on the assumed ratio of 1:1:1).
 
-The tables show the assignment of patients to groups using block randomisation and summary statistics including a summary of the statistical tests.
+The tables show the assignment of patients to groups using block randomization and summary statistics including a summary of the statistical tests.
 
 ```{r, block-rand}
-# Function to generate a randomisation list
+# Function to generate a randomization list
 block_rand <-
   function(n, block, n_groups, strata, arms = LETTERS[1:n_groups]) {
     strata_grid <- expand.grid(strata)
@@ -507,8 +507,8 @@ vars <- c("sex", "age", "diabetes_type", "wound_size", "tpo2", "hba1c")
 
 ```{r, smd-covariants-data}
 smd_covariants_data <-
-  function(data, vars, strata) {
-    result_table <-
+  function(data, vars) {
+    smd_result_table <-
       lapply(unique(data$simnr), function(i) {
         current_data <- data[data$simnr == i, ]
         arms_to_check <- setdiff(names(current_data), c(vars, "id", "simnr"))
@@ -525,22 +525,22 @@ smd_covariants_data <-
             ExtractSmd(tab) |>
             as.data.frame() |>
             tibble::rownames_to_column("covariants") |>
-            select(covariants, results = average) |>
-            mutate(results = round(as.numeric(results), 3))
+            select(covariants, smd_value = average) |>
+            mutate(smd_value = round(as.numeric(smd_value), 3))
 
-          results <-
+          smd_table <-
             bind_cols(
               simnr = i,
               strata = arm,
               results_smd
             )
-          return(results)
+          return(smd_table)
         }) |>
           bind_rows()
       }) |>
       bind_rows()
 
-    return(result_table)
+    return(smd_result_table)
   }
 ```
 
@@ -567,14 +567,15 @@ Below are the results of the SMD test presented in the form of boxplot and violi
 ```{r, boxplot, fig.cap= "Summary average smd in each randomization methods", warning=FALSE, fig.width=9, fig.height=6}
 # boxplot
 cov_balance_data |>
-  select(simnr, results, method) |>
+  select(simnr, smd_value, method) |>
   group_by(simnr, method) |>
-  mutate(results = mean(results)) |>
+  mutate(smd_value = mean(smd_value)) |>
   distinct() |>
-  ggplot(aes(x = method, y = results, fill = method)) +
+  ggplot(aes(x = method, y = smd_value, fill = method)) +
   geom_boxplot() +
   geom_hline(yintercept = 0.2, linetype = "dashed", color = "red") +
-  theme_bw()
+  theme_bw() +
+  ylab("average SMD value") 
 ```
 
 -   **Violin plot**
@@ -582,7 +583,7 @@ cov_balance_data |>
 ```{r, violinplot, fig.cap= "Summary smd in each randomization methods in each covariants", warning = FALSE, fig.width=9, fig.height=6}
 # violin plot
 cov_balance_data |>
-  ggplot(aes(x = method, y = results, fill = method)) +
+  ggplot(aes(x = method, y = smd_value, fill = method)) +
   geom_violin() +
   geom_hline(
     yintercept = 0.2,
@@ -591,7 +592,8 @@ cov_balance_data |>
   ) +
   facet_wrap(~covariants, ncol = 3) +
   theme_bw() +
-  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust = 1))
+  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust = 1))  +
+  ylab("SMD value")
 ```
 
 -   **Summary table of success**
@@ -603,24 +605,24 @@ The final success power is calculated as the sum of successes in each iteration 
 The results are summarized in a table as the percentage of success for each randomization method.
 
 ```{r, success-power}
-# function defining success of randomisation
+# function defining success of randomization
 success_power <-
   function(cov_data) {
-    result_table <-
+    success_table <-
       lapply(unique(cov_data$simnr), function(i) {
         current_data <- cov_data[cov_data$simnr == i, ]
 
         current_data |>
           group_by(method) |>
-          summarise(success = ifelse(any(results > 0.2), 0, 1)) |>
+          summarise(success = ifelse(any(smd_value > 0.2), 0, 1)) |>
           tibble::add_column(simnr = i, .before = 1)
       }) |>
       bind_rows()
 
     success <-
-      result_table |>
+      success_table |>
       group_by(method) |>
-      summarise(results_power = sum(success) / n() * 100)
+      summarise(power = sum(success) / n() * 100)
 
 
     return(success)
@@ -630,7 +632,7 @@ success_power <-
 ```{r, success-result-data, tab.cap = "Summary of percent success in each randomization methods"}
 success_power(cov_balance_data) |>
   as.data.frame() |>
-  rename(`power results [%]` = results_power) |>
+  rename(`power of success [%]` = power) |>
   gt()
 ```
 
@@ -638,9 +640,9 @@ success_power(cov_balance_data) |>
 
 Considering all three randomization methods: minimization, block randomization, and simple randomization, minimization performs the best in terms of covariate balance. Simple randomization has a significant drawback, as patient allocation to arms occurs randomly with equal probability. This leads to an imbalance in both the number of patients and covariate balance, which is also random. This is particularly the case with small samples. Balancing the number of patients is possible for larger samples for n \> 200.
 
-On the other hand, block randomization performs very well in balancing the number of patients in groups in a specified allocation ratio. However, compared to adaptive randomisation using the minimisation method, block randomisation has a lower probability in terms of balancing the co-variables.
+On the other hand, block randomization performs very well in balancing the number of patients in groups in a specified allocation ratio. However, compared to adaptive randomization using the minimization method, block randomization has a lower probability in terms of balancing the co-variables.
 
-Minimization method, provides the highest success power by ensuring balance across covariates between groups. This is made possible by an appropriate algorithm implemented as part of minimisation randomisation. When assigning the next patient to a group, the method examines the total imbalance and then assigns the patient to the appropriate study group with a specified probability to balance the sample in terms of size, and covariates.
+Minimization method, provides the highest success power by ensuring balance across covariates between groups. This is made possible by an appropriate algorithm implemented as part of minimization randomization. When assigning the next patient to a group, the method examines the total imbalance and then assigns the patient to the appropriate study group with a specified probability to balance the sample in terms of size, and covariates.
 
 # References
 
