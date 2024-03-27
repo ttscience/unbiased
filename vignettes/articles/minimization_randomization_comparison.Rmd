@@ -575,7 +575,7 @@ cov_balance_data |>
   geom_boxplot() +
   geom_hline(yintercept = 0.2, linetype = "dashed", color = "red") +
   theme_bw() +
-  ylab("average SMD value") 
+  ylab("average SMD value")
 ```
 
 -   **Violin plot**
@@ -592,7 +592,7 @@ cov_balance_data |>
   ) +
   facet_wrap(~covariants, ncol = 3) +
   theme_bw() +
-  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust = 1))  +
+  theme(axis.text = element_text(angle = 45, vjust = 0.5, hjust = 1)) +
   ylab("SMD value")
 ```
 
