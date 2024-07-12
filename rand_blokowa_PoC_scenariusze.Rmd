@@ -1,0 +1,605 @@
+---
+title: "Scenariusze zmian"
+output: html_notebook
+---
+
+```{r}
+library(randomizeR)
+library(tidyverse)
+set.seed(1234)
+```
+
+# Logical flow
+
+## Study definition
+
+```{r}
+# Define the study
+# N - total number of patients
+study_def <- list(
+  N = 30,
+      arms = list("armA" = 1, 
+               "armB" = 2),
+      block_size = c(3, 6, 9),
+      covariates = list(
+    sex = list(
+      weight= NULL,
+      levels = c("female","male")
+    ),
+    weight = list(
+      weight = NULL,
+      levels = c("up to 60kg", "61-80 kg","81 kg or more")
+    )
+  )
+)
+```
+
+```{r}
+# select random number from vector
+sample(study_def$block_size, 1)
+```
+
+```{r}
+# expand grid of covariates
+covariate_levels <- lapply(study_def$covariates, function(x) x$levels)
+strata_grid <- do.call(expand.grid, covariate_levels)
+strata_grid
+```
+
+## Initialize the block status table
+
+```{r}
+block_status <- tibble::tibble(
+  block_id = 1:nrow(strata_grid),
+  strata_grid,
+  status = "open",
+  block_size = sample(study_def$block, nrow(strata_grid), replace = TRUE)
+)
+
+block_status
+```
+
+## Generate blocks
+
+```{r}
+# Block definition
+get_random_assignments <- function(block_def, arms){
+
+   rand <- rpbrPar(
+      N = block_def$block_size,
+      rb = block_def$block_size,
+      K = length(arms),
+      ratio = as.vector(unlist(lapply(arms, function(x) x))),
+      groups = names(arms),
+      filledBlock = TRUE
+    )
+  arms  <- getRandList(genSeq(rand)) %>% as.vector()
+      bind_cols(block_def, 
+              arms = arms,
+              # random hash as id
+              assignment_id = stringi::stri_rand_strings(length(arms), 12),
+              used = FALSE)
+}
+```
+
+```{r}
+# Generate blocks
+# to each position from block_status table, assign vector of random assignments
+block_status <- 
+  # for each row, generate random assignments
+ lapply(1:nrow(block_status), function(x) {
+   block_def <- block_status[x, ]
+   arms <- get_random_assignments(
+     block_def, 
+     study_def$arms
+   )
+
+  }) |> bind_rows()
+
+block_status <-
+block_status |> 
+  pivot_longer(names(study_def$covariates), names_to = "covariate", values_to = "level")
+ 
+ block_status
+```
+
+## Assign patients to blocks
+
+```{r}
+# Generate random patients state
+patient_state <- function(){
+  tibble(
+  sex = sample(study_def$covariates$sex$levels, 1, replace = TRUE),
+  weight = sample(study_def$covariates$weight$levels, 1, replace = TRUE),
+  arm = "NA"
+)
+}
+```
+
+```{r}
+# Function to match patient state to a block ID
+match_patient_to_block <- function(current_state, block_status) {
+
+  unique_block <- unique(block_status[,c("block_id", "covariate", "level")])
+ 
+  matched_id <- split(unique_block, unique_block$block_id) |> 
+  lapply(function(block){
+    #Check if all elements from block match current state
+    
+    # Apply the matching logic to each block
+    matches <- sapply(1:nrow(block), function(row) {
+      # Count how many covariates match between current_state and this row in the block
+      sum(mapply(function(cs_value, b_value) cs_value == b_value, current_state[-1], block[row, names(current_state[-1])]))
+    })
+    # Check if there's any row with no. of matches equal to the number of covariates
+    # check if all matches are equal to 2
+    
+    if(sum(matches == 2) >= nrow(block)) return(unique(block$block_id))
+  }) |> 
+    purrr::keep(~ !is.null(.x) && length(.x) != 0) |> unlist()
+ 
+  #return error if no matching found
+  # if(is.null(matched_id)) stop("No matching block found")
+    
+}
+```
+
+```{r}
+ # Initialize empty list to store patient states
+rand_list <- list() 
+for (i in 1:5) {
+  patient_data <- patient_state() 
+  
+  current_state <- patient_data |> pivot_longer(-arm, names_to = "covariate", values_to = "level")
+  
+  open_blocks <- block_status[block_status$status == "open",]
+  
+  matched_block_id <- match_patient_to_block(current_state, open_blocks)
+  
+  selected_block <- block_status[block_status$block_id == matched_block_id,]
+    
+     # Check if all positions in the selected block are used
+    if(all(selected_block$used)){
+      # Update block status to 'closed' directly in block_status
+      block_status[block_status$block_id == matched_block_id, "status"] <- "closed"
+      
+      # open new block
+      new_block <-
+          tibble(
+            block_id = max(block_status$block_id) + 1,
+            patient_data[-ncol(patient_data)], # add covariates
+            status = "open",
+            block_size = sample(study_def$block, 1, replace = TRUE) 
+            )|> 
+              get_random_assignments(study_def$arms) |> 
+         pivot_longer(names(study_def$covariates), names_to = "covariate", values_to = "level")
+      
+      # change selected block id to new block 
+      selected_block <- new_block
+      # Append new block to block_status
+      block_status <- bind_rows(block_status, new_block)
+    }
+  # if the block is open, assign patient to the first available position
+     
+       first_unused_position_index <- which(block_status$block_id == selected_block$block_id[1] & block_status$used == FALSE)[1:length(study_def$covariates)]
+       
+       patient_data$arm <- unique(block_status$arms[first_unused_position_index])
+
+      # Change the status of the row to used
+       assignnment_id <- block_status$assignment_id[first_unused_position_index]
+      block_status$used[block_status$assignment_id == assignnment_id] <- TRUE
+      
+           # Store the updated patient state
+  rand_list[[i]] <- patient_data
+}
+
+rand_list_df <- rand_list |> bind_rows()
+```
+
+
+
+# Scenariusze zmian
+
+## Zmiana n całkowitego z 100 na 60 bądź z 60 na 100 
+
+otwieranie nowych bloków kiedy jest potrzeba, więc nie musimy znać z góry n
+
+## Zmiana randomization ratio z c(1,2) na c(2,1)
+
+```{r}
+# Define the study
+# N - total number of patients
+study_def <- list(
+  N = 30,
+      arms = list("armA" = 2, 
+               "armB" = 1),
+      block_size = c(3, 6, 9),
+      covariates = list(
+    sex = list(
+      weight= NULL,
+      levels = c("female","male")
+    ),
+    weight = list(
+      weight = NULL,
+      levels = c("up to 60kg", "61-80 kg","81 kg or more")
+    )
+  )
+)
+```
+
+```{r}
+ # Initialize empty list to store patient states
+rand_list <- list() 
+for (i in 1:10) {
+  patient_data <- patient_state() 
+  
+  current_state <- patient_data |> pivot_longer(-arm, names_to = "covariate", values_to = "level")
+  
+  open_blocks <- block_status[block_status$status == "open",]
+  
+  matched_block_id <- match_patient_to_block(current_state, open_blocks)
+  
+  selected_block <- block_status[block_status$block_id == matched_block_id,]
+    
+     # Check if all positions in the selected block are used
+    if(all(selected_block$used)){
+      # Update block status to 'closed' directly in block_status
+      block_status[block_status$block_id == matched_block_id, "status"] <- "closed"
+      
+      # open new block
+      new_block <-
+          tibble(
+            block_id = max(block_status$block_id) + 1,
+            patient_data[-ncol(patient_data)], # add covariates
+            status = "open",
+            block_size = sample(study_def$block, 1, replace = TRUE) 
+            )|> 
+              get_random_assignments(study_def$arms) |> 
+         pivot_longer(names(study_def$covariates), names_to = "covariate", values_to = "level")
+      
+      # change selected block id to new block 
+      selected_block <- new_block
+      # Append new block to block_status
+      block_status <- bind_rows(block_status, new_block)
+    }
+  # if the block is open, assign patient to the first available position
+     
+       first_unused_position_index <- which(block_status$block_id == selected_block$block_id[1] & block_status$used == FALSE)[1:length(study_def$covariates)]
+       
+       patient_data$arm <- unique(block_status$arms[first_unused_position_index])
+
+      # Change the status of the row to used
+       assignnment_id <- block_status$assignment_id[first_unused_position_index]
+      block_status$used[block_status$assignment_id == assignnment_id] <- TRUE
+      
+           # Store the updated patient state
+  rand_list[[i]] <- patient_data
+}
+
+rand_list_df <- rand_list |> bind_rows()
+
+rand_list_df |> count(arm)
+```
+
+Dodano nowy blok - 7 - o ratio 2:1:
+
+```{r}
+block_status |> filter(block_id == 7) |> count(arms) |> mutate(n=n/2)
+```
+
+
+## Dodanie jednego poziomu do straty, np strata: płeć (2 poziomy -> 3 poziomy, F, M, NA) 
+
+Niebezpieczeństwo: stare bloki nie będą miały nowego poziomu
+
+Rozwiązanie: jeśli nie znaleziono matching block, to otwórz nowy blok
+
+```{r}
+# Define the study
+# N - total number of patients
+study_def <- list(
+  N = 30,
+      arms = list("armA" = 1, 
+               "armB" = 2),
+      block_size = c(3, 6, 9),
+      covariates = list(
+    sex = list(
+      weight= NULL,
+      levels = c("female","male", "NA")
+    ),
+    weight = list(
+      weight = NULL,
+      levels = c("up to 60kg", "61-80 kg","81 kg or more")
+    )
+  )
+)
+```
+
+```{r}
+ # Initialize empty list to store patient states
+rand_list <- list() 
+for (i in 1:18) {
+  patient_data <- patient_state() 
+  
+  current_state <- patient_data |> pivot_longer(-arm, names_to = "covariate", values_to = "level")
+  
+  open_blocks <- block_status[block_status$status == "open",]
+  
+  matched_block_id <- match_patient_to_block(current_state, open_blocks)
+  
+  if(!is.null(matched_block_id)) {
+  selected_block <- block_status[block_status$block_id == matched_block_id,]
+  } else {
+    selected_block <- NULL
+  }
+    
+     # Check if all positions in the selected block are used
+    if(all(selected_block$used) | is.null(selected_block)){
+      # Update block status to 'closed' directly in block_status
+      if(!is.null(selected_block)) {
+        block_status[block_status$block_id == matched_block_id, "status"] <- "closed"
+      }
+      
+      # open new block
+      new_block <-
+          tibble(
+            block_id = max(block_status$block_id) + 1,
+            patient_data[-ncol(patient_data)], # add covariates
+            status = "open",
+            block_size = sample(study_def$block, 1, replace = TRUE) 
+            )|> 
+              get_random_assignments(study_def$arms) |> 
+         pivot_longer(names(study_def$covariates), names_to = "covariate", values_to = "level")
+      
+      # change selected block id to new block 
+      selected_block <- new_block
+      # Append new block to block_status
+      block_status <- bind_rows(block_status, new_block)
+    }
+  # if the block is open, assign patient to the first available position
+     
+       first_unused_position_index <- which(block_status$block_id == selected_block$block_id[1] & block_status$used == FALSE)[1:length(study_def$covariates)]
+       
+       patient_data$arm <- unique(block_status$arms[first_unused_position_index])
+
+      # Change the status of the row to used
+      assignnment_id <- block_status$assignment_id[first_unused_position_index]
+      block_status$used[block_status$assignment_id == assignnment_id] <- TRUE
+      
+           # Store the updated patient state
+  rand_list[[i]] <- patient_data
+}
+
+rand_list_df <- rand_list |> bind_rows()
+
+rand_list_df |> count(arm)
+```
+Dodane nowe bloki -8, 9, 10 - o poziomie "NA":
+
+```{r}
+block_status |> filter(block_id %in% c(8:10)) |> count(block_id, covariate, level) 
+```
+
+```{r}
+block_status |> filter(block_id %in%  c(8:10)) |> count(arms) |> mutate(n=n/2)
+```
+
+## Dodanie 1 straty, np. Strata (2): płeć, waga -> nowa strata(3): płeć, waga, wiek
+
+jeśli 2 z 3 covariates pasują, to mogą być przypisane do starych bloków, zanim nowe zostaną otwarte; nowe zostają otwarte według nowej definicji study
+
+jeśli nie ma bloku, stwórz nowy
+
+Także - nowa definicja dla patient_state
+
+```{r}
+# Define the study
+# N - total number of patients
+study_def <- list(
+  N = 30,
+      arms = list("armA" = 1, 
+               "armB" = 2),
+      block_size = c(3, 6, 9),
+      covariates = list(
+    sex = list(
+      weight= NULL,
+      levels = c("female","male")
+    ),
+    weight = list(
+      weight = NULL,
+      levels = c("up to 60kg", "61-80 kg","81 kg or more")
+    ),
+    age = list(
+      weight = NULL,
+      levels = c("up to 30", "31-50", "51 or more")
+    )
+  )
+)
+```
+
+```{r}
+# Generate random patients state
+patient_state <- function(){
+  tibble(
+  sex = sample(study_def$covariates$sex$levels, 1, replace = TRUE),
+  weight = sample(study_def$covariates$weight$levels, 1, replace = TRUE),
+  age = sample(study_def$covariates$age$levels, 1, replace = TRUE),
+  arm = "NA"
+)
+}
+```
+
+```{r}
+ # Initialize empty list to store patient states
+rand_list <- list() 
+for (i in 1:18) {
+  patient_data <- patient_state() 
+  
+  current_state <- patient_data |> pivot_longer(-arm, names_to = "covariate", values_to = "level")
+  
+  open_blocks <- block_status[block_status$status == "open",]
+  
+  matched_block_id <- match_patient_to_block(current_state, open_blocks)
+  
+   if(!is.null(matched_block_id)) {
+  selected_block <- block_status[block_status$block_id == matched_block_id,]
+  } else {
+    selected_block <- NULL
+  }
+    
+     # Check if all positions in the selected block are used
+    if(all(selected_block$used) | is.null(selected_block)){
+      # Update block status to 'closed' directly in block_status
+      if(!is.null(selected_block)) {
+        block_status[block_status$block_id == matched_block_id, "status"] <- "closed"
+      }
+      
+      # open new block
+      new_block <-
+          tibble(
+            block_id = max(block_status$block_id) + 1,
+            patient_data[-ncol(patient_data)], # add covariates
+            status = "open",
+            block_size = sample(study_def$block, 1, replace = TRUE) 
+            )|> 
+              get_random_assignments(study_def$arms) |> 
+         pivot_longer(names(study_def$covariates), names_to = "covariate", values_to = "level")
+      
+      # change selected block id to new block 
+      selected_block <- new_block
+      # Append new block to block_status
+      block_status <- bind_rows(block_status, new_block)
+    }
+  # if the block is open, assign patient to the first available position
+     
+       first_unused_position_index <- which(block_status$block_id == selected_block$block_id[1] & block_status$used == FALSE)[1]
+       
+      patient_data$arm <- unique(block_status$arms[first_unused_position_index])
+
+      # Change the status of the row to used
+      assignnment_id <- block_status$assignment_id[first_unused_position_index]
+      block_status$used[block_status$assignment_id == assignnment_id] <- TRUE
+      
+           # Store the updated patient state
+  rand_list[[i]] <- patient_data
+}
+
+rand_list_df <- rand_list |> bind_rows()
+
+rand_list_df |> count(arm)
+```
+
+Nowy otwarty blok - 13 - z nowym kowariatem "age":
+
+```{r}
+block_status |> filter(block_id %in% c(13)) |> count(block_id, covariate, level) 
+```
+
+
+## Zmiana liczby ramion z A,B na A,B, C
+
+Jeśli nie znaleziono matching block, to otwórz nowy blok
+
+```{r}
+# Define the study
+# N - total number of patients
+study_def <- list(
+  N = 30,
+      arms = list("armA" = 1, 
+               "armB" = 1,
+               "armC" = 1),
+      block_size = c(3, 6, 9),
+      covariates = list(
+    sex = list(
+      weight= NULL,
+      levels = c("female","male")
+    ),
+    weight = list(
+      weight = NULL,
+      levels = c("up to 60kg", "61-80 kg","81 kg or more")
+    )
+  )
+)
+```
+
+```{r}
+# Generate random patients state
+patient_state <- function(){
+  tibble(
+  sex = sample(study_def$covariates$sex$levels, 1, replace = TRUE),
+  weight = sample(study_def$covariates$weight$levels, 1, replace = TRUE),
+  arm = "NA"
+)
+}
+```
+
+```{r}
+ # Initialize empty list to store patient states
+rand_list <- list() 
+for (i in 1:10) {
+  patient_data <- patient_state() 
+  
+  current_state <- patient_data |> pivot_longer(-arm, names_to = "covariate", values_to = "level")
+  
+  open_blocks <- block_status[block_status$status == "open",]
+  
+  matched_block_id <- match_patient_to_block(current_state, open_blocks)
+  
+   if(!is.null(matched_block_id)) {
+  selected_block <- block_status[block_status$block_id == matched_block_id,]
+  } else {
+    selected_block <- NULL
+  }
+    
+     # Check if all positions in the selected block are used
+    if(all(selected_block$used) | is.null(selected_block)){
+      # Update block status to 'closed' directly in block_status
+      if(!is.null(selected_block)) {
+        block_status[block_status$block_id == matched_block_id, "status"] <- "closed"
+      }
+      
+      # open new block
+      new_block <-
+          tibble(
+            block_id = max(block_status$block_id) + 1,
+            patient_data[-ncol(patient_data)], # add covariates
+            status = "open",
+            block_size = sample(study_def$block, 1, replace = TRUE) 
+            )|> 
+              get_random_assignments(study_def$arms) |> 
+         pivot_longer(names(study_def$covariates), names_to = "covariate", values_to = "level")
+      
+      # change selected block id to new block 
+      selected_block <- new_block
+      # Append new block to block_status
+      block_status <- bind_rows(block_status, new_block)
+    }
+  # if the block is open, assign patient to the first available position
+     
+       first_unused_position_index <- which(block_status$block_id == selected_block$block_id[1] & block_status$used == FALSE)[1:length(study_def$covariates)]
+       
+        patient_data$arm <- unique(block_status$arms[first_unused_position_index])
+
+      # Change the status of the row to used
+       assignnment_id <- block_status$assignment_id[first_unused_position_index]
+      block_status$used[block_status$assignment_id == assignnment_id] <- TRUE
+      
+           # Store the updated patient state
+  rand_list[[i]] <- patient_data
+}
+
+rand_list_df <- rand_list |> bind_rows()
+
+rand_list_df |> count(arm)
+```
+Nowe bloki: 14-16:
+
+```{r}
+block_status |> filter(block_id %in% c(14:16)) |> count(block_id, arms) |> mutate(n=n/2)
+```
+5 pacjentów zostało przypisanych do nowych bloków, reszta do starych bloków:
+
+```{r}
+block_status |> filter(block_id %in% c(14:16), used) |> group_by(block_id) |> count() |>  mutate(n=n/2)
+```
+
