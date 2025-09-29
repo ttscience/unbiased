@@ -204,14 +204,13 @@ randomize_minimisation_pocock <-
       must.include =
         colnames(current_state)[colnames(current_state) != "arm"]
     )
-    checkmate::assert_integerish(
+    checkmate::assert_numeric(
       ratio,
       any.missing = FALSE,
       len = n_arms,
       null.ok = FALSE,
       lower = 0,
-      all.missing = FALSE,
-      names = "named"
+      finite = TRUE
     )
     checkmate::assert_names(
       names(ratio),
@@ -253,7 +252,7 @@ randomize_minimisation_pocock <-
         # compute scenario where each arm (x) gets new subject
         dplyr::mutate(dplyr::across(
           dplyr::where(is.numeric),
-          ~ dplyr::if_else(arm == x, .x + 1, .x) *
+          ~ dplyr::if_else(arm == x, .x + 1, .x) /
             ratio[arm]
         )) |>
         # compute dispersion across each covariate

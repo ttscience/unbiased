@@ -6,8 +6,8 @@
 #'
 #' @param arms `character()`\cr
 #'        Arm names.
-#' @param ratio `integer()`\cr
-#'        Vector of positive integers (0 is allowed), equal in length to number
+#' @param ratio `numeric()`\cr
+#'        Vector of positive values including fractions (0 is allowed), equal in length to number
 #'        of arms, named after arms, defaults to equal weight
 #'
 #' @return Selected arm assignment.
@@ -31,13 +31,15 @@ randomize_simple <- function(arms, ratio) {
     min.chars = 1
   )
 
-  checkmate::assert_integerish(
+  checkmate::assert_numeric(
     ratio,
     any.missing = FALSE,
     lower = 0,
     len = length(arms),
-    names = "named"
+    finite = TRUE,
+    null.ok = FALSE
   )
+
   checkmate::assert_names(
     names(ratio),
     must.include = arms
