@@ -25,8 +25,8 @@ last row contains the new patient with empty string for \code{arm}}
 vector of positive weights, equal in length to number of covariates,
 numbered after covariates, defaults to equal weights}
 
-\item{ratio}{\code{integer()}\cr
-Vector of positive integers (0 is allowed), equal in length to number
+\item{ratio}{\code{numeric()}\cr
+Vector of positive values including fractions (0 is allowed), equal in length to number
 of arms, named after arms, defaults to equal weight}
 
 \item{method}{\code{character()}\cr

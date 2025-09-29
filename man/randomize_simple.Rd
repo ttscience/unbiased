@@ -10,8 +10,8 @@ randomize_simple(arms, ratio)
 \item{arms}{\code{character()}\cr
 Arm names.}
 
-\item{ratio}{\code{integer()}\cr
-Vector of positive integers (0 is allowed), equal in length to number
+\item{ratio}{\code{numeric()}\cr
+Vector of positive values including fractions (0 is allowed), equal in length to number
 of arms, named after arms, defaults to equal weight}
 }
 \value{
