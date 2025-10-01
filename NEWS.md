@@ -1,3 +1,9 @@
+# unbiased 1.0.2
+
+## Bug Fixes
+
+- Fixed incorrect ratio allocation in minimisation randomization when unequal allocation ratios were provided. This was caused by a logic bug; updating a single line in `randomize-minimisation-pocock.R` restores expected allocation behavior.
+
 # unbiased 1.0.1
 
 ## Bug Fixes

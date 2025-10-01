@@ -253,7 +253,7 @@ randomize_minimisation_pocock <-
         # compute scenario where each arm (x) gets new subject
         dplyr::mutate(dplyr::across(
           dplyr::where(is.numeric),
-          ~ dplyr::if_else(arm == x, .x + 1, .x) *
+          ~ dplyr::if_else(arm == x, .x + 1, .x) /
             ratio[arm]
         )) |>
         # compute dispersion across each covariate

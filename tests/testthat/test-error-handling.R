@@ -4,7 +4,7 @@ testthat::test_that("uses correct environment variables when setting up sentry",
       SENTRY_DSN = "https://sentry.io/123",
       GITHUB_SHA = "abc",
       SENTRY_ENVIRONMENT = "production",
-      SENTRY_RELEASE = "1.0.1"
+      SENTRY_RELEASE = "1.0.2"
     )
   )
 
@@ -18,7 +18,7 @@ testthat::test_that("uses correct environment variables when setting up sentry",
       testthat::expect_equal(app_name, "unbiased")
       testthat::expect_equal(app_version, "abc")
       testthat::expect_equal(environment, "production")
-      testthat::expect_equal(release, "1.0.1")
+      testthat::expect_equal(release, "1.0.2")
     },
     .package = "sentryR",
   )
