@@ -575,3 +575,55 @@ test_that("randomization works for 3 patients", {
   testthat::expect_equal(response_patient$status_code, 200)
   checkmate::expect_number(response_patient_body$patient_id, lower = 1)
 })
+
+test_that("API maintains ~3:1:1 ratio over 20 randomizations (p=1)", {
+  source("./test-helpers.R")
+  source("./audit-log-test-helpers.R")
+  with_db_fixtures("fixtures/example_db.yml")
+
+  # 1) Create study with ratio 1:1:3 and p=1
+  resp <- request(api_url) |>
+    req_url_path("study", "minimisation_pocock") |>
+    req_method("POST") |>
+    req_body_json(list(
+      identifier = "RATIO-113",
+      name = "Ratio 1:1:3",
+      method = "var",
+      p = 1,
+      arms = list("control" = 1, "active low" = 1, "active high" = 3),
+      covariates = list(
+        sex = list(weight = 1, levels = c("F","M")),
+        diabetes = list(weight = 1, levels = c("diabetes","no diabetes"))
+      )
+    )) |>
+    req_perform()
+  study <- resp |> resp_body_json() |> (\(b) b$study$id)()
+
+  # 2) Run ~20 randomizations via API with non-tie covariates
+  n <- 20
+  sex <- sample(c("F","M"), n, replace = TRUE, prob = c(0.55, 0.45))
+  diabetes <- sample(c("diabetes","no diabetes"), n, replace = TRUE, prob = c(0.2, 0.8))
+  assigned <- character(n)
+
+  for (i in seq_len(n)) {
+    current_state <- tibble::tibble(
+      sex = c(if (i > 1) sex[1:(i-1)] else character(0), sex[i]),
+      diabetes = c(if (i > 1) diabetes[1:(i-1)] else character(0), diabetes[i]),
+      arm = c(if (i > 1) assigned[1:(i-1)] else character(0), "")
+    )
+    r <- request(api_url) |>
+      req_url_path("study", study, "patient") |>
+      req_method("POST") |>
+      req_body_json(list(data = list(current_state = current_state))) |>
+      req_perform() |>
+      resp_body_json()
+    assigned[i] <- r$arm_name
+  }
+
+  # 3) Check ~3:1:1 via chi-square
+  arms <- c("control","active low","active high")
+  ratio <- c("control" = 1L, "active low" = 1L, "active high" = 3L)
+  obs <- table(factor(assigned, levels = arms))
+  x <- suppressWarnings(chisq.test(x = obs, p = ratio / sum(ratio), rescale.p = TRUE))
+  expect_gt(x$p.value, 0.01)
+})
