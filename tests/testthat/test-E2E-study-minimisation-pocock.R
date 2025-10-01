@@ -614,7 +614,7 @@ test_that("API maintains ~3:1:1 ratio over 20 randomizations (p=1)", {
     r <- request(api_url) |>
       req_url_path("study", study, "patient") |>
       req_method("POST") |>
-      req_body_json(list(data = list(current_state = current_state))) |>
+      req_body_json(list(current_state = current_state)) |>
       req_perform() |>
       resp_body_json()
     assigned[i] <- r$arm_name
