@@ -21,10 +21,17 @@ jobs:
           r-version: '4.2.3'
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::lintr, local::.
-          needs: lint
+      - uses: r-lib/actions/setup-renv@v2
+
+      - name: Install CI extras (lintr, cyclocomp)
+        run: |
+          pkgs <- c("lintr", "cyclocomp")
+          for (p in pkgs) {
+            if (!requireNamespace(p, quietly = TRUE)) {
+              install.packages(p, repos = "https://packagemanager.posit.co/cran/latest")
+            }
+          }
+        shell: Rscript {0}
 
       - name: Lint
         run: lintr::lint_package()
