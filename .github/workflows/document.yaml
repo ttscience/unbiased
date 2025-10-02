@@ -31,7 +31,12 @@ jobs:
             libfontconfig1-dev \
             libfreetype6-dev \
             libharfbuzz-dev \
-            libfribidi-dev
+            libfribidi-dev \
+            libpng-dev \
+            libjpeg-dev \
+            libtiff5-dev \
+            zlib1g-dev \
+            libbz2-dev
 
       - uses: r-lib/actions/setup-renv@v2
 

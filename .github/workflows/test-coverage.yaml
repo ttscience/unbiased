@@ -42,6 +42,21 @@ jobs:
           r-version: '4.2.3'
           use-public-rspm: true
 
+      - name: Install system dependencies for systemfonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config \
+            libfontconfig1-dev \
+            libfreetype6-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libpng-dev \
+            libjpeg-dev \
+            libtiff5-dev \
+            zlib1g-dev \
+            libbz2-dev
+
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install CI extras (covr)
