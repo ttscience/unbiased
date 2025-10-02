@@ -1,5 +1,6 @@
 {
     "files.watcherExclude": {
         "**/renv/**": true
-    }
+    },
+    "r.lsp.promptToInstall": false
 }
