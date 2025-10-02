@@ -21,6 +21,29 @@ jobs:
           r-version: '4.2.3'
           use-public-rspm: true
 
+      - name: Install system dependencies for systemfonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fontconfig \
+            libfontconfig1 \
+            pkg-config \
+            libfontconfig1-dev \
+            libfreetype6 \
+            libfreetype6-dev \
+            libharfbuzz-dev \
+            libfribidi-dev \
+            libpng-dev \
+            libpng16-16 \
+            libjpeg-dev \
+            libtiff5-dev \
+            zlib1g-dev \
+            libbz2-dev
+
+      - name: Ensure pkg-config can find installed libraries
+        run: |
+          echo "PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig" >> $GITHUB_ENV
+
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install CI extras (lintr, cyclocomp)
